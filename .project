@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>Loteria</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.flexbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>com.adobe.flexbuilder.project.apollobuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>com.adobe.flexbuilder.project.apollonature</nature>
+		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[source path] MinimalDesktopTheme-source</name>
+			<type>2</type>
+			<location>D:/Work/feathers-3/themes/MinimalDesktopTheme/source</location>
+		</link>
+		<link>
+			<name>[source path] starling-feathers-2.2-source</name>
+			<type>2</type>
+			<location>D:/Work/starling-feathers-2.2/source</location>
+		</link>
+	</linkedResources>
+</projectDescription>

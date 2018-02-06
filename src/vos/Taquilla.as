@@ -1,0 +1,21 @@
+package vos
+{
+	public class Taquilla
+	{
+		public var taquillaID:int;
+		public var usuarioID:int;
+		public var bancaID:int;
+		public var nombre:String;
+		public var usuario:String;
+		public var clave:String;
+		public var activa:Boolean;
+		public var comision:Number;
+		
+		public var fingerprint:String;
+		public var fingerlock:Boolean;
+		
+		public var conectado:Number;
+		public var papelera:int;
+		public var creacion:String;
+	}
+}

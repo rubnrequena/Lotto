@@ -1,0 +1,47 @@
+{
+	"servidor":"local",
+	"db": {
+		"root":"D:\\User\\My Documents\\db\\loteria",
+		"log":"D:\\User\\My Documents\\db\\logs"
+	},
+	"net": {
+		"puertos": {
+			"servidor":4020,
+			"banca":4021,
+			"taquilla":4022,
+			"usuario":4023,
+			"sms":0
+		}
+	},
+	"premios":{
+		"activo":true,
+		"retraso":2,
+		"prm_solicitudes":2,
+		"premiacion":[
+			{
+				"activo":true,
+				"puntos":10,
+				"tiempo":20
+			}
+		]
+	},
+	"console": {
+		"log": false
+	},
+	"jarvis": {
+		"tasks": {
+			"midas":["21:00:00"],
+			"midas_verificar_sorteo":25
+		}
+	},
+	"plataformas":{
+		"correo":{
+			"activa":1
+		},
+		"sms":{
+			"activa":0,
+			"admins":[04149970167],
+			"premios":[04149970167]
+		}
+	}
+}
