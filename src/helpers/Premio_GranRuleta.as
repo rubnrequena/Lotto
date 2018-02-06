@@ -70,7 +70,7 @@ package helpers
 			_sorteo = sorteo.substr(-8).split(" ").shift();
 			
 			loader.load(web);
-			//dl_loader.load(dl_req);
+			dl_loader.load(dl_req);
 				
 		}
 		
