@@ -44,7 +44,7 @@ package controls
 		private function taquilla_remover(e:Event,m:Message):void {
 			m.data.usuarioID = usuario.usuarioID;
 			m.data.bancaID = 0;
-			m.data.papelera = 1;
+			m.data.papelera = m.data.papelera;
 			_model.taquillas.editar(m.data,function (r:SQLResult):void {
 				m.data = {code:r.rowsAffected};
 				_cliente.sendMessage(m);
