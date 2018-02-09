@@ -183,6 +183,7 @@ package helpers
 		//TUAZAR
 		protected function azar_complete(event:Event):void
 		{
+			if (numBusq++>60) return;
 			var source:String = azar_loader.data;
 			//vefiricar dia de premio
 			if (source.indexOf(azar_fecha)>-1) {
