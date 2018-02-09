@@ -47,7 +47,7 @@ package
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
-			Loteria.console.log("v180207");
+			Loteria.console.log("v180209");
 			addChild(Loteria.console);
 			
 			var n:int=0;
