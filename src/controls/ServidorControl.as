@@ -353,6 +353,7 @@ package controls
 				if (s.data) {
 					m.data.d.sorteo = s.data[0].sorteoID;
 					if (m.data.a==1) _model.reportes.sorteo_global_fecha(m.data.d,result);
+					else if (m.data.a==2) _model.reportes.sorteo_global_grupo(m.data.d,result);
 					else _model.reportes.sorteo_global(m.data.d,result);
 				} else {
 					//null
