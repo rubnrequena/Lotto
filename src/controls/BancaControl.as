@@ -225,27 +225,13 @@ package controls
 		}
 		
 		private function taquilla_remover(e:Event,m:Message):void {
-			_model.ventas.tickets({ultimo:m.data.taquillaID},function (r:SQLResult):void {
-				if (r.data) {
-					var ml:Number = _model.ahora-r.data[0].tiempo; 
-					if (ml>DIAS10) remover();
-					else {
-						m.data = {code:Code.INVALIDO,t:ml}
-						_cliente.sendMessage(m);
-					}
-				} else remover();
+			m.data.usuarioID = banca.usuarioID;
+			m.data.bancaID = banca.bancaID;
+			m.data.papelera = m.data.papelera;
+			_model.taquillas.editar(m.data,function (r:SQLResult):void {
+				m.data = {code:r.rowsAffected};
+				_cliente.sendMessage(m);
 			});
-			
-			
-			function remover ():void {
-				m.data.usuarioID = banca.usuarioID;
-				m.data.bancaID = banca.bancaID;
-				m.data.papelera = 1;
-				_model.taquillas.editar(m.data,function (r:SQLResult):void {
-					m.data = {code:r.rowsAffected};
-					_cliente.sendMessage(m);
-				});
-			}
 		}
 		
 		private function conexiones(e:Event,m:Message):void {
