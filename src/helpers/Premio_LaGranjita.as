@@ -129,7 +129,7 @@ package helpers
 			source = source.substring(fecha,a);
 			if (fecha>-1) {
 				var data:Array = source.split("\n");
-				var n:String = NUMEROS[ANIMALES.indexOf(data[3].split(" ").shift())];
+				var n:String = data[3].split(" ").shift();
 				Loteria.console.log("Premio recibido principal",srt,"PLENO",n);
 				dispatchEventWith(Event.COMPLETE,false,n);
 				isComplete();

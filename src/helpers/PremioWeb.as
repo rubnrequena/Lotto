@@ -25,7 +25,7 @@ package helpers
 		protected var numBusq:int;
 		public var srt:String;
 		
-		protected var numResultados:int;
+		private var numResultados:int;
 		protected var numCompletado:int=1;
 		private var st:uint;
 		
