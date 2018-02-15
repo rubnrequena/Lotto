@@ -37,6 +37,8 @@ package helpers
 				if (sorteo.hasOwnProperty("time") && sorteo.hasOwnProperty("number") &&_busq==sorteo.time) {
 					a=true;
 					var n:String = ObjectUtil.extractAndTrail(sorteo.number);
+					if (n=="0") n = "00";
+					else if (n=="00") n = "0";
 					Loteria.console.log("Premio LottoLeon encontrado:",srt,"(",n,")");
 					dispatchEventWith(Event.COMPLETE,false,n);
 					isComplete();

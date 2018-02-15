@@ -105,7 +105,7 @@ package helpers
 			_fecha = DateFormat.format(fecha,"dd DE mmmm").toUpperCase();
 					
 			//twitter
-			loader.load(web);			
+			//loader.load(web);			
 			loader_alt.load(web);			
 			
 			//tuazar
@@ -129,7 +129,11 @@ package helpers
 			source = source.substring(fecha,a);
 			if (fecha>-1) {
 				var data:Array = source.split("\n");
-				var n:String = data[3].split(" ").shift();
+				source = data[3].split(" ");
+				var n:String = ObjectUtil.extractAndTrail(source);
+				if (n.length==0) {
+					n = NUMEROS[ANIMALES.indexOf(removerAcentuacao(source))]
+				}
 				Loteria.console.log("Premio recibido principal",srt,"PLENO",n);
 				dispatchEventWith(Event.COMPLETE,false,n);
 				isComplete();
