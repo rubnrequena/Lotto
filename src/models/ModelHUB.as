@@ -18,6 +18,7 @@ package models
 	import helpers.Mail;
 	import helpers.ObjectUtil;
 	import helpers.SMS;
+	import helpers.WS;
 	import helpers.bm.BManager;
 	
 	import starling.core.Starling;
@@ -133,7 +134,7 @@ package models
 				if (a.length==1) {
 					Mail.sendAdmin("[JV][MIDAS SORTEO]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
-					SMS.send("04149970167","["+Loteria.setting.servidor+"][SRQ] Revisar sorteo "+a.join());
+					WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"][SRQ] Revisar sorteo "+a.join());
 				} else {
 					Mail.sendAdmin("[JV][MIDAS]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");

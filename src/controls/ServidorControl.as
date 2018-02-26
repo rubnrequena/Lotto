@@ -11,6 +11,7 @@ package controls
 	import helpers.DateFormat;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
+	import helpers.WS;
 	
 	import models.ModelHUB;
 	
@@ -47,7 +48,13 @@ package controls
 					ObjectUtil.clear(m.data);
 					m.command = "init";
 					
-					if (usr.nivel==1) m.data.sorteos = _model.sistema.sorteos;
+					if (usr.nivel==1) {
+						var u:Object = Loteria.setting.plataformas;
+						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[JV] Administrador {0} Inicio sesion",usr.usuario));
+						m.data.sorteos = _model.sistema.sorteos;
+					} else if (usr.nivel==2) {
+						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[JV] Premiador {0} Inicio sesion",usr.usuario));
+					}
 					
 					_model.servidor.numeros({adminID:usr.adminID},function (r:SQLResult):void {
 						m.data.elem = r.data;

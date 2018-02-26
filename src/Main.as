@@ -31,12 +31,9 @@ package
 		private var usuarios:AIRServer;
 		
 		private var model:ModelHUB;
-		public static var ws:WS;
-		//private var sms:AIRServer;
-				
+		
 		public function Main() {
 			super();
-			ws = new WS;
 			addEventListener(Event.ADDED_TO_STAGE,onAdded);
 		}
 		
@@ -44,13 +41,15 @@ package
 			new MinimalDesktopTheme();
 			
 			LoaderPool.initialize(100,100>>1);
-			SMS.init();
 			
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
 			Loteria.console.log("v180224");
 			addChild(Loteria.console);
+			
+			SMS.init();
+			WS.init();
 			
 			var n:int=0;
 			model = new ModelHUB();

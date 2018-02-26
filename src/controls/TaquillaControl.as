@@ -16,6 +16,7 @@ package controls
 	import helpers.Mail;
 	import helpers.ObjectUtil;
 	import helpers.SMS;
+	import helpers.WS;
 	import helpers.bm.EGrupo;
 	import helpers.print.ModoExtremo;
 	
@@ -571,7 +572,7 @@ package controls
 							/*m.data.ws = meta.ws;
 							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);*/
 							
-							Main.ws.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
+							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
 						_cliente.sendMessage(m);
 					});
