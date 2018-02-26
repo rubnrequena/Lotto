@@ -18,7 +18,7 @@ package helpers
 		
 		public function Premio_GranRuleta()
 		{
-			url = 'https://twitter.com/lagranruleta?lang=es';
+			url = 'https://twitter.com/lagranruleta';
 			dl_url = 'https://dlottery.wordpress.com/';
 			
 			dl_loader = new URLLoader;
@@ -29,7 +29,7 @@ package helpers
 			dl_req.useCache=false;
 			
 			super();
-			numCompletado=2;
+			numCompletado=1;
 		}
 		
 		protected function dl_complete(event:Event):void
@@ -71,9 +71,8 @@ package helpers
 			_busq = DateFormat.format(fecha,"dd DE mmmm").toUpperCase();
 			_sorteo = sorteo.substr(-8).split(" ").shift();
 			
-			loader.load(web);
-			dl_loader.load(dl_req);
-				
+			//loader.load(web);
+			dl_loader.load(dl_req);				
 		}
 		
 		override protected function onComplete(event:Event):void {
