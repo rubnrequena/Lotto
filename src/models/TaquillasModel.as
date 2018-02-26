@@ -14,6 +14,7 @@ package models
 	import helpers.DateFormat;
 	
 	import starling.events.EventDispatcher;
+	import starling.utils.StringUtil;
 	import starling.utils.execute;
 	
 	import vos.Taquilla;
@@ -133,7 +134,7 @@ package models
 		}
 		
 		public function nueva (taq:Object,cb:Function,error:Function):void {
-			taq.usuario = (taq.usuario as String).toLowerCase();
+			taq.usuario = StringUtil.trim((taq.usuario as String).toLowerCase());
 			taq.clave = (taq.clave as String).toLowerCase();
 			taq.creacion = DateFormat.format(null,DateFormat.masks["default"]);
 			buscar({usr:taq.usuario},function (r:SQLResult):void {
