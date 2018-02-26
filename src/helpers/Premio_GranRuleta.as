@@ -27,7 +27,9 @@ package helpers
 			dl_req = new URLRequest(dl_url);
 			dl_req.cacheResponse=false;
 			dl_req.useCache=false;
+			
 			super();
+			numCompletado=2;
 		}
 		
 		protected function dl_complete(event:Event):void
@@ -43,7 +45,7 @@ package helpers
 				
 				a = source.indexOf(_sorteo);
 				if (a>-1) {
-					b = source.indexOf(')</td>',a);
+					b = source.indexOf(')</',a);
 				}
 				source = source.substring(b-2,b);
 				if (parseInt(source) || source=="0" || source=="00") {
@@ -86,7 +88,7 @@ package helpers
 				var pleno_start:int = source.indexOf("PLENO");
 				var pleno:Array = String(source.split("\n")[2]).split(":");
 				var npleno:String = ObjectUtil.extractAndTrail(pleno[1]);
-				Loteria.console.log("Premio recibido",srt,"PLENO",npleno);
+				Loteria.console.log("Premio recibido",srt,"PLENO (",npleno,')');
 				dispatchEventWith(Event.COMPLETE,false,npleno);
 				isComplete();
 			} else {

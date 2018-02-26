@@ -129,6 +129,9 @@ package models
 		public function sorteo_global (s:Object,cb:Function):void {
 			sql.sorteo_glb.run(s,cb);
 		}
+		public function sorteo_global_grupo (s:Object,cb:Function):void {
+			sql.sorteo_glb_grupo.run(s,cb);
+		}
 		public function sorteo_global_fecha (s:Object,cb:Function):void {
 			sql.sorteo_glb_fecha.run(s,cb);
 		} 

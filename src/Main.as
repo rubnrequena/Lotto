@@ -16,6 +16,7 @@ package
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.SMS;
+	import helpers.WS;
 	import helpers.pools.LoaderPool;
 	
 	import models.ModelHUB;
@@ -30,11 +31,12 @@ package
 		private var usuarios:AIRServer;
 		
 		private var model:ModelHUB;
+		public static var ws:WS;
 		//private var sms:AIRServer;
 				
 		public function Main() {
 			super();
-			
+			ws = new WS;
 			addEventListener(Event.ADDED_TO_STAGE,onAdded);
 		}
 		
@@ -47,7 +49,7 @@ package
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
-			Loteria.console.log("v180206");
+			Loteria.console.log("v180224");
 			addChild(Loteria.console);
 			
 			var n:int=0;

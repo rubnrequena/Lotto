@@ -54,6 +54,7 @@ package db.sql
 		public var midas_reporte_sorteo:SQLStatementPool;
 		public var sorteo_glb:SQLStatementPool;
 		public var sorteo_glb_fecha:SQLStatementPool;
+		public var sorteo_glb_grupo:SQLStatementPool;
 		
 		public function ReportesSQL()
 		{

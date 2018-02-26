@@ -47,7 +47,7 @@ package helpers.print
 			else 
 				_lineas.push("T:"+ticket.monto);
 			
-			return _lineas.join(File.lineEnding);
+			return _lineas.join("\\n");
 		}
 		
 		private static function sorteos_order (a:Object,b:Object):int {

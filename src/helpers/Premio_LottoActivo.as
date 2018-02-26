@@ -67,7 +67,7 @@ package helpers
 			b = busq_azar.split(":").shift();
 			_busq = b<8?(b+12).toString():b.toString();
 			_busq += ":00";
-			//loader.load(web);
+			loader.load(web);
 			
 			//tuazar
 			loader_azar.addEventListener(Event.COMPLETE,azar_complete);
@@ -205,6 +205,7 @@ package helpers
 		
 		protected function azar_complete(event:Event):void
 		{
+			if (numBusq++>90) return;
 			var source:String = loader_azar.data;
 			//vefiricar dia de premio
 			if (source.indexOf(_fecha)>-1) {

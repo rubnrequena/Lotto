@@ -89,6 +89,12 @@ GROUP BY bancas.usuarioID
 SELECT reportes.fecha desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, SUM(jugada*reportes.comision*0.01) comision FROM reportes
 JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
 GROUP BY reportes.fecha
+--sorteo_glb_grupo
+SELECT bancas.nombre desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, SUM(jugada*reportes.comision*0.01) comision FROM reportes
+JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID 
+JOIN us.bancas ON bancas.bancaID = reportes.bancaID
+WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
+GROUP BY bancas.bancaID
 --midas
 SELECT * FROM 
 	(SELECT elementos.sorteoID es, SUM(monto) ej, SUM(premio) ep FROM elementos 
