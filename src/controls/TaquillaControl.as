@@ -566,10 +566,12 @@ package controls
 							});*/
 						}
 						if (meta.hasOwnProperty("ws")) {
-							m.data.format = "ws";
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
-							m.data.ws = meta.ws;
-							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);
+							m.data.format = "ws";
+							/*m.data.ws = meta.ws;
+							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);*/
+							
+							Main.ws.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
 						_cliente.sendMessage(m);
 					});
