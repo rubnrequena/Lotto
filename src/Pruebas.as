@@ -1,5 +1,9 @@
 package
 {
+	import flash.desktop.NativeProcess;
+	import flash.desktop.NativeProcessStartupInfo;
+	import flash.filesystem.File;
+	
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.PremioWeb;
@@ -10,6 +14,7 @@ package
 	import helpers.Premio_LottoLeon;
 	import helpers.Premio_ReyAnzoategui;
 	import helpers.Premio_RuletAnimal;
+	import helpers.WS;
 	
 	import models.ModelHUB;
 	
@@ -38,14 +43,17 @@ package
 			addChild(Loteria.console);
 			
 			/*model = new ModelHUB();
-			model.addEventListener(Event.READY,onReady);*/
-			
-			sorteos = lotto_leon;
-			pr = new helpers.Premio_LottoLeon; 
+			model.addEventListener(Event.READY,onReady);*/			
+		}
+		
+		
+		private function test_sorteos():void {
+			sorteos = gran;
+			pr = new helpers.Premio_GranRuleta; 
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
-			//hoy.date -= 1;
+			//hoy.date -= 4;
 			pr.buscar(sorteos[pri],hoy);
 		}
 		
@@ -58,7 +66,7 @@ package
 		{
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_LottoLeon; 
+				pr = new helpers.Premio_GranRuleta; 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
@@ -178,5 +186,6 @@ package
 			"RULETA ANIMAL 7PM",
 			"RULETA ANIMAL 8PM"
 		];
+		private var file:File;
 	}
 }
