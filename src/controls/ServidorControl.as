@@ -50,10 +50,10 @@ package controls
 					
 					if (usr.nivel==1) {
 						var u:Object = Loteria.setting.plataformas;
-						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[JV] Administrador {0} Inicio sesion",usr.usuario));
+						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Administrador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
 						m.data.sorteos = _model.sistema.sorteos;
 					} else if (usr.nivel==2) {
-						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[JV] Premiador {0} Inicio sesion",usr.usuario));
+						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Premiador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
 					}
 					
 					_model.servidor.numeros({adminID:usr.adminID},function (r:SQLResult):void {
