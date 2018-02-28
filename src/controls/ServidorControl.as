@@ -484,13 +484,15 @@ package controls
 								var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,usuario.nivel==1?100:10);
 								if (numSol>=premiador.puntos) {
 									var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
-									Mail.sendAdmin("[SRQ]["+sorteo.fecha+"] SORTEO PREMIADO",StringUtil.format(Mail.PREMIO_CONFIRMADO,
+									var body:String = StringUtil.format(Mail.PREMIO_CONFIRMADO,
 										sorteo.sorteoID, //0
 										sorteo.descripcion, //1
 										e.numero, //2
 										usuario.usuario, //3
 										Loteria.setting.servidor //4
-									),null);
+									);
+									WS.emitir(Loteria.setting.plataformas.usuarios.premios,body);
+									Mail.sendAdmin("[SRQ]["+sorteo.fecha+"] SORTEO PREMIADO",body,null);
 									_model.ventas.premiar(sorteo,e,function (srt:Object):void {
 										m.data = {code:Code.OK};
 										_cliente.sendMessage(m);
