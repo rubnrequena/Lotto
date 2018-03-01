@@ -521,12 +521,15 @@ package controls
 						var i:int = solPremios.indexOf(m.data.sorteoID);
 						solPremios.removeAt(i);
 						_model.mSorteos.reiniciarPuntos(sorteo);
-						Mail.sendAdmin("[ADM] SORTEO REINICIADO",StringUtil.format(Mail.PREMIO_REINICIADO,
+						var body:String = StringUtil.format(Mail.PREMIO_REINICIADO,
 							sorteo.sorteoID, //0
 							sorteo.descripcion, //1
 							sorteo.fecha, //2
-							usuario.usuario //3
-						),null);
+							usuario.usuario, //3
+							Loteria.setting.servidor //4
+						);
+						Mail.sendAdmin("[ADM] SORTEO REINICIADO",body,null);
+						WS.enviar(Loteria.setting.plataformas.usuarios.admin,body);
 						m.data = r.rowsAffected;
 						_cliente.sendMessage(m);
 					} else {

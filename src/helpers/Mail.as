@@ -18,8 +18,8 @@ package helpers
 			
 		}
 		
-		public static const PREMIO_CONFIRMADO:String = "[{4}]<p>SORTEO: #{0} {1}</p><p>NUMERO: {2}</p><p>USUARIO: {3}</p>";
-		public static const PREMIO_REINICIADO:String = "<p>SORTEO: #{0} {1}</p><p>FECHA: {2}</p><p>USUARIO: {3}</p>";
+		public static const PREMIO_CONFIRMADO:String = "[{4}] SORTEO PREMIADO:\\nSORTEO: #{0} {1}\\nNUMERO: {2}\\nUSUARIO: {3}";
+		public static const PREMIO_REINICIADO:String = "[{4}] SORTEO REINICIADO:\\nSORTEO: #{0} {1}\\nFECHA: {2}\\nUSUARIO: {3}";
 		
 		public static const JV_MIDAS_INCONSISTENCIA:String = '<p style="font-weight:bold">{0} SORTEO(S) NO COINCIDEN</p><p>FECHA: {1}</p><p>SORTEOS: <br/>{2}</p>';
 		public static const JV_MIDAS_OK:String = '<p style="font-weight:bold">TODOS LOS SORTEOS COINCIDEN</p><p>FECHA: {0}</p><p>JUGADO: {1}</p><p>PREMIOS: {2}</p>';
