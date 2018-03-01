@@ -31,7 +31,10 @@
 	"jarvis": {
 		"tasks": {
 			"midas":["21:00:00"],
-			"midas_verificar_sorteo":25
+			"midas_verificar_sorteo":25,
+			"monitor": {
+				"time":"23:00:00"
+			}
 		}
 	},
 	"plataformas":{

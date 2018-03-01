@@ -10,6 +10,8 @@ package models
 	import flash.utils.setInterval;
 	import flash.utils.setTimeout;
 	
+	import controls.MonitorSistema;
+	
 	import db.DB;
 	import db.SQLStatementPool;
 	
@@ -109,6 +111,22 @@ package models
 			for each (var time:String in Loteria.setting.jarvis.tasks.midas) {
 				_tasks[time] = [jv_midas];
 			}
+			
+			if (Loteria.setting.jarvis.tasks.hasOwnProperty("monitor")) {
+				_tasks[Loteria.setting.jarvis.tasks.monitor.time] = [jv_sysMonitor];
+			}
+		}
+		
+		private function jv_sysMonitor ():void {
+			var fn:File = File.applicationStorageDirectory.resolvePath("sysmonitor/"+DateFormat.format(null)+".json");
+			Console.saveTo(JSON.stringify(MonitorSistema.acciones_contar,null,2),fn);
+			Loteria.console.log("[JV] Informe monitor registrado exitosamente");
+			
+			try {
+				
+			} catch (e:*) {
+				Loteria.console.log("[JV] Error al registrar informe monitor");
+			}
 		}
 		
 		private function jv_midas ():void {
@@ -134,7 +152,7 @@ package models
 				if (a.length==1) {
 					Mail.sendAdmin("[JV][MIDAS SORTEO]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
-					WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"][SRQ] Revisar sorteo "+a.join());
+					WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"]Revisar sorteo\\n"+a.join());
 				} else {
 					Mail.sendAdmin("[JV][MIDAS]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
