@@ -1,6 +1,7 @@
 package helpers
 {
 	import flash.events.Event;
+	import flash.filesystem.File;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.utils.clearTimeout;
@@ -15,6 +16,7 @@ package helpers
 		private var dl_loader:URLLoader;
 		private var dl_req:URLRequest;
 		private var stdLot:uint;
+		private var localLog:File;
 		
 		public function Premio_GranRuleta()
 		{
@@ -29,7 +31,8 @@ package helpers
 			dl_req.useCache=false;
 			
 			super();
-			numCompletado=1;
+			numCompletado=2;
+			
 		}
 		
 		protected function dl_complete(event:Event):void
@@ -71,7 +74,9 @@ package helpers
 			_busq = DateFormat.format(fecha,"dd DE mmmm").toUpperCase();
 			_sorteo = sorteo.substr(-8).split(" ").shift();
 			
-			//loader.load(web);
+			localLog = File.applicationStorageDirectory.resolvePath("GRANRULETA/"+sorteo.split(":").join("_")+".txt");
+			
+			loader.load(web);
 			dl_loader.load(dl_req);				
 		}
 		
@@ -84,6 +89,7 @@ package helpers
 			if (fecha>-1 && sorteo>-1) {
 				source = source.substring(fecha);
 				source = source.substring(0,source.indexOf("GRUPO"));
+				Console.saveTo(source,localLog);
 				var pleno_start:int = source.indexOf("PLENO");
 				var pleno:Array = String(source.split("\n")[2]).split(":");
 				var npleno:String = ObjectUtil.extractAndTrail(pleno[1]);
