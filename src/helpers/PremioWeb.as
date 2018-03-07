@@ -71,7 +71,6 @@ package helpers
 		
 		public function isComplete():void {
 			if (++numResultados==numCompletado) {
-				//dispose();
 				dispatchEventWith("ready",false,this);
 			}
 		}

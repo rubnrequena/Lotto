@@ -50,8 +50,8 @@ package helpers
 				if (a>-1) {
 					b = source.indexOf(')</',a);
 				}
-				source = source.substring(b-2,b);
-				if (parseInt(source) || source=="0" || source=="00") {
+				source = ObjectUtil.extractInt(source.substring(b-2,b));
+				if (parseInt(source) || source=="0") {
 					Loteria.console.log("Premio dLoterry:",srt,"(",source,")");
 					dispatchEventWith(Event.COMPLETE,false,source);
 					isComplete();
@@ -83,22 +83,22 @@ package helpers
 		override protected function onComplete(event:Event):void {
 			if (numBusq>60) return;
 			var source:String = loader.data;			
-			var fecha:int = source.indexOf(_busq);
-			var sorteo:int = source.indexOf(_sorteo,fecha);
-			fecha = source.indexOf(_busq,sorteo-30);
-			if (fecha>-1 && sorteo>-1) {
-				source = source.substring(fecha);
-				source = source.substring(0,source.indexOf("GRUPO"));
-				Console.saveTo(source,localLog);
-				var pleno_start:int = source.indexOf("PLENO");
-				var pleno:Array = String(source.split("\n")[2]).split(":");
-				var npleno:String = ObjectUtil.extractAndTrail(pleno[1]);
-				Loteria.console.log("Premio recibido",srt,"PLENO (",npleno,')');
-				dispatchEventWith(Event.COMPLETE,false,npleno);
-				isComplete();
-			} else {
-				retry();
-			}
+			var sorteo:int = source.indexOf(_sorteo);
+			
+			if (sorteo>-1) {
+				var end:int = source.indexOf("<a",sorteo);
+				source = source.substring(sorteo-58,end);
+				Console.saveTo(_sorteo+File.lineEnding+source,localLog);
+				var fecha:int = source.indexOf(_busq);
+				if (fecha>-1) {
+					var pleno_start:int = source.indexOf("PLENO");
+					var pleno:Array = String(source.split("\n")[2]).split(":");
+					var npleno:String = ObjectUtil.extractAndTrail(pleno[1]);
+					Loteria.console.log("Premio recibido",srt,"PLENO (",npleno,')');
+					dispatchEventWith(Event.COMPLETE,false,npleno);
+					isComplete();
+				} else retry();
+			} else retry();
 		}
 		
 		override public function dispose():void {
