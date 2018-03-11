@@ -71,7 +71,7 @@ package helpers
 			var a:int,b:int,t:String;
 			var source:String = tw_loader.data as String;
 			
-			for (var i:int = 0; i < 20; i++) {
+			for (var i:int = 0; i < 5; i++) {
 				a = source.indexOf('<div class="js-tweet-text-container">',b);
 				b = source.indexOf('</div>',a);
 				t = source.substring(a,b+6);
@@ -80,14 +80,18 @@ package helpers
 				t = x.p[0].text();
 				if (t.indexOf("GRUPO")>-1) {
 					r = t.split("\n");
-					//validar horario
-					var s:String = StringUtil.trim(r[2]);
-					var a1:int = tw_busq.indexOf(s); 
-					if (a1>-1) {
-						s = ObjectUtil.extractAndTrail(r[3]);
-						Loteria.console.log("Premio twitter recibido",srt,"PLENO",s);
-						dispatchEventWith(Event.COMPLETE,false,s);
-						isComplete();
+					//validar fecha
+					var f:String = StringUtil.trim(r[0]).split(" ").pop();
+					if (f==tw_fecha) {
+						//validar horario
+						var s:String = StringUtil.trim(r[2]);
+						var a1:int = tw_busq.indexOf(s); 
+						if (a1>-1) {
+							s = ObjectUtil.extractAndTrail(r[3]);
+							Loteria.console.log("Premio twitter recibido",srt,"PLENO",s);
+							dispatchEventWith(Event.COMPLETE,false,s);
+							isComplete();
+						}
 					}
 				}
 			}
