@@ -50,14 +50,14 @@ package controls
 			addEventListener(ModelEvent.LOGIN,login);
 			
 			_conectado = (new Date).time;
-			setTimeout(TC_onInit,200);
+			setTimeout(TC_onInit,500);
 			
 			function TC_onInit():void {
 				msg.command = "init";
 				msg.data = {
 					t:_conectado
 				};
-				_cliente.sendMessage(msg);
+				cliente.sendMessage(msg);
 			}
 		}
 		
