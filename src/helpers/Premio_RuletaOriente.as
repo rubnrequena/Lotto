@@ -67,9 +67,10 @@ package helpers
 		
 		protected function tw_onComplete(event:Event):void
 		{
-			trace(event.type);
+			if (numBusq>30) return;
 			var a:int,b:int,t:String;
 			var source:String = tw_loader.data as String;
+			var e:Boolean=false;
 			
 			for (var i:int = 0; i < 5; i++) {
 				a = source.indexOf('<div class="js-tweet-text-container">',b);
@@ -87,6 +88,7 @@ package helpers
 						var s:String = StringUtil.trim(r[2]);
 						var a1:int = tw_busq.indexOf(s); 
 						if (a1>-1) {
+							e=true;
 							s = ObjectUtil.extractAndTrail(r[3]);
 							Loteria.console.log("Premio twitter recibido",srt,"PLENO",s);
 							dispatchEventWith(Event.COMPLETE,false,s);
@@ -94,6 +96,12 @@ package helpers
 						}
 					}
 				}
+			}
+			if (!e) {
+				setTimeout(function ():void {
+					numBusq++;
+					tw_loader.load(tw_req);
+				},_delay);
 			}
 		}
 		
