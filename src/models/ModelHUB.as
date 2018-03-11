@@ -295,6 +295,7 @@ package models
 										Mail.sendAdmin("[SRQ]["+s.fecha+"] SORTEO PREMIADO",StringUtil.format(Mail.PREMIO_CONFIRMADO,s.sorteoID,s.descripcion,e.numero,"jarvis",Loteria.setting.servidor),null);
 									}
 								} else {
+									WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"] Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);
 									Loteria.console.log("[JV] Error al premiar, pleno invalido. pleno: #",pleno,s.descripcion);
 								}
 							}
