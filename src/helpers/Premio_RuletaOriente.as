@@ -2,7 +2,6 @@ package helpers
 {
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
-	import flash.filesystem.File;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.utils.setTimeout;
@@ -40,7 +39,6 @@ package helpers
 		
 		protected function tw_error(event:IOErrorEvent):void
 		{
-			trace(event.type,event.text);
 			tw_loader.load(tw_req);
 		}
 		
@@ -71,8 +69,9 @@ package helpers
 			var a:int,b:int,t:String;
 			var source:String = tw_loader.data as String;
 			var e:Boolean=false;
+			var reg:RegExp = /[0-9]/;
 			
-			for (var i:int = 0; i < 5; i++) {
+			for (var i:int = 0; i < 20; i++) {
 				a = source.indexOf('<div class="js-tweet-text-container">',b);
 				b = source.indexOf('</div>',a);
 				t = source.substring(a,b+6);
@@ -86,7 +85,8 @@ package helpers
 					if (f==tw_fecha) {
 						//validar horario
 						var s:String = StringUtil.trim(r[2]);
-						var a1:int = tw_busq.indexOf(s); 
+						s = s.substr(s.search(reg));
+						var a1:int = tw_busq.indexOf(s);
 						if (a1>-1) {
 							e=true;
 							s = ObjectUtil.extractAndTrail(r[3]);

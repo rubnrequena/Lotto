@@ -2,6 +2,7 @@ package helpers
 {
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
+	import flash.filesystem.File;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -9,6 +10,7 @@ package helpers
 	import flash.utils.setTimeout;
 	
 	import starling.events.EventDispatcher;
+	import starling.utils.StringUtil;
 	
 	public class PremioWeb extends EventDispatcher
 	{
@@ -28,6 +30,7 @@ package helpers
 		private var numResultados:int;
 		protected var numCompletado:int=1;
 		private var st:uint;
+		private var x:XML;
 		
 		public function PremioWeb() {
 			super();
@@ -60,7 +63,7 @@ package helpers
 			Loteria.console.log("Esperando premiacion:",srt,"(",numBusq,")");
 			st = setTimeout(function ():void {
 				numBusq++;
-				loader.load(web);
+				if (loader) loader.load(web);
 			},_delay);
 		}
 		
@@ -83,6 +86,24 @@ package helpers
 			
 			web=null;
 			removeEventListeners(Event.COMPLETE);
+		}
+		
+		protected function getTweets(source:String,filter:Function):String {
+			var a:int,b:int,t:String;
+			var e:Boolean=false;
+			
+			for (var i:int = 0; i < 20; i++) {
+				a = source.indexOf('<div class="js-tweet-text-container">',b);
+				b = source.indexOf('</div>',a);
+				t = source.substring(a,b+6);
+				
+				x = XML(t);
+				t = x.p[0].text();
+				if (filter.call(this,t)) {
+					return t;
+				}
+			}
+			return null;
 		}
 	}
 }
