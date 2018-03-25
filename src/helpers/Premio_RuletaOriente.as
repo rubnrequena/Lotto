@@ -76,9 +76,9 @@ package helpers
 				b = source.indexOf('</div>',a);
 				t = source.substring(a,b+6);
 				
-				x = XML(t);
-				t = x.p[0].text();
 				if (t.indexOf("GRUPO")>-1) {
+					x = XML(t);
+					t = x.p[0].text();
 					r = t.split("\n");
 					//validar fecha
 					var f:String = StringUtil.trim(r[0]).split(" ").pop();
