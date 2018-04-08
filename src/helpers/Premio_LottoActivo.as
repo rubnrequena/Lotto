@@ -48,7 +48,7 @@ package helpers
 			ldh_req.cacheResponse = false;
 			super();
 			
-			numCompletado=2;
+			numCompletado=1;
 		}
 		
 		override public function buscar (sorteo:String,fecha:Date=null):void {
@@ -83,7 +83,7 @@ package helpers
 			else if (b>=9&&b<=11) _busqOfic = b+":00 AM";
 			else _busqOfic = b+":00 M";
 			_busqOfic += " \n"+_localFecha;
-			findImage();
+			//findImage();
 		}
 		
 		private function findImage():void
@@ -225,9 +225,9 @@ package helpers
 				
 				source = source.substring(b,a);
 				
-				var n:String = StringUtil.trim(source.substr(6,2));
+				var n:String = ObjectUtil.extractInt(StringUtil.trim(source.substr(6,2)));
 				if (parseInt(n) || n=="0" || n=="00") {
-					Loteria.console.log("Premio tuAzar:",srt,"(",n,")");
+					Loteria.console.log("Premio tuAzar encontrado:",srt,"(",n,")");
 					dispatchEventWith(Event.COMPLETE,false,n);
 					isComplete();
 				} else {
@@ -258,7 +258,7 @@ package helpers
 				if (a>-1) {
 					b = source.indexOf(')</td>',a);
 				}
-				source = source.substring(b-2,b);
+				source = ObjectUtil.extractInt(source.substring(b-2,b));
 				if (parseInt(source) || source=="0" || source=="00") {
 					Loteria.console.log("Premio dLoterry:",srt,"(",source,")");
 					dispatchEventWith(Event.COMPLETE,false,source);
@@ -282,6 +282,7 @@ package helpers
 			loader_azar = null;
 			req_azar=null;			
 			
+			if (lottoLoader)
 			lottoLoader.removeEventListener(Event.COMPLETE,onImageFound);
 			
 			

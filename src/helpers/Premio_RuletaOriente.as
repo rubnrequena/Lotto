@@ -18,7 +18,6 @@ package helpers
 		private var tw_busq:Array;
 		private var tw_fecha:String;
 		private var x:XML;
-		private var r:Array;
 		
 		
 		public function Premio_RuletaOriente()
@@ -45,13 +44,14 @@ package helpers
 		override public function buscar(sorteo:String, fecha:Date=null):void {
 			super.buscar(sorteo,fecha);
 			_busq = DateFormat.format(fecha,"dd DE mmmm").toUpperCase();
+			
 			_sorteo = sorteo.substr(-8);
 			_sorteo = StringUtil.trim(_sorteo).split(" ").shift();
 			//loader.load(web);
 			
 			
 			//twitter
-			tw_fecha = DateFormat.format(fecha,"dd/mm/yyyy");
+			tw_fecha = DateFormat.format(fecha,"dd\/mm\/yyyy");
 			var tw_sorteo:String = sorteo.substr(-8);
 			tw_busq = [
 				tw_sorteo,
@@ -59,7 +59,7 @@ package helpers
 				tw_sorteo.substr(1),
 				tw_sorteo.substr(1).split(" ").join("")
 			];
-			if (tw_sorteo=="12:00 PM") tw_busq = ["12:00 M","12:00M"]
+			if (tw_sorteo=="12:00 PM") tw_busq = ["12:00 M","12:00M","12:00 DM","12:00DM"]
 			tw_loader.load(tw_req);
 		}
 		
@@ -70,26 +70,29 @@ package helpers
 			var source:String = tw_loader.data as String;
 			var e:Boolean=false;
 			var reg:RegExp = /[0-9]/;
+			var freg:RegExp = new RegExp(tw_fecha+"|"+_busq,"gi");
+			var hreg:RegExp = /[0-1][0-9]:00|[0-9]:00/;
+			var nreg:RegExp = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]{4,} \d{1,2}\n|\d{1,2}\s{0,2} [a-zA-ZáéíóúÁÉÍÓÚñÑ]{4,}/;
 			
 			for (var i:int = 0; i < 20; i++) {
 				a = source.indexOf('<div class="js-tweet-text-container">',b);
 				b = source.indexOf('</div>',a);
-				t = source.substring(a,b+6);
+				t = source.substring(a,b+6).toUpperCase();
 				
-				if (t.indexOf("GRUPO")>-1) {
+				if (t.search(/GRUPO|NEGRO|ROJO/g)>-1) {
 					x = XML(t);
-					t = x.p[0].text();
-					r = t.split("\n");
+					t = x.P[0].text();
+					
 					//validar fecha
-					var f:String = StringUtil.trim(r[0]).split(" ").pop();
-					if (f==tw_fecha) {
+					if (t.search(freg)>-1) {
 						//validar horario
-						var s:String = StringUtil.trim(r[2]);
-						s = s.substr(s.search(reg));
-						var a1:int = tw_busq.indexOf(s);
-						if (a1>-1) {
+						var a1:* = hreg.exec(t);
+						var ss:String = t.substr(a1.index,a1[0].length);
+						ss = ss.length==4?"0"+ss:ss;
+						if (_sorteo.indexOf(ss)>-1) {
 							e=true;
-							s = ObjectUtil.extractAndTrail(r[3]);
+							a1 = nreg.exec(t);
+							var s:String = ObjectUtil.extractAndTrail(a1[0]);
 							Loteria.console.log("Premio twitter recibido",srt,"PLENO",s);
 							dispatchEventWith(Event.COMPLETE,false,s);
 							isComplete();

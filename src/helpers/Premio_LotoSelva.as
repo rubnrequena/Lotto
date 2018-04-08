@@ -7,7 +7,7 @@ package helpers
 		private var _fecha:String;
 		public function Premio_LotoSelva()
 		{
-			url = 'http://parlay.website/lotoselva/control/resultados.php';
+			url = 'http://www.lotoselva.com/control/resultados.php';
 			super();
 		}
 		
