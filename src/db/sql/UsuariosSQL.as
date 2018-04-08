@@ -4,7 +4,7 @@ package db.sql
 	
 	import vos.Usuario;
 
-	public class UsuariosSQL
+	public class UsuariosSQL extends SQLBase
 	{
 		public var usuarios:SQLStatementPool;
 		public var usuario_login:SQLStatementPool;
@@ -18,21 +18,28 @@ package db.sql
 		public var permiso_remove:SQLStatementPool;
 		public var usuario_editar:SQLStatementPool;
 		public var usuario_activar:SQLStatementPool;
+		public var cm_login:SQLStatementPool;
 		
 		public function UsuariosSQL() {
+			super('usuarios.sql');
 			
-			usuarios = new SQLStatementPool('SELECT * FROM us.usuarios',null,Usuario);
-			usuario_id = new SQLStatementPool('SELECT * FROM us.usuarios WHERE usuarioID = :id',null,Usuario);
-			usuario_user = new SQLStatementPool('SELECT * FROM us.usuarios WHERE usuario = :usuario');
-			usuario_login = new SQLStatementPool('SELECT usuarioID,usuario,nombre,tipo,activo,renta FROM us.usuarios WHERE usuario = :us AND clave = :cl',null,Usuario);
-			usuario_nuevo = new SQLStatementPool('INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta)');
-			usuario_editar = new SQLStatementPool('UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta WHERE usuarioID = :usuarioID');
-			usuario_activar = new SQLStatementPool('UPDATE us.usuarios SET activo = :activo WHERE usuarioID = :usuarioID');
+			usuarios = new SQLStatementPool(sentencia("usuarios"),null,Usuario);
+			usuario_id = new SQLStatementPool(sentencia("usuario_id"),null,Usuario);
+			usuario_login = new SQLStatementPool(sentencia("usuario_login"),null,Usuario);
 			
-			permisos = new SQLStatementPool('SELECT meta.usuarioID, bancas.nombre, metaID, campoID, CAST(meta.valor AS INTEGER) valor FROM us.meta LEFT JOIN us.bancas ON bancas.bancaID = meta.bancaID WHERE (meta.usuarioID = 0 OR meta.usuarioID = :usuarioID) GROUP BY meta.bancaID, meta.campoID ORDER BY meta.bancaID');
-			meta_nuevo = new SQLStatementPool('INSERT INTO us.meta (usuarioID,bancaID,campoID,valor) VALUES (:usuarioID, :bancaID, :campoID, :valor)');
-			permiso_update = new SQLStatementPool('UPDATE us.meta SET valor = :valor WHERE metaID = :meta AND usuarioID = :usuarioID');
-			permiso_remove = new SQLStatementPool('DELETE FROM us.meta WHERE metaID = :meta AND usuarioID = :usuarioID');
+			/*usuario_user = new SQLStatementPool('');
+			usuario_nuevo = new SQLStatementPool('');
+			usuario_editar = new SQLStatementPool('');
+			usuario_activar = new SQLStatementPool('');
+			
+			permisos = new SQLStatementPool('');
+			meta_nuevo = new SQLStatementPool('');
+			permiso_update = new SQLStatementPool('');
+			permiso_remove = new SQLStatementPool('');*/
+			
+			
+			
+			scan();
 		}
 	}
 }
