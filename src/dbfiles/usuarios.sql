@@ -1,13 +1,13 @@
 --usuarios
-SELECT * FROM us.usuarios
+SELECT * FROM us.usuarios WHERE tipo = 1
 --usuario_id
 SELECT * FROM us.usuarios WHERE usuarioID = :id
 --usuario_user
 SELECT * FROM us.usuarios WHERE usuario = :usuario
 --usuario_login
-SELECT usuarioID,usuario,nombre,tipo,activo,renta FROM us.usuarios WHERE tipo = 1 AND usuario = :us AND clave = :cl
+SELECT usuarioID,usuario,nombre,tipo,activo,renta,comision,participacion FROM us.usuarios WHERE tipo = 1 AND usuario = :us AND clave = :cl
 --usuario_nuevo
-INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta)
+INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta,comision,participacion) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta,:comision,:participacion)
 --usuario_editar
 UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta WHERE usuarioID = :usuarioID
 --usuario_activar
@@ -20,5 +20,3 @@ INSERT INTO us.meta (usuarioID,bancaID,campoID,valor) VALUES (:usuarioID, :banca
 UPDATE us.meta SET valor = :valor WHERE metaID = :meta AND usuarioID = :usuarioID
 --permiso_remove
 DELETE FROM us.meta WHERE metaID = :meta AND usuarioID = :usuarioID
---cm_login
-SELECT usuarioID,usuario,nombre,tipo,activo,renta FROM us.usuarios WHERE tipo = 2 AND usuario = :us AND clave = :cl

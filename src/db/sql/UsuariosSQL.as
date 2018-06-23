@@ -18,7 +18,6 @@ package db.sql
 		public var permiso_remove:SQLStatementPool;
 		public var usuario_editar:SQLStatementPool;
 		public var usuario_activar:SQLStatementPool;
-		public var cm_login:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');

@@ -42,7 +42,7 @@ package controls
 			});
 		}
 		private function taquilla_remover(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
+			if (usuario.tipo==1) m.data.usuarioID = usuario.usuarioID;
 			m.data.bancaID = 0;
 			m.data.papelera = m.data.papelera;
 			_model.taquillas.editar(m.data,function (r:SQLResult):void {
@@ -240,7 +240,7 @@ package controls
 			});
 		}
 		private function taquillas(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
+			if (usuario.tipo!=2) m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -248,21 +248,23 @@ package controls
 		}
 		
 		private function login(e:Event,m:Message):void {
-			_model.usuarios.login(m.data,function (u:Usuario):void {
+			_model.comercializadora.login(m.data,function (u:Usuario):void {
 				if (u) {
 					usuario = u;
 					if (u.activo>Usuario.USUARIO_SUSPENDIDO) {
 						controlID = u.usuarioID;
 						
 						_model.sorteos.sorteos({usuarioID:u.usuarioID},function (sorteos:SQLResult):void {
-							m.data = {
-								us:u,
-								bn:LTool.exploreBy("usuarioID",usuario.usuarioID,_model.bancas.bancas).sortOn("papelera","activa","nombre"),
-								st:sorteos.data
-							};
-							addListeners();
-							measure(m.command);
-							_cliente.sendMessage(m);
+							_model.comercializadora.usuarios({usuarioID:u.usuarioID},function (bancas:SQLResult):void {
+								m.data = {
+									us:u,
+									bn:bancas.data,
+									st:sorteos.data
+								};
+								addListeners();
+								measure(m.command);
+								_cliente.sendMessage(m);
+							});
 						});
 						
 						initSolicitudesPremios();
@@ -297,6 +299,11 @@ package controls
 			addEventListener("tope-nuevo",tope_nuevo);
 			addEventListener("tope-remover",tope_remover);
 			
+			addEventListener("usuario-nuevo",usuario_nuevo);
+			addEventListener("usuario-editar",usuario_editar);
+			addEventListener("usuario-grupos",usuario_grupos);
+			
+			addEventListener("banca-grupo",banca_grupo);
 			addEventListener("banca-nueva",banca_nueva);
 			addEventListener("banca-editar",banca_editar);
 			addEventListener("banca-remover",banca_remover);
@@ -311,25 +318,88 @@ package controls
 			addEventListener("transferir",transferir);
 			addEventListener("conexiones",conexiones);
 			
+			addEventListener("reporte-general",reporte_general);
 			addEventListener("reporte-usuario",reporteUsuario);
 			addEventListener("reporte-taquilla",reporteTaquilla);
 			addEventListener("reporte-banca",reporte_banca);
+			addEventListener("reporte-recogedor",reporte_recogedor);
 			addEventListener("reporte-ventas",reporte_ventas);
 			addEventListener("reporte-diario",reporte_diario);
 			
 			addEventListener("permiso-nuevo",permiso_nuevo);
 			addEventListener("permiso-update",permiso_update);
 			addEventListener("permiso-remove",permiso_remove);
-			addEventListener("permisos",permisos);
-			
+			addEventListener("permisos",permisos);			
 			
 			addEventListener("venta-premios",venta_premios);
-			addEventListener("venta-anular",venta_anular);
+			addEventListener("vent<a-anular",venta_anular);
 			
 			addEventListener("sms-nuevo",sms_nuevo);
 			addEventListener("sms-bandeja",sms_bandeja);
 			addEventListener("sms-leer",sms_leer);
 			addEventListener("sms-respuestas",sms_respuestas);
+		}
+		
+		private function reporte_recogedor(e:Event,m:Message):void {
+			if (m.data.g==0) _model.reportes.comercial(m.data.s,result);
+			//else  _model.reportes.fecha(m.data.s,result);
+			
+			function result (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+				measure(m.command);
+			}
+		}
+		
+		private function reporte_general(e:Event,m:Message):void {
+			m.data.s.comercial = usuario.usuarioID;
+			if (m.data.g==0) _model.reportes.general(m.data.s,result);
+			else if (m.data.g==1) _model.reportes.general_fecha(m.data.s,result);
+			else if (m.data.g==2) {
+				_model.reportes.comercial(m.data.s,result);
+			}
+			
+			function result (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			}
+		}
+		
+		private function banca_grupo(e:Event,m:Message):void
+		{
+			m.data = LTool.findBy("bancaID",m.data.bancaID,_model.bancas.bancas);
+			_cliente.sendMessage(m);
+		}		
+		
+		private function usuario_grupos(e:Event,m:Message):void
+		{
+			//validar usuario
+			m.data = LTool.exploreBy("usuarioID",m.data.usuarioID,_model.bancas.bancas).sortOn("papelera","activa","nombre");
+			_cliente.sendMessage(m);
+		}
+		
+		private function usuario_nuevo(e:Event,m:Message):void
+		{
+			m.data.tipo = 1;
+			m.data.renta = usuario.renta;
+			_model.usuarios.nuevo(m.data,function (id:int):void {
+				m.data = id;
+				_cliente.sendMessage(m);
+				
+				_model.comercializadora.linkUsuario({
+					cID:usuario.usuarioID,
+					uID:id
+				},null);
+			});
+		}
+		private function usuario_editar(e:Event,m:Message):void {
+			_model.usuarios.editar(m.data,function (r:SQLResult):void {
+				m.data = {code:Code.OK};
+				_cliente.sendMessage(m);
+			},function (e:SQLError):void {
+				m.data = {code:Code.NO};
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function banca_remover(e:Event,m:Message):void {
@@ -479,9 +549,8 @@ package controls
 		}
 		
 		private function reporte_banca(e:Event,m:Message):void {
-			if (m.data.g==0) _model.reportes.general(m.data.s,result);
-			else if (m.data.g==1) _model.reportes.general_sorteo(m.data.s,result);
-			else  _model.reportes.fecha(m.data.s,result);
+			if (m.data.g==0) _model.reportes.comercial(m.data.s,result);
+			//else  _model.reportes.fecha(m.data.s,result);
 			
 			function result (r:SQLResult):void {
 				m.data = r.data;

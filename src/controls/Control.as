@@ -21,7 +21,8 @@ package controls
 			TaquillaControl:"TC",
 			BancaControl:"BC",
 			UsuarioControl:"UC",
-			ServidorControl:"SC"
+			ServidorControl:"SC",
+			ComerControl:"CC"
 		}
 			
 		protected var _model:ModelHUB;

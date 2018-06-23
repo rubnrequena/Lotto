@@ -8,6 +8,7 @@ package models
 	
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
+	import starling.utils.StringUtil;
 	import starling.utils.execute;
 	
 	import vos.Usuario;
@@ -24,8 +25,8 @@ package models
 		
 		public function nuevo (usuario:Object,cb:Function):void {			
 			usuario.registrado = (new Date).time;
-			usuario.clave = (usuario.clave as String).toLowerCase();
-			usuario.usuario = (usuario.usuario as String).toLowerCase();
+			usuario.clave = StringUtil.trim(usuario.clave).toLowerCase();
+			usuario.usuario = StringUtil.trim(usuario.usuario).toLowerCase();
 			sql.usuario_nuevo.run(usuario,function (r:SQLResult):void {
 				usuario.usuarioID = r.lastInsertRowID;
 				execute(cb,r.lastInsertRowID);

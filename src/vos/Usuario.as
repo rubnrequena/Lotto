@@ -16,5 +16,8 @@ package vos
 		public var registrado:Number;
 		public var renta:Number;
 		
+		public var comision:Number;
+		public var participacion:Number;
+		
 	}
 }

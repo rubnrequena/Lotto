@@ -33,6 +33,11 @@ package models
 			else sql.rp_bancas_gen.run(s,cb);
 		}
 		
+		public function comercial (s:Object,cb:Function):void {
+			if (s.hasOwnProperty("comercial")) sql.comercial_general.run(s,cb);
+			else if (s.hasOwnProperty("usuarioID")) sql.comercial_banca.run(s,cb);
+			else if (s.hasOwnProperty("bancaID")) sql.comercial_recogedor.run(s,cb);
+		}
 		public function usuarios (s:Object,cb:Function):void {
 			sql.rp_usuarios_gen.run(s,cb);
 		}

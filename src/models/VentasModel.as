@@ -189,6 +189,7 @@ package models
 			
 			function premiar (rel:SQLResult):void {
 				relacion = rel.data;
+				if (relacion==null || relacion.length==0) return;
 				var len:int = rel.data.length;
 				var premios:Array = []; var prm:Object;
 								

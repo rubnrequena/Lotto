@@ -55,6 +55,9 @@ package db.sql
 		public var sorteo_glb:SQLStatementPool;
 		public var sorteo_glb_fecha:SQLStatementPool;
 		public var sorteo_glb_grupo:SQLStatementPool;
+		public var comercial_general:SQLStatementPool;
+		public var comercial_banca:SQLStatementPool;
+		public var comercial_recogedor:SQLStatementPool;
 		
 		public function ReportesSQL()
 		{
@@ -114,6 +117,9 @@ package db.sql
 			
 			rp_bancas_gen = new SQLStatementPool('SELECT bancas.nombre desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*reportes.renta)) renta  FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID WHERE fecha BETWEEN :inicio AND :fin GROUP BY reportes.bancaID ORDER BY bancas.usuarioID, bancas.bancaID',SQLStatementPool.REPORTE_CONN);
 			rp_usuarios_gen = new SQLStatementPool('SELECT bancas.usuarioID, usuarios.nombre desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*reportes.renta)) renta  FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID WHERE fecha BETWEEN :inicio AND :fin GROUP BY usuarios.usuarioID ORDER BY bancas.usuarioID, bancas.bancaID',SQLStatementPool.REPORTE_CONN);
+			load('comercial_general',SQLStatementPool.REPORTE_CONN);
+			load('comercial_banca',SQLStatementPool.REPORTE_CONN);
+			load('comercial_recogedor',SQLStatementPool.REPORTE_CONN);
 			rp_fecha_gen = new SQLStatementPool('SELECT bancas.usuarioID, reportes.fecha desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*reportes.renta)) renta FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID WHERE fecha BETWEEN :inicio AND :fin GROUP BY reportes.fecha ORDER BY reportes.fecha',SQLStatementPool.REPORTE_CONN);
 			
 			//usuario

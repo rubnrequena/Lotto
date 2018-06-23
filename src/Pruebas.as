@@ -1,20 +1,16 @@
 package
 {
-	import flash.desktop.NativeProcess;
-	import flash.desktop.NativeProcessStartupInfo;
 	import flash.filesystem.File;
 	
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.PremioWeb;
-	import helpers.Premio_GranRuleta;
 	import helpers.Premio_LaGranjita;
 	import helpers.Premio_LotoSelva;
 	import helpers.Premio_LottoActivo;
 	import helpers.Premio_LottoLeon;
-	import helpers.Premio_ReyAnzoategui;
 	import helpers.Premio_RuletAnimal;
-	import helpers.WS;
+	import helpers.Premio_RuletaOriente;
 	
 	import models.ModelHUB;
 	
@@ -29,6 +25,7 @@ package
 			super();
 			
 			addEventListener(Event.ADDED_TO_STAGE,onAdded);
+			
 		}
 		
 		private function onAdded():void
@@ -43,17 +40,19 @@ package
 			addChild(Loteria.console);
 			
 			/*model = new ModelHUB();
-			model.addEventListener(Event.READY,onReady);*/			
+			model.addEventListener(Event.READY,onReady);*/
+			
+			test_sorteos();
 		}
 		
 		
 		private function test_sorteos():void {
-			sorteos = gran;
-			pr = new helpers.Premio_GranRuleta; 
+			sorteos = oriente;
+			pr = new helpers.Premio_RuletaOriente; 
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
-			//hoy.date -= 4;
+			//hoy.date -= 1;
 			pr.buscar(sorteos[pri],hoy);
 		}
 		
@@ -66,7 +65,7 @@ package
 		{
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_GranRuleta; 
+				pr = new helpers.Premio_RuletaOriente; 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
@@ -90,12 +89,16 @@ package
 		];
 		
 		private var oriente:Array = [
+			"RULETA ACT ORIENTE 09:00 AM",
 			"RULETA ACT ORIENTE 10:00 AM",
 			"RULETA ACT ORIENTE 11:00 AM",
 			"RULETA ACT ORIENTE 12:00 PM",
 			"RULETA ACT ORIENTE 01:00 PM",
+			"RULETA ACT ORIENTE 03:00 PM",
 			"RULETA ACT ORIENTE 04:00 PM",
-			"RULETA ACT ORIENTE 05:00 PM"
+			"RULETA ACT ORIENTE 05:00 PM",
+			"RULETA ACT ORIENTE 06:00 PM",
+			"RULETA ACT ORIENTE 07:00 PM"
 		];
 		
 		private var reyanz:Array = [

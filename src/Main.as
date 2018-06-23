@@ -7,6 +7,7 @@ package
 	import be.aboutme.airserver.messages.Message;
 	
 	import controls.BancaControl;
+	import controls.ComercializadoraControl;
 	import controls.MonitorSistema;
 	import controls.ServidorControl;
 	import controls.TaquillaControl;
@@ -15,7 +16,6 @@ package
 	import feathers.controls.LayoutGroup;
 	import feathers.themes.MinimalDesktopTheme;
 	
-	import helpers.SMS;
 	import helpers.WS;
 	import helpers.pools.LoaderPool;
 	
@@ -29,6 +29,7 @@ package
 		private var servidor:AIRServer;
 		private var clientes:AIRServer;
 		private var usuarios:AIRServer;
+		private var comercializadora:AIRServer;
 		
 		private var model:ModelHUB;
 		
@@ -45,10 +46,9 @@ package
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
-			Loteria.console.log("v180408");
+			Loteria.console.log("v180622");
 			addChild(Loteria.console);
 			
-			SMS.init();
 			WS.init();
 			
 			var n:int=0;
@@ -61,6 +61,7 @@ package
 					bancas.start();
 					clientes.start();
 					usuarios.start();
+					comercializadora.start();
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
 						var m:Message = new Message;
@@ -92,15 +93,19 @@ package
 			usuarios.addEndPoint(new SocketEndPoint(model.settings.net.puertos.usuario,new WebSocketClientHandlerFactory));
 			usuarios.addEventListener(AIRServerEvent.CLIENT_ADDED,usuario_added);
 			
+			
+			comercializadora = new AIRServer;
+			comercializadora.addEndPoint(new SocketEndPoint(model.settings.net.puertos.comercializadora,new WebSocketClientHandlerFactory));
+			comercializadora.addEventListener(AIRServerEvent.CLIENT_ADDED,comer_added);
 			/*sms = new AIRServer;
 			sms.addEndPoint(new SocketEndPoint(model.settings.net.puertos.sms,new AMFSocketClientHandlerFactory));
 			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/
 		}
 		
-		protected function sms_added(event:AIRServerEvent):void
-		{
-			new SMSControl(event.client,model);
+		protected function comer_added(event:AIRServerEvent):void {
+			new ComercializadoraControl(event.client,model);
 		}
+		
 		
 		protected function usuario_added(event:AIRServerEvent):void {
 			new UsuarioControl(event.client,model);

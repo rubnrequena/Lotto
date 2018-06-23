@@ -95,6 +95,31 @@ JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID
 JOIN us.bancas ON bancas.bancaID = reportes.bancaID
 WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
 GROUP BY bancas.bancaID
+--comercial_general
+SELECT usuarios.usuarioID id,usuarios.nombre desc, SUM(jugada) jg, SUM(premio) pr, partBanca pb, cmBanca cb, 
+	ROUND(SUM(jugada*cmBanca),2) cm, round(SUM(jugada*reportes.renta),2) rt, 
+	ROUND(SUM((jugada-premio-(jugada*cmBanca))*partBanca),2) prt
+FROM vt.reportes
+JOIN us.bancas ON bancas.bancaID = reportes.bancaID 
+JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID 
+JOIN us.comer_usuario ON comer_usuario.uID = bancas.usuarioID
+WHERE fecha BETWEEN :inicio AND :fin AND cID = :comercial
+GROUP BY usuarios.usuarioID ORDER BY usuarios.nombre ASC
+--comercial_banca
+SELECT bancas.bancaID id, bancas.nombre desc, SUM(jugada) jg, SUM(premio) pr, partGrupo pb, cmGrupo cb, 
+	ROUND(SUM(jugada*cmGrupo),2) cm, SUM(jugada*reportes.comision*0.01) cmt, round(SUM(jugada*reportes.renta),2) rt, 
+	ROUND(SUM((jugada-premio-(jugada*cmGrupo))*partGrupo),2) prt
+FROM vt.reportes
+JOIN us.bancas ON bancas.bancaID = reportes.bancaID
+WHERE fecha BETWEEN :inicio AND :fin AND bancas.usuarioID = :usuarioID 
+GROUP BY bancas.bancaID ORDER BY bancas.nombre ASC
+--comercial_recogedor
+SELECT taquillas.taquillaID id, taquillas.nombre desc, SUM(jugada) jg, SUM(premio) pr, partGrupo pb, cmGrupo cb, 
+	SUM(jugada*reportes.comision*0.01) cmt, round(SUM(jugada*reportes.renta),2) rt 
+FROM vt.reportes
+JOIN us.taquillas ON taquillas.taquillaID = reportes.taquillaID
+WHERE fecha BETWEEN :inicio AND :fin AND reportes.bancaID = :bancaID
+GROUP BY reportes.taquillaID ORDER BY taquillas.nombre ASC
 --midas
 SELECT * FROM 
 	(SELECT elementos.sorteoID es, SUM(monto) ej, SUM(premio) ep FROM elementos 

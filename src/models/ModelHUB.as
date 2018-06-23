@@ -8,7 +8,6 @@ package models
 	import flash.net.Responder;
 	import flash.utils.getTimer;
 	import flash.utils.setInterval;
-	import flash.utils.setTimeout;
 	
 	import controls.MonitorSistema;
 	
@@ -19,7 +18,6 @@ package models
 	import helpers.IPremio;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
-	import helpers.SMS;
 	import helpers.WS;
 	import helpers.bm.BManager;
 	
@@ -49,6 +47,7 @@ package models
 		public var sistema:SistemaModel;
 		
 		public var usuarios:UsuariosModel;
+		public var comercializadora:ComercializadoraModel;
 		public var taquillas:TaquillasModel;
 		public var topes:TopesModel; 
 		
@@ -188,12 +187,7 @@ package models
 			}
 		}
 		
-		private function init_mensajes (e:SQLEvent):void {
-			sms = new SMSModel();
-			
-			Loteria.console.log("MODEL SMS RDY");
-			conexion.attach("vt",ventasDB,new Responder(init_ventas));
-		}
+		
 		private function init_ventas(e:SQLEvent):void {
 			ventas = new VentasModel(this);
 			reportes = new ReporteModel;
@@ -309,6 +303,7 @@ package models
 		
 		private function init_usuarios(e:SQLEvent):void {
 			usuarios = new UsuariosModel;
+			comercializadora = new ComercializadoraModel;
 			bancas = new BancasModel;
 			taquillas = new TaquillasModel;
 			topes = new TopesModel;
@@ -317,7 +312,7 @@ package models
 			Loteria.console.log("MODEL USUARIOS RDY");
 						
 			Starling.juggler.delayCall(function ():void {
-				conexion.attach("sms",smsDB,new Responder(init_mensajes));
+				conexion.attach("vt",ventasDB,new Responder(init_ventas));
 			},1);
 		}
 		
