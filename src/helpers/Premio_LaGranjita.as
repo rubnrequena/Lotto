@@ -4,6 +4,8 @@ package helpers
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
+	import flash.net.URLRequestMethod;
+	import flash.net.URLVariables;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 
@@ -29,15 +31,28 @@ package helpers
 		private var ldh_req:URLRequest;
 		private var ldh_busq:String;
 		private var stLDH:uint;
+		private var urlofic:String;
+		private var loader_oficial:URLLoader;
+		private var oficial_req:URLRequest;
+		private var _oficbusq:String;
+		private var stOfic:uint;
 		
 		public function Premio_LaGranjita()
 		{
 			url = 'https://twitter.com/lagranjitaofic';
+			urlofic = 'http://lagranjitaonline.com/IndexServlet';
 			
 			loader_alt = new URLLoader();
 			loader_alt.addEventListener(Event.COMPLETE,premioAlt_complete);
 			loader_alt.dataFormat = URLLoaderDataFormat.TEXT;			
 			
+			loader_oficial = new URLLoader();
+			loader_oficial.addEventListener(Event.COMPLETE,premioOfic_complete);
+			loader_oficial.dataFormat = URLLoaderDataFormat.TEXT;
+			oficial_req = new URLRequest(urlofic);
+			oficial_req.useCache=false;
+			oficial_req.cacheResponse=false;
+			oficial_req.method = URLRequestMethod.POST;
 			
 			azar_loader = new URLLoader();
 			azar_loader.addEventListener(Event.COMPLETE,azar_complete);
@@ -53,6 +68,31 @@ package helpers
 			
 			super();
 			numCompletado=2;
+		}
+		
+		protected function premioOfic_complete(event:Event):void
+		{
+			var src:Array = JSON.parse(loader_oficial.data) as Array;
+			var n:String; var r:Object;
+			for (var i:int = 0; i < src.length; i++) {
+				r = src[i];
+				if (_oficbusq.toLowerCase()=="12:00 pm") _oficbusq = "12:00 m";
+				if (r.time==_oficbusq.toLowerCase()) {
+					if (r.hasOwnProperty("number")) {
+						n = ObjectUtil.extractAndTrail(src[i].number);
+						if (n=="0") n ="00"
+						else if (n=="00") n = "0";
+						Loteria.console.log("Premio WebOficial encontrado:",srt,"(",n,")");
+						dispatchEventWith(Event.COMPLETE,false,n);
+						isComplete();
+					} else {
+						Loteria.console.log("Esperando premiacion WebOficial:",srt,"(",numBusq,")");
+						stOfic = setTimeout(function ():void {
+							loader_oficial.load(oficial_req);
+						},_delay);
+					}
+				}
+			}
 		}
 		
 		protected function ldh_complete(event:Event):void
@@ -101,11 +141,17 @@ package helpers
 		{
 			super.buscar(sorteo, fecha);
 			_busq = sorteo.split(" ").slice(-2).join(" ");
+			_oficbusq = _busq.toString();
 			if (_busq.split(":").shift()<10) _busq = "0"+_busq;
 			_fecha = DateFormat.format(fecha,"dd DE mmmm").toUpperCase();
 					
+			oficial_req.data = new URLVariables;
+			oficial_req.data.opt = "consultResult";
+			oficial_req.data.datesearch = DateFormat.format(fecha,"dd-mm-yyyy");
+			loader_oficial.load(oficial_req);			
+			
 			//twitter
-			//loader.load(web);			
+			loader.load(web);
 			loader_alt.load(web);			
 			
 			//tuazar
@@ -231,6 +277,7 @@ package helpers
 			clearTimeout(stAzar);
 			clearTimeout(stAlt);
 			clearTimeout(stLDH);
+			clearTimeout(stOfic);
 			
 			loader_alt.removeEventListener(Event.COMPLETE,premioAlt_complete);
 			loader_alt = null;
@@ -242,6 +289,10 @@ package helpers
 			azar_loader.removeEventListener(Event.COMPLETE,azar_complete);
 			azar_req=null;
 			azar_loader=null;
+			
+			loader_oficial.removeEventListener(Event.COMPLETE,premioOfic_complete);
+			loader_oficial=null;
+			oficial_req=null;
 		}
 	}
 }

@@ -2,7 +2,6 @@ package helpers
 {
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
-	import flash.filesystem.File;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -10,7 +9,6 @@ package helpers
 	import flash.utils.setTimeout;
 	
 	import starling.events.EventDispatcher;
-	import starling.utils.StringUtil;
 	
 	public class PremioWeb extends EventDispatcher
 	{
@@ -104,6 +102,16 @@ package helpers
 				}
 			}
 			return null;
+		}
+		
+		protected function getDlotery (src:String,sorteo:String,hora:String):String {
+			var a:int,b:int;
+			a = src.indexOf(sorteo);
+			src = src.substr(a);
+			a = src.indexOf("<table");
+			b = src.indexOf("</table>",a);
+			src = src.substring(a,b);
+			return src;
 		}
 	}
 }

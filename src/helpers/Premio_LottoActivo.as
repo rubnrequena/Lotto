@@ -27,7 +27,7 @@ package helpers
 		
 		private var _localFecha:String;
 		
-		private var _busqOfic:String;
+		private var busq_ofic:String;
 		
 		private var lottoLoader:URLLoader;
 		
@@ -46,9 +46,15 @@ package helpers
 			ldh_req = new URLRequest('http://www.loteriadehoy.com/animalitos/');
 			ldh_req.useCache = false;
 			ldh_req.cacheResponse = false;
+			
+			ofic_loader = new URLLoader;
+			ofic_req = new URLRequest('http://www.lottoactivo.com/');
+			ofic_req.useCache=false;
+			ofic_req.cacheResponse=false;
+			
 			super();
 			
-			numCompletado=1;
+			numCompletado=2;
 		}
 		
 		override public function buscar (sorteo:String,fecha:Date=null):void {
@@ -56,18 +62,25 @@ package helpers
 			_busq = sorteo.split(" ").pop();
 			_fecha = DateFormat.format(fecha);
 			_localFecha = DateFormat.format(fecha,"dd/mm/yyyy");
+			_fechaweb = DateFormat.format(fecha,'dd mmm yyyy');
+			
 			var a:Array = _busq.split("");
 			a.splice(-2,2);
 			a.push(":00");
 			busq_azar = a.join(""); 
+			busq_ofic = busq_azar.toString(); 
 			busq_azar = busq_azar.length==4?"0"+busq_azar:busq_azar;
+			
+			//web oficial
+			ofic_loader.addEventListener(Event.COMPLETE,oficial_complete);
+			ofic_loader.load(ofic_req);
 			
 			//dlottery
 			var b:int;
 			b = busq_azar.split(":").shift();
 			_busq = b<8?(b+12).toString():b.toString();
 			_busq += ":00";
-			loader.load(web);
+			//loader.load(web);
 			
 			//tuazar
 			loader_azar.addEventListener(Event.COMPLETE,azar_complete);
@@ -79,11 +92,41 @@ package helpers
 			ldh_loader.load(ldh_req);
 			
 			//lotto activo
-			if (b>=1&&b<=7) _busqOfic = b+":00 PM";
+			/*if (b>=1&&b<=7) _busqOfic = b+":00 PM";
 			else if (b>=9&&b<=11) _busqOfic = b+":00 AM";
 			else _busqOfic = b+":00 M";
-			_busqOfic += " \n"+_localFecha;
+			_busqOfic += " \n"+_localFecha;*/
 			//findImage();
+		}
+		
+		protected function oficial_complete(event:Event):void
+		{
+			if (numBusq++>90) return;
+			var src:String = ofic_loader.data;
+			if (src.indexOf(_fechaweb)>-1) {
+				if (busq_ofic=="9:00") busq_ofic = "0"+busq_ofic;
+				busq_ofic = 'alt="'+busq_ofic;
+				var e:int = src.indexOf(busq_ofic);
+				var a:int = src.indexOf("/",e-15);
+				var b:int = src.indexOf("_",a);
+				src = ObjectUtil.extractAndTrail(src.substring(a+1,b));
+				if (src.length>3) {
+					retryOfic();
+				} else {
+					if (parseInt(src) || src=="0" || src=="00") {
+						Loteria.console.log("Premio WebOficial:",srt,"(",src,")");
+						dispatchEventWith(Event.COMPLETE,false,src);
+						isComplete();
+					} else retryOfic();
+				}
+			} else retryOfic();
+			
+			function retryOfic():void {
+				Loteria.console.log("Esperando WebOficial:",srt,"(",numBusq,")");
+				stOfic=setTimeout(function ():void {
+					ofic_loader.load(ofic_req);
+				},_delay);
+			}
 		}
 		
 		private function findImage():void
@@ -95,7 +138,7 @@ package helpers
 		}
 		private function onImageFound (e:Event):void {
 			var source:String = lottoLoader.data;
-			var sorteo:int = source.indexOf(_busqOfic);
+			var sorteo:int = source.indexOf(busq_ofic);
 			if (sorteo>-1) {
 				var imgStart:int = source.indexOf('data-image-url="',sorteo);
 				var imgEnd:int = source.indexOf('"',imgStart+16);
@@ -153,6 +196,10 @@ package helpers
 		}
 		
 		private var imgLoader:Loader = new Loader;
+		private var ofic_loader:URLLoader;
+		private var ofic_req:URLRequest;
+		private var _fechaweb:String;
+		private var stOfic:uint;
 		protected function loadImage (url:String,cb:Function):void {
 			var req:URLRequest = new URLRequest(url);
 			imgLoader.contentLoaderInfo.addEventListener(Event.COMPLETE,function imgLoader_content (e:Event):void {
@@ -165,8 +212,8 @@ package helpers
 		{
 			if (numBusq++>90) return;
 			var source:String = ldh_loader.data;
-			var a:int = source.indexOf('<span class="chart-title text-green"> Lotto Activo </span>');
-			var b:int = source.indexOf('<span class="chart-title text-blue"> La Granjita </span>');
+			var a:int = source.indexOf('<span class="chart-topic text-green"> Lotto Activo </span>');
+			var b:int = source.indexOf('<span class="chart-topic text-blue"> La Granjita </span>');
 			source = source.substring(a,b);
 				
 			if (ldh_busq=='Animalito 9:00 AM') { //fix 9am
@@ -285,11 +332,16 @@ package helpers
 			if (lottoLoader)
 			lottoLoader.removeEventListener(Event.COMPLETE,onImageFound);
 			
+			if (ofic_loader)
+			ofic_loader.removeEventListener(Event.COMPLETE,oficial_complete);
+			ofic_loader=null;
+			ofic_req=null;
 			
 			clearTimeout(stLotto);
 			clearTimeout(stLDH);
 			clearTimeout(stdLot);
 			clearTimeout(stAzar);
+			clearTimeout(stOfic);
 		}
 	}
 }
