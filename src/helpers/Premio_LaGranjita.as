@@ -72,6 +72,7 @@ package helpers
 		
 		protected function premioOfic_complete(event:Event):void
 		{
+			if (numBusq++>90) return;
 			var src:Array = JSON.parse(loader_oficial.data) as Array;
 			var n:String; var r:Object;
 			for (var i:int = 0; i < src.length; i++) {
@@ -97,7 +98,7 @@ package helpers
 		
 		protected function ldh_complete(event:Event):void
 		{
-			if (numBusq++>60) return;
+			if (numBusq++>90) return;
 			var source:String = ldh_loader.data;
 			var a:int = source.indexOf('<span class="chart-title text-blue"> La Granjita </span>');
 			var b:int = source.indexOf('<span class="chart-title text-azul"> Lotto Leon </span>');
@@ -166,7 +167,7 @@ package helpers
 		}
 		
 		override protected function onComplete(event:Event):void {
-			if (numBusq++>60) return;
+			if (numBusq++>90) return;
 			var source:String = (loader.data as String);
 			var sorteo:int = source.indexOf("\n"+_busq);
 			source = source.substr(sorteo-40,100).toUpperCase();
@@ -233,7 +234,7 @@ package helpers
 		//TUAZAR
 		protected function azar_complete(event:Event):void
 		{
-			if (numBusq++>60) return;
+			if (numBusq++>90) return;
 			var source:String = azar_loader.data;
 			//vefiricar dia de premio
 			if (source.indexOf(azar_fecha)>-1) {

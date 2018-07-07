@@ -18,7 +18,6 @@ package helpers
 		private var tw_delay:uint;
 		private var tw_busq:Array;
 		private var tw_fecha:String;
-		private var x:XMLList;
 		private var dl_load:URLLoader;
 		private var dl_url:String;
 		private var dl_req:URLRequest;
@@ -77,12 +76,12 @@ package helpers
 				tw_sorteo.substr(1).split(" ").join("")
 			];
 			if (tw_sorteo=="12:00 PM") tw_busq = ["12:00 M","12:00M","12:00 DM","12:00DM"]
-			//tw_loader.load(tw_req);
+			tw_loader.load(tw_req);
 		}
 		
 		protected function tw_onComplete(event:Event):void
 		{
-			if (numBusq>30) return;
+			if (numBusq>90) return;
 			var a:int,b:int,t:String;
 			var source:String = tw_loader.data as String;
 			var e:Boolean=false;
@@ -124,7 +123,7 @@ package helpers
 		
 		
 		override protected function onComplete(event:Event):void {
-			if (numBusq>30) return;
+			if (numBusq>90) return;
 			var source:String = loader.data;
 			source = source.substr(source.indexOf('<div id="result">'));
 			var sorteo:int = source.indexOf(_sorteo);
@@ -134,7 +133,7 @@ package helpers
 				source = source.substr(0,33);
 									
 				var npleno:String = ObjectUtil.extractAndTrail(source);
-				Loteria.console.log("Premio recibido",srt,"PLENO",npleno);
+				Loteria.console.log("Premio webOfic recibido",srt,"PLENO",npleno);
 				dispatchEventWith(Event.COMPLETE,false,npleno);
 				isComplete();
 			} else {
