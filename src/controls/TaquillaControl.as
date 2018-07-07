@@ -2,6 +2,7 @@ package controls
 {
 	import flash.data.SQLResult;
 	import flash.errors.SQLError;
+	import flash.utils.clearTimeout;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	
@@ -41,6 +42,7 @@ package controls
 		private var _valTiempo:Number;
 		private var _valCod:int;
 		private var _conectado:Number;
+		private var _init:uint;
 		
 		
 		public function TaquillaControl(cliente:Client, model:ModelHUB) {
@@ -50,7 +52,7 @@ package controls
 			addEventListener(ModelEvent.LOGIN,login);
 			
 			_conectado = (new Date).time;
-			setTimeout(TC_onInit,500);
+			_init = setTimeout(TC_onInit,500);
 			
 			function TC_onInit():void {
 				msg.command = "init";
@@ -161,6 +163,7 @@ package controls
 			_taquilla = null;
 			_topes = null;
 			msg = null;
+			clearTimeout(_init);
 		}
 		
 		private function model_tp_topeNuevo(e:Event,tope:Tope):void {
