@@ -2,6 +2,9 @@ package controls
 {
 	import flash.data.SQLResult;
 	import flash.errors.SQLError;
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 	import flash.utils.clearTimeout;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
@@ -34,6 +37,8 @@ package controls
 	
 	public class TaquillaControl extends Control
 	{
+		private static const LOG_LOGIN:String = "{0}: LOGIN U:{1} IP:{2} FP:{3}\n";
+		
 		private var _taquilla:Taquilla;
 		private var _meta:Object;
 		private var _topes:Vector.<Tope>;
@@ -44,6 +49,8 @@ package controls
 		private var _conectado:Number;
 		private var _init:uint;
 		
+		private var logFile:File;
+		private var logFS:FileStream;
 		
 		public function TaquillaControl(cliente:Client, model:ModelHUB) {
 			super(cliente, model);
@@ -105,7 +112,9 @@ package controls
 			m.data = {
 				fp:String(m.data),
 				taquillaID:_taquilla.taquillaID	
-			}
+			};
+			_taquilla.fingerprint = m.data.fp;
+			initLog();
 			_model.taquillas.fingerprint(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -164,6 +173,9 @@ package controls
 			_topes = null;
 			msg = null;
 			clearTimeout(_init);
+			if (logFS) logFS.close();
+			logFS=null;
+			logFile=null;
 		}
 		
 		private function model_tp_topeNuevo(e:Event,tope:Tope):void {
@@ -189,21 +201,21 @@ package controls
 			delete m.data.fp;
 			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla):void {
 				_taquilla = taquilla;
+				var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
 				if (taquilla) {
-					controlID = _taquilla.taquillaID;					
-					if (_taquilla.fingerlock) {
-						if (_taquilla.fingerprint) {
-							if (fp != MD5.hash(_taquilla.fingerprint+_conectado)) {
-								m.data = {code:Code.INVALIDO};
-								_cliente.sendMessage(m);
-								return;
-							}
-						} else {
+					controlID = _taquilla.taquillaID;		
+					if (_taquilla.fingerlock==true) {
+						if (fp != efp) {
+							m.data = {code:Code.INVALIDO};
+							_cliente.sendMessage(m);
+							return;
+						} //else initLog();
+					} else {
+						if (fp != efp) {
 							msg.command = "fingerprint";
 							_cliente.sendMessage(msg);
-						}
+						} //else initLog();
 					}
-					
 					_taquilla.conectado = _model.ahora;
 					m.data = {
 						taq:taquilla,
@@ -228,7 +240,20 @@ package controls
 				}
 			});
 		}
-			
+		
+		private function initLog():void {
+			logFile = File.applicationStorageDirectory.resolvePath("logUsers").resolvePath(DateFormat.format(null,"yyyymmdd")).resolvePath("TQ"+_taquilla.taquillaID+".txt");
+			logFS = new FileStream;
+			logFS.open(logFile,FileMode.APPEND);
+			Console.saveTo(
+				StringUtil.format(LOG_LOGIN,
+					DateFormat.format(_model.ahora,DateFormat.masks.mediumTime), //0.hora
+					_taquilla.usuario,//1.usuario
+					_cliente.socket().remoteAddress,//2.ip
+					_taquilla.fingerprint+":"+int(_taquilla.fingerlock)),//3.huella
+				logFile,logFS,false);
+		}
+		
 		private function ventasModel_premio(e:Event,pr:Object):void {
 			if (msg && _cliente) {
 				msg.command = e.type;

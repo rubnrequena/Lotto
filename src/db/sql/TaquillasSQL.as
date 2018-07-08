@@ -99,7 +99,7 @@ package db.sql
 			transferir_ventas = new SQLStatementPool('UPDATE vt.ticket SET bancaID = :hasta WHERE taquillaID = :taquillaID AND bancaID = :desde');
 			transferir_reportes = new SQLStatementPool('UPDATE vt.reportes SET bancaID = :hasta WHERE taquillaID = :taquillaID AND bancaID = :desde');
 			
-			fingerprint = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = :fp WHERE taquillaID = :taquillaID AND fingerprint is null');
+			fingerprint = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = :fp WHERE taquillaID = :taquillaID');
 			fingerlock_grp = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE taquillaID = :taquillaID AND bancaID = :bancaID');
 			fingerlock_grp_all = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE bancaID = :bancaID');
 			fingerlock_usr = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE taquillaID = :taquillaID AND usuarioID = :usuarioID');

@@ -130,11 +130,13 @@ package
 			buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"\t"+str+File.lineEnding;
 		}
 		
-		public static function saveTo (text:String,to:File):void {
-			var fs:FileStream = new FileStream;
-			fs.open(to,FileMode.WRITE);
+		public static function saveTo (text:String,to:File,fs:FileStream=null,close:Boolean=true):void {
+			if (fs==null) { 
+				fs = new FileStream;
+				fs.open(to,FileMode.WRITE);
+			}
 			fs.writeMultiByte(text,File.systemCharset);
-			fs.close();
+			if (close) fs.close();
 		}
 	}
 }
