@@ -36,3 +36,9 @@ SELECT sorteos.sorteoID, descripcion, cierra, ganador, SUM(monto) monto, SUM(pre
 FROM us.sorteos LEFT JOIN (SELECT * FROM us.elementos WHERE anulado = 0) as elementos ON sorteos.sorteoID = elementos.sorteoID 
 WHERE sorteos.fecha = :fecha 
 GROUP BY sorteos.sorteoID
+--relacion_pago_consulta
+SELECT * FROM relacion_pago WHERE bancaID = :bancaID AND sorteo = :sorteo
+--relacion_pago_nuevo
+INSERT INTO relacion_pago (bancaID,taquillaID,sorteo,valor) VALUES (:bancaID,0,:sorteo,:valor)
+--relacion_pago_editar
+UPDATE relacion_pago SET valor = :valor WHERE relacionID = :relacion

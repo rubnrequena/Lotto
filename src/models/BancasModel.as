@@ -84,5 +84,12 @@ package models
 				execute(cb,r);
 			}
 		}
+		
+		public function relacion_pago (data:Object,cb:Function):void {
+			sql.relacion_pago_consulta.run({bancaID:data.bancaID,sorteo:data.sorteo},function (r:SQLResult):void {
+				if (r.data) sql.relacion_pago_editar.run({relacion:r.data[0].relacionID,valor:data.valor},cb);
+				else sql.relacion_pago_nuevo.run(data,cb);
+			});
+		}
 	}
 }

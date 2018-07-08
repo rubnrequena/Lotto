@@ -300,6 +300,7 @@ package controls
 			addEventListener("banca-nueva",banca_nueva);
 			addEventListener("banca-editar",banca_editar);
 			addEventListener("banca-remover",banca_remover);
+			addEventListener("banca-relacion",banca_relacion);
 			
 			addEventListener("monitor",monitor);
 			
@@ -330,6 +331,13 @@ package controls
 			addEventListener("sms-bandeja",sms_bandeja);
 			addEventListener("sms-leer",sms_leer);
 			addEventListener("sms-respuestas",sms_respuestas);
+		}
+		
+		private function banca_relacion(e:Event,m:Message):void {
+			_model.bancas.relacion_pago(m.data,function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function banca_remover(e:Event,m:Message):void {
