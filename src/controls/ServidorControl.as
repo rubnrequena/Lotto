@@ -491,7 +491,7 @@ package controls
 										usuario.usuario, //3
 										Loteria.setting.servidor //4
 									);
-									WS.emitir(Loteria.setting.plataformas.usuarios.premios,body);
+									//WS.emitir(Loteria.setting.plataformas.usuarios.premios,body);
 									Mail.sendAdmin("[SRQ]["+sorteo.fecha+"] SORTEO PREMIADO",body,null);
 									_model.ventas.premiar(sorteo,e,function (srt:Object):void {
 										m.data = {code:Code.OK};
