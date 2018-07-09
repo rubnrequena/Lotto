@@ -201,10 +201,10 @@ package controls
 			delete m.data.fp;
 			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla):void {
 				_taquilla = taquilla;
-				var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
 				if (taquilla) {
+					var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
 					controlID = _taquilla.taquillaID;		
-					if (_taquilla.fingerlock==true) {
+					if (_taquilla.fingerlock==true && _taquilla.fingerprint) {
 						if (fp != efp) {
 							m.data = {code:Code.INVALIDO};
 							_cliente.sendMessage(m);
