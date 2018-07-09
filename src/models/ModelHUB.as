@@ -151,7 +151,7 @@ package models
 				if (a.length==1) {
 					Mail.sendAdmin("[JV][MIDAS SORTEO]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
-					WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"]Revisar sorteo\\n"+a.join());
+					WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"] Revisar sorteo\\n"+a.join());
 				} else {
 					Mail.sendAdmin("[JV][MIDAS]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
@@ -171,10 +171,16 @@ package models
 		}
 		
 		private var lastTime:int;
+		private var lastSec:int;
 		private function actualizarHora():void {
 			ahora += getTimer()-lastTime;
 			lastTime = getTimer();
 			tasks(DateFormat.format(ahora,"HH:MM:ss"));
+			
+			if (++lastSec>=60) {
+				lastSec=0;
+				Starling.current.dispatchEventWith("sys_minute",false,ahora);
+			}
 		}
 		
 		private function tasks (time:String):void {

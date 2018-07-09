@@ -335,7 +335,7 @@ package controls
 		
 		private function banca_relacion(e:Event,m:Message):void {
 			_model.bancas.relacion_pago(m.data,function (r:SQLResult):void {
-				m.data = r.lastInsertRowID;
+				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
 		}

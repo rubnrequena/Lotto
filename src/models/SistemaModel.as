@@ -4,9 +4,7 @@ package models
 	import flash.utils.getTimer;
 	
 	import db.DB;
-	import db.SQLBatch;
 	import db.SQLStatementPool;
-	import db.sql.SQLBase;
 	import db.sql.SistemaSQL;
 	
 	import helpers.Code;
