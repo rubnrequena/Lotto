@@ -231,9 +231,15 @@ package controls
 						_model.sistema.elementos_taq(f,function (r:SQLResult):void {
 							m.data.elementos = r.data;
 							_cliente.sendMessage(m);
-							measure(m.command);
+							
+							_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function (meta:Object):void {
+								m.command = "metas";
+								m.data = meta;
+								_cliente.sendMessage(m);
+								measure(m.command);
+							})
 						});
-					});					
+					});
 				} else {
 					m.data = {code:Code.NO_EXISTE};
 					_cliente.sendMessage(m);

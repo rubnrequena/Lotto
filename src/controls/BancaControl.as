@@ -83,6 +83,7 @@ package controls
 			addEventListener("taquilla-activa",taquilla_activa);
 			addEventListener("taquilla-panic",taquilla_panic);
 			addEventListener("taquilla-remover",taquilla_remover);
+			addEventListener("taquilla-metas",taquilla_metas);
 			
 			addEventListener("taquilla-flock",taquilla_flock);
 			addEventListener("taquilla-fpclear",taquilla_fpclear);
@@ -114,6 +115,28 @@ package controls
 			
 			//_model.mSorteos.addEventListener(Event.OPEN,sorteo_abierto);
 			//_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);
+		}
+		
+		private function taquilla_metas(e:Event,m:Message):void {
+			var a:int=0;
+			for (var meta:String in m.data.meta) {
+				a++;
+				_model.taquillas.meta({valor:m.data.meta[meta],campo:meta,taquillaID:m.data.taq},taquillas_meta_result);
+			}
+			
+			if (a==0) {
+				m.data = m.data.meta;
+				_cliente.sendMessage(m);
+			}
+			
+			var n:int=0;
+			function taquillas_meta_result (r:SQLResult):void {
+				n++;
+				if (n==a) {
+					m.data = m.data.meta;
+					_cliente.sendMessage(m);
+				}
+			}
 		}
 		
 		private function taquillas_act(e:Event,m:Message):void {
@@ -378,8 +401,11 @@ package controls
 		private function taquilla(e:Event,m:Message):void {
 			m.data.bancaID = banca.bancaID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
+				m.data = r.data[0];		
+				_model.taquillas.metas({taquillaID:m.data.taquillaID},function (meta:Object):void {
+					m.data.meta = meta;
+					_cliente.sendMessage(m);
+				});				
 			});
 		}
 		

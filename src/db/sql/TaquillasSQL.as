@@ -27,8 +27,10 @@ package db.sql
 		public var panic_off_banca:SQLStatementPool;
 		public var panic_off_usuario:SQLStatementPool;
 		
+		public var metas:SQLStatementPool;
 		public var meta:SQLStatementPool;
 		public var meta_campo:SQLStatementPool;
+		public var meta_nuevo:SQLStatementPool;
 		public var taquillas_banca_usr:SQLStatementPool;
 		public var taquillas_lista_banca:SQLStatementPool;
 		
@@ -87,9 +89,9 @@ package db.sql
 			/*panic_off_banca = new SQLStatementPool('UPDATE us.taquillas SET activa = 1 WHERE activa = -1 AND bancaID = :bancaID');
 			panic_off_usuario = new SQLStatementPool('UPDATE us.taquillas SET activa = 1 WHERE activa = -1 AND usuarioID = :usuarioID');*/
 			
-			meta = new SQLStatementPool('SELECT taquillaID, meta.campo, taquillas_meta.valor FROM us.taquillas_meta JOIN us.meta_info ON taquillas_meta.metaID = meta_info.metaID ' +
-				'WHERE taquillaID = 0 OR taquillaID = :taquillaID GROUP BY campoID ORDER BY taquillaID DESC');
-			
+			metas = new SQLStatementPool('SELECT * FROM (SELECT taquillaID, taquillas_meta.campo, taquillas_meta.valor FROM taquillas_meta WHERE taquillaID = 0 OR taquillaID = :taquillaID ORDER BY taquillaID ASC) GROUP BY campo');
+			meta = new SQLStatementPool('UPDATE taquillas_meta SET valor = :valor WHERE taquillaID = :taquillaID AND campo = :campo');
+			meta_nuevo = new SQLStatementPool('INSERT INTO taquillas_meta (valor,campo,taquillaiD) VALUES (:valor,:campo,:taquillaID)');
 			meta_campo = new SQLStatementPool('SELECT bancaID, taquillaID, CAST(valor AS INTEGER) valor FROM us.meta WHERE campoID = :campoID ORDER BY taquillaID DESC, bancaID DESC',null);
 			
 			transferir = new SQLStatementPool("UPDATE us.taquillas SET bancaID = :hasta WHERE taquillaID = :taquillaID AND bancaID = :desde");

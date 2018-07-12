@@ -207,9 +207,14 @@ package models
 			}
 			else sql.taquilla_editar.run(taq,cb,error);
 		}
-		
 		public function meta (s:Object,cb:Function):void {
 			sql.meta.run(s,function (r:SQLResult):void {
+				if (r.rowsAffected>0) execute(cb,r);
+				else sql.meta_nuevo.run(s,cb);
+			});
+		}
+		public function metas (s:Object,cb:Function):void {
+			sql.metas.run(s,function (r:SQLResult):void {
 				var m:Object = {};
 				for each (var row:Object in r.data) m[row.campo] = row.valor;
 				execute(cb,m);
