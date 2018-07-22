@@ -1,7 +1,9 @@
 package
 {
+	import flash.desktop.NativeApplication;
 	import flash.display.Sprite;
 	import flash.events.ErrorEvent;
+	import flash.events.InvokeEvent;
 	import flash.events.UncaughtErrorEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
@@ -34,6 +36,12 @@ package
 			_starling.start();
 			
 			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR,onError);
+			
+			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE,onInvoke);
+		}
+		
+		protected function onInvoke(event:InvokeEvent):void {
+			if (event.arguments[0]=="closeapp") NativeApplication.nativeApplication.exit(0);
 		}
 		
 		protected function onError(event:UncaughtErrorEvent):void

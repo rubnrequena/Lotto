@@ -95,6 +95,7 @@ package controls
 			addEventListener("bancas-nombres",bancas_nombres);
 			addEventListener("banca-nueva",banca_nueva);
 			addEventListener("banca-editar",banca_editar);
+			addEventListener("banca-relacion",banca_relacion);
 			
 			addEventListener("taquillas",taquillas);
 			addEventListener("taquilla-nueva",taquilla_nueva);
@@ -268,6 +269,13 @@ package controls
 		private function banca_editar(e:Event,m:Message):void {
 			_model.bancas.editar(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected>0?Code.OK:Code.INVALIDO;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function banca_relacion(e:Event,m:Message):void {
+			_model.bancas.relacion_pago(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
 		}

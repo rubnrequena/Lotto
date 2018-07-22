@@ -18,9 +18,11 @@ package models
 		private var sql:UsuariosSQL;
 		private var usr:Usuario;
 		
+		private var _usuarios:Vector.<Usuario>;
+		
 		public function UsuariosModel() {
 			super();
-			sql = new UsuariosSQL;
+			sql = new UsuariosSQL;			
 		}
 		
 		public function nuevo (usuario:Object,cb:Function):void {			

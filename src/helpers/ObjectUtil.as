@@ -39,5 +39,10 @@ package helpers
 		static public function extractAndTrail (n:String):String {
 			return trailZero(extractInt(n));
 		}
+		static public function arrayObject (data:Array):Object {
+			var m:Object = {};
+			for each (var row:Object in data) m[row.campo] = row.valor;
+			return m;
+		}
 	}
 }
