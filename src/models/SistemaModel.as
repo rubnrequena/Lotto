@@ -17,6 +17,7 @@ package models
 	import helpers.Premio_LotoSelva;
 	import helpers.Premio_LottoActivo;
 	import helpers.Premio_LottoLeon;
+	import helpers.Premio_MiniLottico;
 	import helpers.Premio_ReyAnzoategui;
 	import helpers.Premio_RuletAnimal;
 	import helpers.Premio_RuletaOriente;
@@ -41,7 +42,8 @@ package models
 			granjita:Premio_LaGranjita,
 			ruletanimal:Premio_RuletAnimal,
 			lotoselva:Premio_LotoSelva,
-			lottoleon:Premio_LottoLeon
+			lottoleon:Premio_LottoLeon,
+			mini:Premio_MiniLottico
 		}
 		
 		private static var _elementos:Vector.<Elemento>;
