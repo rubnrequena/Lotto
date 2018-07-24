@@ -46,7 +46,7 @@ package
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
-			Loteria.console.log("v180714");
+			Loteria.console.log("v180722a");
 			addChild(Loteria.console);
 			
 			WS.init();
@@ -67,12 +67,6 @@ package
 						var m:Message = new Message;
 						m.command = "close-mant";
 						clientes.sendMessageToAllClients(m);
-						
-						/*setTimeout(function ():void {
-							clientes.stop();
-							bancas.stop();
-							usuarios.stop();
-						},1000);*/
 					});
 				}
 			});

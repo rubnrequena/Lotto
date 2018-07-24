@@ -104,7 +104,7 @@ package models
 		private var v:Object;
 		public function venta (ventas:Array,taquilla:Taquilla,cb:Function):void {
 			if (lockVentas) return;
-			ahora = new Date;
+			
 			var vt:Object; // TODO: object pool
 			
 			var m:Number=0;
@@ -115,7 +115,7 @@ package models
 				taquillaID:taquilla.taquillaID,
 				bancaID:taquilla.bancaID,
 				monto:m,
-				tiempo:ahora.time,
+				tiempo:owner.ahora,
 				ticketID:ID,
 				codigo:getRandomArbitrary(1000,9999)
 			};
@@ -223,6 +223,7 @@ package models
 			
 			function premiar_complete (r:Vector.<SQLResult>):void {
 				guardarReportes();	
+				sorteo.ganador = elemento.elementoID;
 				execute(cb,sorteo);
 				dispatchEventWith(ModelEvent.PREMIO,false,sorteo);
 			}

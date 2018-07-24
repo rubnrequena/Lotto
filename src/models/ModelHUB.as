@@ -83,7 +83,7 @@ package models
 			ventasDB = rootDB.resolvePath("ventas.sqlite");
 			smsDB = rootDB.resolvePath("sms.sqlite");
 			
-			ahora = (new Date).time;
+			ahora = (new Date).time+(Loteria.setting.gmt);
 			lastTime = getTimer();
 			setInterval(actualizarHora,1000);
 			Loteria.console.log("HORA ACTUAL:",DateFormat.format(ahora,"HH:MM:ss"));
