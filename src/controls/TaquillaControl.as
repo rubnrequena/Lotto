@@ -41,6 +41,7 @@ package controls
 		
 		private var _taquilla:Taquilla;
 		private var _meta:Object;
+		private var _bancaMeta:Object;
 		private var _topes:Vector.<Tope>;
 		
 		private var msg:Message;
@@ -88,11 +89,19 @@ package controls
 			addEventListener("reporte-ventas",reporte_ventas);
 			
 			addEventListener("ticket-anulado",ticket_anulado);
+			
+			addEventListener("notificar",sistema_notificar);
 						
 			_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.addEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.addEventListener(Event.CHANGE,model_tp_topeNuevo);			
 			_model.ventas.addEventListener(ModelEvent.PREMIO,ventasModel_premio);
+		}
+		
+		private function sistema_notificar(e:Event,m:Message):void {
+			if (m.data.code==1) {
+				WS.emitir(Loteria.setting.plataformas.usuarios.premios,StringUtil.format(WS.NTF_TQ_SORTEO_INV,m.data.sorteo.descripcion,_taquilla.taquillaID,_taquilla.usuarioID));				
+			}
 		}
 		
 		private function ticket_anulado(e:Event,m:Message):void {
@@ -220,7 +229,7 @@ package controls
 					m.data = {
 						taq:taquilla,
 						numeros:_model.sistema.numeros,
-						time:(new Date).time							
+						time:_taquilla.conectado							
 					};
 					addListeners();
 					
@@ -236,7 +245,7 @@ package controls
 								m.command = "metas";
 								m.data = meta;
 								_cliente.sendMessage(m);
-								measure(m.command);
+								measure("login");
 							})
 						});
 					});
