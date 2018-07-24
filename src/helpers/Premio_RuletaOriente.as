@@ -138,7 +138,7 @@ package helpers
 				isComplete();
 			} else {
 				Loteria.console.log("Esperando premiacion:",srt,"(",numBusq,")");
-				setTimeout(function ():void {
+				stTw = setTimeout(function ():void {
 					numBusq++;
 					loader.load(web);
 				},_delay);
