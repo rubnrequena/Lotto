@@ -1,5 +1,5 @@
 --usuarios
-SELECT * FROM us.usuarios WHERE tipo = 1
+SELECT * FROM us.usuarios
 --usuario_id
 SELECT * FROM us.usuarios WHERE usuarioID = :id
 --usuario_user
@@ -9,7 +9,7 @@ SELECT usuarioID,usuario,nombre,tipo,activo,renta,comision,participacion FROM us
 --usuario_nuevo
 INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta,comision,participacion) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta,:comision,:participacion)
 --usuario_editar
-UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta WHERE usuarioID = :usuarioID
+UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta, comision = :comision, participacion = :participacion WHERE usuarioID = :usuarioID
 --usuario_activar
 UPDATE us.usuarios SET activo = :activo WHERE usuarioID = :usuarioID
 --permisos
@@ -20,3 +20,5 @@ INSERT INTO us.meta (usuarioID,bancaID,campoID,valor) VALUES (:usuarioID, :banca
 UPDATE us.meta SET valor = :valor WHERE metaID = :meta AND usuarioID = :usuarioID
 --permiso_remove
 DELETE FROM us.meta WHERE metaID = :meta AND usuarioID = :usuarioID
+--usuarios_comer
+SELECT usuarioID,usuario,clave,activo,registrado,nombre,tipo,renta,comision,participacion FROM comer_usuario JOIN usuarios ON usuarios.usuarioID = comer_usuario.uID WHERE cID = :comercial

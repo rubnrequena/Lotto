@@ -18,6 +18,7 @@ package db.sql
 		public var permiso_remove:SQLStatementPool;
 		public var usuario_editar:SQLStatementPool;
 		public var usuario_activar:SQLStatementPool;
+		public var usuarios_comer:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');
@@ -25,18 +26,6 @@ package db.sql
 			usuarios = new SQLStatementPool(sentencia("usuarios"),null,Usuario);
 			usuario_id = new SQLStatementPool(sentencia("usuario_id"),null,Usuario);
 			usuario_login = new SQLStatementPool(sentencia("usuario_login"),null,Usuario);
-			
-			/*usuario_user = new SQLStatementPool('');
-			usuario_nuevo = new SQLStatementPool('');
-			usuario_editar = new SQLStatementPool('');
-			usuario_activar = new SQLStatementPool('');
-			
-			permisos = new SQLStatementPool('');
-			meta_nuevo = new SQLStatementPool('');
-			permiso_update = new SQLStatementPool('');
-			permiso_remove = new SQLStatementPool('');*/
-			
-			
 			
 			scan();
 		}

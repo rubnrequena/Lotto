@@ -90,6 +90,7 @@ package controls
 			addEventListener("usuarios",usuarios);
 			addEventListener("usuario-nuevo",usuario_nuevo);
 			addEventListener("usuario-editar",usuario_editar);
+			addEventListener("usuario-asignar",usuario_asignar);
 			
 			addEventListener("bancas",bancas);
 			addEventListener("bancas-nombres",bancas_nombres);
@@ -127,6 +128,16 @@ package controls
 			
 			/*_model.mSorteos.addEventListener(Event.OPEN,sorteo_abierto);
 			_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);*/
+		}
+		
+		private function usuario_asignar(e:Event,m:Message):void {
+			_model.comercializadora.linkUsuario({
+				cID:m.data.cid,
+				uID:m.data.uid
+			},function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function usuario_sorteo(e:Event,m:Message):void {
@@ -451,8 +462,15 @@ package controls
 		}
 		
 		private function usuario_nuevo(e:Event,m:Message):void {
-			m.data.tipo = 1;
+			var cid:int = m.data.cid;
+			delete m.data.cid;
 			_model.usuarios.nuevo(m.data,function (id:int):void {
+				if (m.data.tipo==1) {
+					_model.comercializadora.linkUsuario({
+						cID:cid,
+						uID:id
+					},null);
+				}
 				m.data = id;
 				_cliente.sendMessage(m);
 			});
