@@ -100,7 +100,7 @@ package controls
 		
 		private function sistema_notificar(e:Event,m:Message):void {
 			if (m.data.code==1) {
-				WS.emitir(Loteria.setting.plataformas.usuarios.premios,StringUtil.format(WS.NTF_TQ_SORTEO_INV,m.data.sorteo.descripcion,_taquilla.taquillaID,_taquilla.usuarioID));				
+				WS.emitir(Loteria.setting.plataformas.usuarios.premios,StringUtil.format(WS.NTF_TQ_SORTEO_INV,m.data.sorteo.descripcion,_taquilla.taquillaID,_taquilla.usuarioID,Loteria.setting.servidor));				
 			}
 		}
 		

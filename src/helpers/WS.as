@@ -11,7 +11,7 @@ package helpers
 
 	public class WS
 	{
-		public static const NTF_TQ_SORTEO_INV:String = "SORTEO INVALIDO\\nSORTEO: {0}\\nTAQ: {1}\\nUSUARIO: {2}";
+		public static const NTF_TQ_SORTEO_INV:String = "[{3}] VERIFICAR RESULTADO\\nSORTEO: {0}\\nTAQ: {1}\\nUSUARIO: {2}";
 		
 		private static var process:NativeProcess;
 		
