@@ -88,7 +88,7 @@ package helpers
 			var reg:RegExp = /[0-9]/;
 			var freg:RegExp = new RegExp(tw_fecha+"|"+_busq,"gi");
 			var hreg:RegExp = /[0-1][0-9]:00|[0-9]:00/;
-			var nreg:RegExp = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,} \d{1,2}\n|\d{1,2}\s{0,2} [a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,}/;
+			var nreg:RegExp = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,} \d{1,2}\n|\d{1,2} {0,2} [a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,}/;
 			
 			for (var i:int = 0; i < 20; i++) {
 				a = source.indexOf('<div class="js-tweet-text-container">',b);
