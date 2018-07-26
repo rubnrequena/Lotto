@@ -9,6 +9,7 @@ package
 	import helpers.Premio_LotoSelva;
 	import helpers.Premio_LottoActivo;
 	import helpers.Premio_LottoLeon;
+	import helpers.Premio_MiniLottico;
 	import helpers.Premio_RuletAnimal;
 	import helpers.Premio_RuletaOriente;
 	
@@ -47,8 +48,8 @@ package
 		
 		
 		private function test_sorteos():void {
-			sorteos = oriente;
-			pr = new helpers.Premio_RuletaOriente; 
+			sorteos = mini;
+			pr = new helpers.Premio_MiniLottico; 
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
@@ -58,14 +59,14 @@ package
 		
 		private function onComplete(e:Event,n:String):void
 		{
-			
+			Loteria.console.log("GANADOR:",n);
 		}
 		
 		private function onReady(e:Event,p:PremioWeb):void
 		{
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_RuletaOriente; 
+				pr = new helpers.Premio_MiniLottico; 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
@@ -74,6 +75,19 @@ package
 		private var pr:PremioWeb;
 		private var pri:int;
 		private var hoy:Date = new Date;
+		
+		private var mini:Array = [
+			/*"MINI LOTTICO 10:00 AM",
+			"MINI LOTTICO 11:00 AM",
+			"MINI LOTTICO 12:00 PM",
+			"MINI LOTTICO 1:00 PM",
+			"MINI LOTTICO 3:00 PM",
+			"MINI LOTTICO 4:00 PM",
+			"MINI LOTTICO 5:00 PM",*/
+			"MINI LOTTICO 6:00 PM",
+			"MINI LOTTICO 7:00 PM",
+			"MINI LOTTICO 8:00 PM"
+		];
 		
 		private var lotto:Array = [
 			"LOTTO ACTIVO 9AM",

@@ -17,7 +17,6 @@ package controls
 	import starling.events.Event;
 	import starling.utils.StringUtil;
 	
-	import vos.Banca;
 	import vos.Elemento;
 	import vos.Sorteo;
 	import vos.Taquilla;
@@ -190,14 +189,14 @@ package controls
 			});	
 		}	
 		private function banca_editar(e:Event,m:Message):void {
-			_model.bancas.editar(m.data,function (r:SQLResult):void {
-				if (r.rowsAffected>0) {
+			_model.usuarios.editar(m.data,function (r:SQLResult):void {
+				/*if (r.rowsAffected>0) {
 					var b:Banca = LTool.findBy("bancaID",m.data.bancaID,_model.bancas.bancas);
 					if (m.data.hasOwnProperty("activa")) b.activa = m.data.activa;
 					if (m.data.hasOwnProperty("nombre")) b.nombre = m.data.nombre;
 					if (m.data.hasOwnProperty("clave")) b.clave = m.data.clave;
 					if (m.data.hasOwnProperty("comision")) b.comision = m.data.comision;
-				}
+				}*/
 				if (r.rowsAffected>0) m.data.code = Code.OK;
 				else m.data.code = Code.INVALIDO;
 				_cliente.sendMessage(m);
@@ -332,7 +331,7 @@ package controls
 			addEventListener("permisos",permisos);			
 			
 			addEventListener("venta-premios",venta_premios);
-			addEventListener("vent<a-anular",venta_anular);
+			addEventListener("venta-anular",venta_anular);
 			
 			addEventListener("sms-nuevo",sms_nuevo);
 			addEventListener("sms-bandeja",sms_bandeja);
@@ -373,7 +372,6 @@ package controls
 		
 		private function usuario_grupos(e:Event,m:Message):void
 		{
-			//validar usuario
 			m.data = LTool.exploreBy("usuarioID",m.data.usuarioID,_model.bancas.bancas).sortOn("papelera","activa","nombre");
 			_cliente.sendMessage(m);
 		}
@@ -381,7 +379,6 @@ package controls
 		private function usuario_nuevo(e:Event,m:Message):void
 		{
 			m.data.tipo = 1;
-			m.data.renta = usuario.renta;
 			_model.usuarios.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);

@@ -22,7 +22,7 @@ package controls
 			BancaControl:"BC",
 			UsuarioControl:"UC",
 			ServidorControl:"SC",
-			ComerControl:"CC"
+			ComercializadoraControl:"CC"
 		}
 			
 		protected var _model:ModelHUB;
