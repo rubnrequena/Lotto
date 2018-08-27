@@ -594,7 +594,7 @@ package controls
 								//mail send
 							});
 						}
-						if (meta.hasOwnProperty("sms")) {
+						/*if (meta.hasOwnProperty("sms")) {
 							m.data.format = "sms";
 							var sms:String = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);
 							
@@ -604,11 +604,11 @@ package controls
 							} else {
 								m.data.code = Code.SMS_NODISPONIBLE;
 							}
-							/*_model.dispatchEventWith("sms_send",false,{
+							_model.dispatchEventWith("sms_send",false,{
 								command:"sms",
 								data:{t:meta.sms,m:sms,c:_cliente}
-							});*/
-						}
+							});
+						}*/
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
 							m.data.format = "ws";
@@ -658,11 +658,11 @@ package controls
 				}
 				if (tope) {
 					tope = _topes[i];
-					if (jugadas && jugadas.length>0) {
+					if (jugadas && jugadas.length>0) {						
 						for (i = 0; i < jugadas.length; i++) {
 							mj = jugadas[i];
 							if (mj.sorteoID==venta.sorteoID && mj.numero==venta.numero) {
-								var sum:int = mj.monto+venta.monto;
+								var sum:Number = mj.monto+venta.monto;
 								if (sum>tope.monto) { // sumatoria de jugada exede tope
 									sum = tope.monto-mj.monto>0?tope.monto-mj.monto:0;
 									addInvalido({s:venta.sorteoID,n:venta.numero,td:sum});

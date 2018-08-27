@@ -114,7 +114,7 @@ package models
 			vt = {
 				taquillaID:taquilla.taquillaID,
 				bancaID:taquilla.bancaID,
-				monto:m,
+				monto:Number(m.toFixed(2)),
 				tiempo:owner.ahora,
 				ticketID:ID,
 				codigo:getRandomArbitrary(1000,9999)
