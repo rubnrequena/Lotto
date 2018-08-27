@@ -123,10 +123,13 @@ JOIN vt.ticket ON ticket.ticketID = elementos.ticketID JOIN us.taquillas ON taqu
 WHERE elementos.anulado = 0 AND sorteoID = :sorteoID 
 GROUP BY taquillas.usuarioID ORDER BY jugada DESC
 --jugadas_srv_num
-SELECT numeros.numero numero, numeros.descripcion desc, SUM(elementos.monto) jugada, g.glb FROM vt.elementos 
-JOIN vt.ticket ON ticket.ticketID = elementos.ticketID JOIN numeros ON numeros.elementoID = elementos.numero JOIN (SELECT numeros.numero, SUM(elementos.monto) glb FROM vt.elementos JOIN vt.ticket ON ticket.ticketID = elementos.ticketID JOIN numeros ON numeros.elementoID = elementos.numero WHERE elementos.anulado = 0 AND sorteoID = :sorteoID GROUP BY elementos.numero ORDER BY elementos.numero) as g ON g.numero = numeros.numero 
-WHERE elementos.anulado = 0 AND sorteoID = :sorteoID 
-GROUP BY elementos.numero ORDER BY elementos.numero
+SELECT numeros.numero, numeros.descripcion desc, jugada, n tickets, (jugada*relacion_pago.valor) premios FROM 
+(SELECT numero, sum(jugada) jugada, count(numero) n, sorteoID FROM
+(SELECT numero, monto jugada, ticketID, sorteoID  FROM vt.elementos WHERE sorteoID = :sorteoID)
+GROUP BY numero) tn
+JOIN numeros ON numeros.elementoID = tn.numero
+JOIN vt.sorteos ON sorteos.sorteoID = tn.sorteoID
+JOIN us.relacion_pago ON relacion_pago.sorteo = sorteos.sorteo AND bancaID = 0
 --jugadas_banca_taq
 SELECT taquillas.nombre banca, SUM(elementos.monto) jugada  FROM vt.elementos 
 JOIN vt.ticket ON ticket.ticketID = elementos.ticketID JOIN us.taquillas ON taquillas.taquillaID = ticket.taquillaID 
