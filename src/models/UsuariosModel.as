@@ -70,6 +70,7 @@ package models
 			if (filtro) {
 				if (filtro.hasOwnProperty("id")) sql.usuario_id.run(filtro,cb);
 				else if (filtro.hasOwnProperty("usuario")) sql.usuario_user.run(filtro,cb);
+				else if (filtro.hasOwnProperty("comercial")) sql.usuarios_comer.run(filtro,cb);
 				//filtrar por activos
 				//filtrar por tipo
 			} else sql.usuarios.run(null,cb);

@@ -48,12 +48,12 @@ package
 		
 		
 		private function test_sorteos():void {
-			sorteos = mini;
-			pr = new helpers.Premio_MiniLottico; 
+			sorteos = ruleta_animal;
+			pr = new helpers.Premio_RuletAnimal; 
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
-			//hoy.date -= 1;
+			hoy.date -= 1;
 			pr.buscar(sorteos[pri],hoy);
 		}
 		
@@ -64,9 +64,10 @@ package
 		
 		private function onReady(e:Event,p:PremioWeb):void
 		{
+			Loteria.console.log("GANADOR:",p.srt);
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_MiniLottico; 
+				pr = new helpers.Premio_RuletAnimal; 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
@@ -197,6 +198,7 @@ package
 			"RULETA ANIMAL 11AM",
 			"RULETA ANIMAL 12M",
 			"RULETA ANIMAL 1PM",
+			"RULETA ANIMAL 3PM",
 			"RULETA ANIMAL 4PM",
 			"RULETA ANIMAL 5PM",
 			"RULETA ANIMAL 6PM",
