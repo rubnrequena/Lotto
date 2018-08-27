@@ -19,13 +19,28 @@
 		"activo":true,
 		"retraso":2,
 		"prm_solicitudes":2,
+		"url":"http://srq.com.ve/prm/",
 		"premiacion":[
 			{
 				"activo":true,
 				"puntos":10,
 				"tiempo":20
 			}
-		]
+		],
+		"sorteos":{
+			"lottoactivo":{
+				"numCompletado":1,
+				"webofic":{
+					"url":"http://srq.com.ve/prm/"
+				}
+			},
+			"ruletanimal":{
+				"numCompletado":1,
+				"webofic":{
+					"url":"http://localhost/prm/"
+				}
+			}
+		}
 	},
 	"console": {
 		"log": false
