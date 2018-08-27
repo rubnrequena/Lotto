@@ -48,12 +48,15 @@ package controls
 					ObjectUtil.clear(m.data);
 					m.command = "init";
 					
-					if (usr.nivel==1) {
-						var u:Object = Loteria.setting.plataformas;
-						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Administrador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
-						m.data.sorteos = _model.sistema.sorteos;
-					} else if (usr.nivel==2) {
-						WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Premiador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
+					
+					if (Loteria.setting.servidor!="local") {
+						if (usr.nivel==1) {
+							var u:Object = Loteria.setting.plataformas;
+							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Administrador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
+							m.data.sorteos = _model.sistema.sorteos;
+						} else if (usr.nivel==2) {
+							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Premiador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
+						}
 					}
 					
 					_model.servidor.numeros({adminID:usr.adminID},function (r:SQLResult):void {
@@ -97,6 +100,7 @@ package controls
 			addEventListener("banca-nueva",banca_nueva);
 			addEventListener("banca-editar",banca_editar);
 			addEventListener("banca-relacion",banca_relacion);
+			addEventListener("banca-remover",banca_remover);
 			
 			addEventListener("taquillas",taquillas);
 			addEventListener("taquilla-nueva",taquilla_nueva);
@@ -287,6 +291,13 @@ package controls
 		private function banca_relacion(e:Event,m:Message):void {
 			_model.bancas.relacion_pago(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function banca_remover(e:Event,m:Message):void {
+			_model.bancas.editar(m.data,function (r:SQLResult):void {
+				if (r.rowsAffected>0) m.data = {code:Code.OK};
+				else m.data = {code:Code.NO};
 				_cliente.sendMessage(m);
 			});
 		}
