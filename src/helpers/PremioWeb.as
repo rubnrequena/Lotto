@@ -29,9 +29,15 @@ package helpers
 		protected var numCompletado:int=1;
 		private var st:uint;
 		private var x:XML;
-		
-		public function PremioWeb() {
+		protected var configs:Object;
+				
+		public function PremioWeb(name:String="") {
 			super();
+			
+			if (Loteria.setting.premios.sorteos.hasOwnProperty(name)) {
+				configs = Loteria.setting.premios.sorteos[name];
+				url = configs.webofic.url;
+			}
 			
 			web = new URLRequest(url);
 			web.useCache = false;

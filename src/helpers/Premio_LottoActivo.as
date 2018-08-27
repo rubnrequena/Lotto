@@ -1,13 +1,9 @@
 package helpers
 {
-	import flash.display.Bitmap;
-	import flash.display.BitmapData;
-	import flash.display.Loader;
-	import flash.display.LoaderInfo;
 	import flash.events.Event;
-	import flash.filesystem.File;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	import flash.net.URLVariables;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -35,6 +31,8 @@ package helpers
 		
 		public function Premio_LottoActivo()
 		{
+			super("lottoactivo");
+			
 			url = 'https://dlottery.wordpress.com/';
 			
 			loader_azar = new URLLoader;
@@ -48,20 +46,20 @@ package helpers
 			ldh_req.cacheResponse = false;
 			
 			ofic_loader = new URLLoader;
-			ofic_req = new URLRequest('http://www.lottoactivo.com/');
+			ofic_req = new URLRequest(configs.webofic.url);
 			ofic_req.useCache=false;
 			ofic_req.cacheResponse=false;
-			
-			super();
-			
-			numCompletado=2;
+						
+			numCompletado= configs.numCompletado;
 		}
 		
 		override public function buscar (sorteo:String,fecha:Date=null):void {
 			super.buscar(sorteo,fecha);
+			
 			_busq = sorteo.split(" ").pop();
 			_fecha = DateFormat.format(fecha);
 			_localFecha = DateFormat.format(fecha,"dd/mm/yyyy");
+			
 			_fechaweb = DateFormat.format(fecha,'dd mmm yyyy');
 			
 			var a:Array = _busq.split("");
@@ -73,6 +71,11 @@ package helpers
 			
 			//web oficial
 			ofic_loader.addEventListener(Event.COMPLETE,oficial_complete);
+			var fv:URLVariables = new URLVariables;
+			fv.fecha = _fechaweb;
+			fv.hora = busq_ofic;
+			fv.sorteo = "lottoactivo";
+			ofic_req.data = fv;
 			ofic_loader.load(ofic_req);
 			
 			//dlottery
@@ -89,37 +92,44 @@ package helpers
 			//loteria de hoy
 			ldh_busq = "Animalito "+b+":00";
 			ldh_loader.addEventListener(Event.COMPLETE,ldh_complete);
-			ldh_loader.load(ldh_req);
+			//ldh_loader.load(ldh_req);
 			
-			//lotto activo
-			/*if (b>=1&&b<=7) _busqOfic = b+":00 PM";
-			else if (b>=9&&b<=11) _busqOfic = b+":00 AM";
-			else _busqOfic = b+":00 M";
-			_busqOfic += " \n"+_localFecha;*/
-			//findImage();
 		}
 		
 		protected function oficial_complete(event:Event):void
 		{
 			if (numBusq++>90) return;
-			var src:String = ofic_loader.data;
-			if (src.indexOf(_fechaweb)>-1) {
-				if (busq_ofic=="9:00") busq_ofic = "0"+busq_ofic;
-				busq_ofic = 'alt="'+busq_ofic;
-				var e:int = src.indexOf(busq_ofic);
-				var a:int = src.indexOf("/",e-15);
-				var b:int = src.indexOf("_",a);
-				src = ObjectUtil.extractAndTrail(src.substring(a+1,b));
-				if (src.length>3) {
-					retryOfic();
-				} else {
-					if (parseInt(src) || src=="0" || src=="00") {
-						Loteria.console.log("Premio WebOficial:",srt,"(",src,")");
-						dispatchEventWith(Event.COMPLETE,false,src);
-						isComplete();
-					} else retryOfic();
-				}
+			if (ofic_loader.data && ofic_loader.data!="") {
+				var src:Object = JSON.parse(ofic_loader.data);
+				//src.ganador = ObjectUtil.trailZero(src.ganador);
+				Loteria.console.log("Premio WebOficial:",srt,"(",src.ganador,")");
+				dispatchEventWith(Event.COMPLETE,false,src.ganador);
+				isComplete();
 			} else retryOfic();
+			/*var rjpgs:RegExp = new RegExp('\\d{1,2}_d200.jpg','g');
+			var sorteos:Array = ["9:00","10:00","11:00","12:00","1:00","3:00","4:00","5:00","6:00","7:00"];
+			var a:int, b:int;
+			if (src.indexOf(_fechaweb)>-1) {
+				a = 0; b = src.length;
+				for (var i:int = 0; i < 9; i++) {					
+					var jpgs:Object = rjpgs.exec(src.substring(a,b));
+					if (jpgs) {
+						if (busq_ofic==sorteos[i]) {
+							var n:String = String(jpgs[0]).split("_")[0];
+							a = rjpgs.lastIndex;
+							
+							Loteria.console.log("Premio WebOficial:",srt,"(",n,")");
+							dispatchEventWith(Event.COMPLETE,false,n);
+							isComplete();
+							return;
+						}
+					} else {
+						retryOfic();
+						break;
+					}
+					
+				}
+			} else retryOfic();*/
 			
 			function retryOfic():void {
 				Loteria.console.log("Esperando WebOficial:",srt,"(",numBusq,")");
@@ -128,85 +138,12 @@ package helpers
 				},_delay);
 			}
 		}
-		
-		private function findImage():void
-		{
-			lottoLoader = new URLLoader;
-			var req:URLRequest = new URLRequest('https://twitter.com/lottoactivo');
-			lottoLoader.addEventListener(Event.COMPLETE,onImageFound);
-			lottoLoader.load(req);
-		}
-		private function onImageFound (e:Event):void {
-			var source:String = lottoLoader.data;
-			var sorteo:int = source.indexOf(busq_ofic);
-			if (sorteo>-1) {
-				var imgStart:int = source.indexOf('data-image-url="',sorteo);
-				var imgEnd:int = source.indexOf('"',imgStart+16);
-				compareImage(source.substring(imgStart+16,imgEnd));
-			} else {
-				Loteria.console.log("Esperando premiacion LottoActivo:",srt,"(",numBusq,")");
-				stLotto= setTimeout(function ():void {
-					findImage();
-				},_delay);
-			}
-		}
-		
-		
-		private static var images:Object;
-		private function compareImage(url:String):void
-		{
-			if (images==null) {
-				images = {};
-				var folder:File = File.documentsDirectory.resolvePath("lotto");
-				var lista:Array = folder.getDirectoryListing();
-				var ncomplete:int; var numfiles:int = lista.length;
-				for each (var f:File in folder.getDirectoryListing()) {
-					loadImage(f.nativePath,loadComplete);
-				}
-			} else {
-				loadImage(url,onLoadImage);
-			}
-			
-			function loadComplete (b:Bitmap,name:String):void {
-				ncomplete++;
-				images[name] = b.bitmapData;
-				if (ncomplete==numfiles) {
-					//comparar
-					loadImage(url,onLoadImage);
-				}
-			}	
-			
-			function onLoadImage (b:Bitmap,n:String):void{
-				var b1:BitmapData = b.bitmapData;
-				var b2:BitmapData;
-				for (var i:String in images) {
-					b2 = images[i];
-					var compare:* = b1.compare(b2); 
-					if (compare==0) {
-						n = i.split(".").shift();
-						Loteria.console.log("Premio LottoActivo encontrado:",srt,"(",n,")");
-						dispatchEventWith(Event.COMPLETE,false,n);
-						isComplete();
-						return;
-					}
-				}
-				//not match	
-			}
-			
-		}
-		
-		private var imgLoader:Loader = new Loader;
+				
 		private var ofic_loader:URLLoader;
 		private var ofic_req:URLRequest;
 		private var _fechaweb:String;
 		private var stOfic:uint;
-		protected function loadImage (url:String,cb:Function):void {
-			var req:URLRequest = new URLRequest(url);
-			imgLoader.contentLoaderInfo.addEventListener(Event.COMPLETE,function imgLoader_content (e:Event):void {
-				cb.call(null,Bitmap(LoaderInfo(e.target).content),url.split("\\").pop());
-			});
-			imgLoader.load(req);
-		}
+		
 		
 		protected function ldh_complete(event:Event):void
 		{
@@ -328,16 +265,12 @@ package helpers
 			loader_azar.removeEventListener(Event.COMPLETE,azar_complete);
 			loader_azar = null;
 			req_azar=null;			
-			
-			if (lottoLoader)
-			lottoLoader.removeEventListener(Event.COMPLETE,onImageFound);
-			
+						
 			if (ofic_loader)
 			ofic_loader.removeEventListener(Event.COMPLETE,oficial_complete);
 			ofic_loader=null;
 			ofic_req=null;
 			
-			clearTimeout(stLotto);
 			clearTimeout(stLDH);
 			clearTimeout(stdLot);
 			clearTimeout(stAzar);
