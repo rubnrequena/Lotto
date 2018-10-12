@@ -15,9 +15,15 @@ package vos
 		public var activo:int;
 		public var registrado:Number;
 		public var renta:Number;
+		public var papelera:int;
 		
 		public var comision:Number;
 		public var participacion:Number;
 		
+		public function get usID():String {
+			if (tipo==1) return "u"+usuarioID;
+			if (tipo==2) return "c"+usuarioID;
+			return usuarioID.toString();
+		}
 	}
 }

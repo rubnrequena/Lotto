@@ -9,6 +9,10 @@ package vos.sistema
 		public var creado:String;
 		public var nivel:int;
 		
+		public function get usID ():String {
+			return "a"+adminID;
+		}
+		
 		public function Admin()
 		{
 			

@@ -42,3 +42,5 @@ SELECT * FROM relacion_pago WHERE bancaID = :bancaID AND sorteo = :sorteo
 INSERT INTO relacion_pago (bancaID,taquillaID,sorteo,valor) VALUES (:bancaID,0,:sorteo,:valor)
 --relacion_pago_editar
 UPDATE relacion_pago SET valor = :valor WHERE relacionID = :relacion
+--transferir
+UPDATE bancas SET usuarioID = :uID WHERE bancaID = :bID

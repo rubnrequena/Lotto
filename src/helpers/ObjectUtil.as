@@ -37,7 +37,8 @@ package helpers
 			return int(n)<10?"0"+int(n):n.toString();
 		}
 		static public function extractAndTrail (n:String):String {
-			return trailZero(extractInt(n));
+			if (n && n.length>0) return trailZero(extractInt(n));
+			else return n;
 		}
 		static public function arrayObject (data:Array):Object {
 			var m:Object = {};

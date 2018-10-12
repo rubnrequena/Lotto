@@ -5,6 +5,7 @@ package models
 	import flash.data.SQLResult;
 	import flash.errors.SQLError;
 	
+	import db.SQLStatementPool;
 	import db.sql.BancasSQL;
 	
 	import helpers.DateFormat;
@@ -24,6 +25,10 @@ package models
 		public function BancasModel() {
 			super();
 			sql = new BancasSQL;
+			force_update();
+		}
+		
+		public function force_update ():void {
 			sql.bancas.run(null,bancas_update);
 		}
 		
@@ -90,6 +95,10 @@ package models
 				if (r.data) sql.relacion_pago_editar.run({relacion:r.data[0].relacionID,valor:data.valor},cb);
 				else sql.relacion_pago_nuevo.run(data,cb);
 			});
+		}
+		
+		public function transferir(data:Object, cb:Function):void {
+			sql.transferir.run(data,cb);
 		}
 	}
 }

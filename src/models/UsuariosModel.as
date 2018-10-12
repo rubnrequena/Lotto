@@ -48,10 +48,13 @@ package models
 			});
 		}
 		public function editar (filtro:Object,cb:Function,error:Function=null):void {
-			if (filtro.hasOwnProperty("activo")) sql.usuario_activar.run(filtro,cb,error);
+			if (filtro.hasOwnProperty("activo")) {
+				sql.usuario_activar.run(filtro,function (r:SQLResult):void {
+					
+				},error);
+			}
 			else sql.usuario_editar.run(filtro,cb,error);
 		}
-		
 		
 		public function permisos (filtro:Object,cb:Function):void {
 			sql.permisos.run(filtro,cb);

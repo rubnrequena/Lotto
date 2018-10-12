@@ -7,6 +7,7 @@ package vos
 		public var nombre:String;
 		public var activa:int;
 		public var renta:Number;
+		
 		public var comision:Number;
 		
 		public var usuario:String;

@@ -21,6 +21,8 @@ package models
 	import helpers.Premio_ReyAnzoategui;
 	import helpers.Premio_RuletAnimal;
 	import helpers.Premio_RuletaOriente;
+	import helpers.Premio_RuletonColombia;
+	import helpers.Premio_RuletonPeru;
 	
 	import starling.events.EventDispatcher;
 	import starling.utils.execute;
@@ -43,7 +45,9 @@ package models
 			ruletanimal:Premio_RuletAnimal,
 			lotoselva:Premio_LotoSelva,
 			lottoleon:Premio_LottoLeon,
-			mini:Premio_MiniLottico
+			mini:Premio_MiniLottico,
+			ruletonperu:Premio_RuletonPeru,
+			ruletoncol:Premio_RuletonColombia
 		}
 		
 		private static var _elementos:Vector.<Elemento>;

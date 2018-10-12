@@ -109,7 +109,9 @@ package models
 			
 			var m:Number=0;
 			var ID:int = ++lastID;			
-			for each (v in ventas) { m += v.monto; }			
+			for each (v in ventas) { 
+				m += Number(v.monto.toFixed(2));
+			}			
 			
 			vt = {
 				taquillaID:taquilla.taquillaID,

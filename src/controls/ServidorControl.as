@@ -87,6 +87,8 @@ package controls
 			addEventListener("sorteo-premiar",sorteo_premiar);
 			addEventListener("sorteo-reiniciar",sorteo_reinciar);
 			addEventListener("sorteo-editar",sorteo_editar);
+			addEventListener("sorteo-num-hist",sorteo_numHist);
+			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
 			
 			addEventListener("elemento-nuevo",elemento_nuevo);
 			
@@ -106,13 +108,19 @@ package controls
 			addEventListener("taquilla-nueva",taquilla_nueva);
 			addEventListener("taquilla-editar",taquilla_editar);
 			
-			addEventListener("reporte-banca",reporte_banca);
-			addEventListener("reporte-taquilla",reporte_taquilla);
-			addEventListener("reporte-sorteo",reporte_sorteo);
-			addEventListener("reporte-sorteo-global",reporte_sorteo_global);
-			
 			addEventListener("reporte-general",reporte_general);
+			addEventListener("reporte-comercial",reporte_comercial);
+			addEventListener("reporte-cobros",reporte_cobros);
+			addEventListener("reporte-subcobros",reporte_cobros);
 			
+			addEventListener("reporte-banca",reporte_banca);
+			addEventListener("reporte-recogedor",reporte_recogedor);
+			addEventListener("reporte-taquilla",reporte_taquilla);
+			
+			addEventListener("reporte-sorteo",reporte_sorteo);
+			
+			addEventListener("reporte-sorteo-global",reporte_sorteo_global);
+						
 			addEventListener("topes",topes);
 			addEventListener("tope-nuevo",tope_nuevo);
 			
@@ -129,9 +137,72 @@ package controls
 			
 			addEventListener("sorteos-usuarios",usuarios_sorteos);
 			addEventListener("sorteo-usuario",usuario_sorteo);
+						
+			addEventListener("balance-add",balance_add);
+			addEventListener("balance-general",balance_general);
 			
 			/*_model.mSorteos.addEventListener(Event.OPEN,sorteo_abierto);
 			_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);*/
+		}
+		
+		private function balance_general(e:Event,m:Message):void
+		{
+			if (m.data==null) m.data = {rID:usuario.usID};
+			else m.data.rID = usuario.usID;
+			_model.balance.operador(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_add(e:Event,m:Message):void
+		{
+			m.data.resID = "a"+usuario.adminID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function reporte_cobros(e:Event,m:Message):void {
+			//if (m.data.g==1) _model.reportes.general_fecha(m.data.s,result);
+			if (m.data.g==2) _model.reportes.cbr_usuarios(m.data.s,result);
+			else if (m.data.g==3) _model.reportes.cbr_comerciales(m.data.s,result);
+			
+			function result (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			}
+		}
+		
+		private function reporte_comercial(e:Event,m:Message):void
+		{
+			//m.data.s.comercial = usuario.usuarioID;
+			if (m.data.g==0) _model.reportes.general(m.data.s,result);
+			else if (m.data.g==1) _model.reportes.general_fecha(m.data.s,result);
+			else if (m.data.g==2) {
+				_model.reportes.comercial(m.data.s,result);
+			}
+			
+			function result (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			}
+		}
+		
+		private function sorteo_monitor_vnt(e:Event,m:Message):void {
+			_model.servidor.monitor_venta_tickets(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function sorteo_numHist(e:Event,m:Message):void {
+			_model.servidor.historia_numero(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function usuario_asignar(e:Event,m:Message):void {
@@ -311,6 +382,7 @@ package controls
 			if (m.data.g==0) _model.reportes.general(m.data.s,result);
 			else if (m.data.g==1) _model.reportes.general_fecha(m.data.s,result);
 			else if (m.data.g==2) _model.reportes.usuarios(m.data.s,result);
+			else if (m.data.g==3) _model.reportes.comerciales(m.data.s,result);
 			
 			function result (r:SQLResult):void {
 				m.data = r.data;
@@ -404,21 +476,36 @@ package controls
 		}
 		
 		private function reporte_taquilla(e:Event,m:Message):void {
-			_model.reportes.sorteo(m.data,function (r:SQLResult):void {
+			//TODO: validar que la taquilla pertenezca a la banca
+			_model.reportes.taquilla(m.data,reporte);
+			
+			function reporte(r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
-			});
+			}
 		}
 		
 		private function reporte_banca(e:Event,m:Message):void {
-			if (m.data.g==0) _model.reportes.banca(m.data.s,result); 
-			else _model.reportes.fecha(m.data.s,result);
+			if (m.data.g==0) _model.reportes.comercial(m.data.s,result);
+			//else  _model.reportes.fecha(m.data.s,result);
 			
 			function result (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
+				measure(m.command);
 			}
 		}		
+		private function reporte_recogedor(e:Event,m:Message):void {
+			if (m.data.g==0) _model.reportes.comercial(m.data.s,result);
+			//else  _model.reportes.fecha(m.data.s,result);
+			
+			function result (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+				measure(m.command);
+			}
+		}
+		
 		
 		private function sorteo_cerrado(e:Event,s:Sorteo):void {
 			msg.command = "sorteo-cierra";
@@ -659,11 +746,12 @@ package controls
 		
 		private function inicio(e:Event,m:Message):void {
 			var now:Date = new Date;
-			_model.servidor.est_inicio(DateFormat.format(now),function (r:SQLResult):void {
+			if (!m.data) m.data = {fecha:DateFormat.format(now)};
+			_model.servidor.est_inicio(m.data,function (r:SQLResult):void {
 				if (r.data) {
 					m.data = {
 						data:r.data,
-						time:now.time
+						time:DateFormat.format(now,DateFormat.masks.mediumTime)
 					};
 				} else m.data = {code:Code.VACIO,time:now.time};
 				_cliente.sendMessage(m);

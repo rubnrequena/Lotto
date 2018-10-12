@@ -21,6 +21,7 @@ package helpers
 		private static var queue:Array=[];
 		private static var cmsg:Object;
 		private static var ocupado:Boolean;
+		public static var preferencias:Object;
 		
 		public function WS()
 		{
@@ -29,6 +30,7 @@ package helpers
 		
 		public static function init ():void {
 			initWeb();
+			preferencias = Loteria.setting.plataformas.ws;
 		}
 		
 		private static function initWeb():void {

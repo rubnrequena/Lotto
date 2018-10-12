@@ -62,6 +62,14 @@ package controls
 				measure(m.command);
 			});
 		}
+		private function transferir_grupo (e:Event,m:Message):void {
+			_model.bancas.transferir(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+				if (r.rowsAffected>0) _model.bancas.force_update();
+				measure(m.command);
+			});
+		}
 		
 		private function publicar(e:Event,m:Message):void {
 			var taquillas:Array = m.data.taquillas;
@@ -179,7 +187,7 @@ package controls
 			});
 		}
 		private function taquilla_nueva(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
+			//m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.nueva(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
@@ -189,7 +197,7 @@ package controls
 			});	
 		}	
 		private function banca_editar(e:Event,m:Message):void {
-			_model.usuarios.editar(m.data,function (r:SQLResult):void {
+			_model.bancas.editar(m.data,function (r:SQLResult):void {
 				/*if (r.rowsAffected>0) {
 					var b:Banca = LTool.findBy("bancaID",m.data.bancaID,_model.bancas.bancas);
 					if (m.data.hasOwnProperty("activa")) b.activa = m.data.activa;
@@ -305,7 +313,7 @@ package controls
 			addEventListener("banca-grupo",banca_grupo);
 			addEventListener("banca-nueva",banca_nueva);
 			addEventListener("banca-editar",banca_editar);
-			addEventListener("banca-remover",banca_remover);
+			addEventListener("banca-remover",grupo_remover);
 			
 			addEventListener("monitor",monitor);
 			
@@ -315,15 +323,20 @@ package controls
 			addEventListener("publicar",publicar);
 			
 			addEventListener("transferir",transferir);
+			addEventListener("transferir-grupo",transferir_grupo);
 			addEventListener("conexiones",conexiones);
 			
 			addEventListener("reporte-general",reporte_general);
-			addEventListener("reporte-usuario",reporteUsuario);
-			addEventListener("reporte-taquilla",reporteTaquilla);
 			addEventListener("reporte-banca",reporte_banca);
 			addEventListener("reporte-recogedor",reporte_recogedor);
+			addEventListener("reporte-taquilla",reporte_taquilla);
+			
 			addEventListener("reporte-ventas",reporte_ventas);
 			addEventListener("reporte-diario",reporte_diario);
+			addEventListener("reporte-cobros",reporte_cobros);
+			addEventListener("reporte-subcobros",reporte_cobros);
+			
+			//addEventListener("reporte-usuario",reporteUsuario); obsoleto
 			
 			addEventListener("permiso-nuevo",permiso_nuevo);
 			addEventListener("permiso-update",permiso_update);
@@ -337,6 +350,76 @@ package controls
 			addEventListener("sms-bandeja",sms_bandeja);
 			addEventListener("sms-leer",sms_leer);
 			addEventListener("sms-respuestas",sms_respuestas);
+			
+			addEventListener("balance-padre",balance_padre);
+			addEventListener("balance-add",balance_add);
+			addEventListener("balance-clientes",balance_clientes);
+			addEventListener("balance-us",balance_us);
+		}
+		
+		private function balance_us(e:Event,m:Message):void {
+			m.data.rID = usuario.usID;
+			m.data.lm = 100;
+			_model.balance.usID(m.data,function (r:SQLResult):void {
+				if (r.data) {
+					var c:String = String(m.data.usID).charAt(0);
+					var _id:int = int(String(m.data.usID).slice(1));
+					m.data = {bl:r.data};
+					if (c=="g") {
+						m.data.us = LTool.findBy("bancaID",_id,_model.bancas.bancas);
+						_cliente.sendMessage(m);
+					} else if (c=="u") {
+						_model.usuarios.usuarios({id:_id},function (r:SQLResult):void {
+							m.data.us = r.data[0];
+							_cliente.sendMessage(m);
+						});
+					}
+				} else {
+					m.data = {code:Code.VACIO};
+					_cliente.sendMessage(m);
+				}
+			});
+		}
+		
+		private function balance_clientes(e:Event,m:Message):void
+		{
+			m.data = {usID:usuario.usID};
+			_model.balance.cm_clientes(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_add(e:Event,m:Message):void
+		{
+			m.data.resID = usuario.usID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+				
+		private function balance_padre(e:Event,m:Message):void {
+			m.data = {usID:usuario.usID,lm:10};
+			_model.balance.usID(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function reporte_cobros(e:Event,m:Message):void {
+			//if (m.data.g==1) _model.reportes.general_fecha(m.data.s,result);
+			if (m.data.g==2) {
+				m.data.s.cid = usuario.usuarioID;				
+				_model.reportes.cbr_usuarios(m.data.s,result);
+			}
+			else if (m.data.g==3) _model.reportes.cbr_grupos(m.data.s,result);
+			//else if (m.data.g==3) _model.reportes.cbr_comerciales(m.data.s,result);
+			
+			function result (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			}
 		}
 		
 		private function reporte_recogedor(e:Event,m:Message):void {
@@ -379,6 +462,7 @@ package controls
 		private function usuario_nuevo(e:Event,m:Message):void
 		{
 			m.data.tipo = 1;
+			//m.data.renta = usuario.renta;
 			_model.usuarios.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
@@ -399,7 +483,7 @@ package controls
 			});
 		}
 		
-		private function banca_remover(e:Event,m:Message):void {
+		private function grupo_remover(e:Event,m:Message):void {
 			_model.bancas.editar(m.data,function (r:SQLResult):void {
 				if (r.rowsAffected>0) m.data = {code:Code.OK};
 				else m.data = {code:Code.NO};
@@ -432,7 +516,7 @@ package controls
 		
 		private function taquilla_fpclear(e:Event,m:Message):void {
 			m.data = m.data || {};
-			m.data.usuarioID = usuario.usuarioID;
+			//m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.fingerClear_usuario(m.data,function (r:SQLResult):void {
 				m.data.ok = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -585,7 +669,7 @@ package controls
 			});
 		}
 		
-		private function reporteTaquilla(e:Event,m:Message):void {
+		private function reporte_taquilla(e:Event,m:Message):void {
 			//TODO: validar que la taquilla pertenezca a la banca
 			_model.reportes.taquilla(m.data,reporte);
 			

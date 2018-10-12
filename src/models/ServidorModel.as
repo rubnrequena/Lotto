@@ -41,11 +41,18 @@ package models
 		public function sorteos (s:Object,cb:Function):void {
 			sql.sorteos_admin.run(s,cb);
 		}
+		public function historia_numero (s:Object,cb:Function):void {
+			sql.sorteos_num_historia.run(s,cb);
+		}
+		public function monitor_venta_tickets (s:Object,cb:Function):void {
+			sql.monitor_vnt_ticket_num.run(s,cb);
+		}
 		public function numeros (s:Object,cb:Function):void {
 			sql.numeros_admin.run(s,cb);
 		}
-		public function est_inicio (fecha:String,cb:Function):void {
-			sql.sorteos_dia.run({fecha:fecha},cb);
+		public function est_inicio (s:Object,cb:Function):void {
+			if (s.hasOwnProperty("sorteo")) sql.sorteo_dia.run(s,cb);
+			else sql.sorteos_dia.run(s,cb);
 		}
 		public function sqlc (sentencia:String,cb:Function,err:Function):void {
 			if (SQLStatementPool.ADMIN_CONN.inTransaction) {
@@ -62,7 +69,7 @@ package models
 			sql.usuario_del_sorteo.run(s,cb);
 		}
 		public function usuario_sorteos (s:Object,cb:Function):void {
-			if (s.hasOwnProperty("sorteo")) sql.usuario_sorteo_id.run(s,cb);
+			if (s && s.hasOwnProperty("sorteo")) sql.usuario_sorteo_id.run(s,cb);
 			else sql.usuario_sorteos.run(s,cb);
 		}
 	}

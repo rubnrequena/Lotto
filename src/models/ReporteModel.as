@@ -41,6 +41,20 @@ package models
 		public function usuarios (s:Object,cb:Function):void {
 			sql.rp_usuarios_gen.run(s,cb);
 		}
+		public function comerciales (s:Object,cb:Function):void {
+			sql.rp_comer_gen.run(s,cb);
+		}
+		
+		public function cbr_comerciales (s:Object,cb:Function):void {
+			sql.rp_cobro_comergen.run(s,cb);
+		}
+		public function cbr_usuarios (s:Object,cb:Function):void {
+			sql.rp_cobro_usergen.run(s,cb);
+		}
+		public function cbr_grupos (s:Object,cb:Function):void {
+			sql.rp_cobro_grupogen.run(s,cb);
+		}
+		
 		public function general_fecha (s:Object,cb:Function):void {
 			sql.rp_fecha_gen.run(s,cb);
 		}

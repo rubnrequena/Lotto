@@ -5,6 +5,7 @@ package
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.PremioWeb;
+	import helpers.Premio_GranRuleta;
 	import helpers.Premio_LaGranjita;
 	import helpers.Premio_LotoSelva;
 	import helpers.Premio_LottoActivo;
@@ -12,6 +13,7 @@ package
 	import helpers.Premio_MiniLottico;
 	import helpers.Premio_RuletAnimal;
 	import helpers.Premio_RuletaOriente;
+	import helpers.Premio_RuletonPeru;
 	
 	import models.ModelHUB;
 	
@@ -48,8 +50,8 @@ package
 		
 		
 		private function test_sorteos():void {
-			sorteos = ruleta_animal;
-			pr = new helpers.Premio_RuletAnimal; 
+			sorteos = selva;
+			pr = new helpers.Premio_LotoSelva; 
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
@@ -67,7 +69,7 @@ package
 			Loteria.console.log("GANADOR:",p.srt);
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_RuletAnimal; 
+				pr = new helpers.Premio_LotoSelva; 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
@@ -206,5 +208,19 @@ package
 			"RULETA ANIMAL 8PM"
 		];
 		private var file:File;
+		private var ruletonact:Array = [
+			"RULETON ACTIVO PERU 9:00 AM",			
+			"RULETON ACTIVO PERU 10:00 AM",			
+			"RULETON ACTIVO PERU 11:00 AM",			
+			"RULETON ACTIVO PERU 12:00 PM",			
+			"RULETON ACTIVO PERU 1:00 PM",			
+			"RULETON ACTIVO PERU 3:00 PM",			
+			"RULETON ACTIVO PERU 4:00 PM",			
+			"RULETON ACTIVO PERU 5:00 PM",			
+			"RULETON ACTIVO PERU 6:00 PM",			
+			"RULETON ACTIVO PERU 7:00 PM",			
+			"RULETON ACTIVO PERU 8:00 PM",			
+			"RULETON ACTIVO PERU 9:00 PM"
+		];
 	}
 }

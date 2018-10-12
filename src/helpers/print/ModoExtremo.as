@@ -43,9 +43,9 @@ package helpers.print
 			
 			//_lineas.push({type:"linea",text:"TOTAL: "+ticket.monto,align:"center"});
 			if(taquilla.fingerprint)
-				_lineas.push("T:"+Number(ticket.monto).toFixed(2)+" AG"+taquilla.fingerprint);
+				_lineas.push("*T:"+Number(ticket.monto).toFixed(2)+"* AG"+taquilla.fingerprint);
 			else 
-				_lineas.push("T:"+Number(ticket.monto).toFixed(2));
+				_lineas.push("*T:"+Number(ticket.monto).toFixed(2)+"*");
 			
 			return _lineas.join("\\n");
 		}

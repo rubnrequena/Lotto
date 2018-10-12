@@ -49,7 +49,8 @@ package models
 		public var usuarios:UsuariosModel;
 		public var comercializadora:ComercializadoraModel;
 		public var taquillas:TaquillasModel;
-		public var topes:TopesModel; 
+		public var topes:TopesModel;		
+		public var balance:BalanceModel;
 		
 		public var ventas:VentasModel;
 		public var reportes:ReporteModel;
@@ -103,8 +104,9 @@ package models
 					trace("[SQL ERROR]",e.details);
 				}
 				Loteria.console.log("[SQL ERROR]",e.detailID,e.message,e.details);
+				WS.enviar(Loteria.setting.plataformas.usuarios.admin,"["+Loteria.setting.servidor+"] *"+e.message+"* \\n"+e.details);
 			}
-			DB.DEBUG = true;
+			//DB.DEBUG = true;
 			
 			_tasks = {};
 			for each (var time:String in Loteria.setting.jarvis.tasks.midas) {
@@ -314,6 +316,7 @@ package models
 			taquillas = new TaquillasModel;
 			topes = new TopesModel;
 			servidor = new ServidorModel;
+			balance = new BalanceModel;
 			dispatchEventWith(Event.READY,null,"usuarios");
 			Loteria.console.log("MODEL USUARIOS RDY");
 						
