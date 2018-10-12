@@ -19,7 +19,6 @@ package controls
 	import helpers.LTool;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
-	import helpers.SMS;
 	import helpers.WS;
 	import helpers.bm.EGrupo;
 	import helpers.print.ModoExtremo;
@@ -90,7 +89,7 @@ package controls
 			
 			addEventListener("ticket-anulado",ticket_anulado);
 			
-			addEventListener("notificar",sistema_notificar);
+			//addEventListener("notificar",sistema_notificar);
 						
 			_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.addEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
@@ -615,7 +614,7 @@ package controls
 							/*m.data.ws = meta.ws;
 							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);*/
 							
-							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
+							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model)+"\\n"+WS.preferencias.pie_sms);
 						}
 						_cliente.sendMessage(m);
 					});
