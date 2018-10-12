@@ -4,6 +4,7 @@ package helpers
 	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	import flash.net.URLVariables;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
 	
@@ -29,25 +30,17 @@ package helpers
 			url = 'http://www.ruletactiva.com.ve/';
 			tw_url = 'https://twitter.com/ruletactivave';
 			dl_url = 'https://www.dlottery.net.ve/';
-			super();
 			
-			tw_req = new URLRequest(tw_url);
+			super("ruletaoriente");
+			
+			/*tw_req = new URLRequest(tw_url);
 			tw_req.cacheResponse=false;
 			tw_req.useCache=false;
 			
 			tw_loader = new URLLoader;
 			tw_loader.addEventListener(Event.COMPLETE,tw_onComplete);
 			tw_loader.addEventListener(IOErrorEvent.IO_ERROR,tw_error);
-			
-			dl_req = new URLRequest(dl_url);
-			dl_load = new URLLoader;
-			dl_load.addEventListener(Event.COMPLETE,dl_onComplete);
-		}
-		
-		protected function dl_onComplete(event:Event):void
-		{
-			var src:String = dl_load.data;
-			src = getDlotery(src,"ruletactiva","9:00");
+			*/
 		}
 		
 		protected function tw_error(event:IOErrorEvent):void
@@ -59,15 +52,25 @@ package helpers
 			super.buscar(sorteo,fecha);
 			_busq = DateFormat.format(fecha,"dd DE mmmm").toUpperCase();
 			
-			_sorteo = sorteo.substr(-8);
-			_sorteo = StringUtil.trim(_sorteo).split(" ").shift();
+			_sorteo = sorteo.substr(-8).toLowerCase();
+			var a:Array = _sorteo.split(":");
+			a[0] = int(a[0]);
+			_sorteo = a.join(":");	
+			//_sorteo = StringUtil.trim(_sorteo).split(" ").join(" ").toLowerCase();
+			
+			var fv:URLVariables = new URLVariables;
+			fv.fecha = _busq.toLowerCase();
+			fv.hora = _sorteo.toLocaleLowerCase();
+			fv.sorteo = "ruletaoriente";
+			
+			web.data = fv;
 			loader.load(web);
 			
 			//dlotery
 			//dl_load.load(dl_req);			
 			
 			//twitter
-			tw_fecha = DateFormat.format(fecha,"dd\/mm\/yyyy");
+			/*tw_fecha = DateFormat.format(fecha,"dd\/mm\/yyyy");
 			var tw_sorteo:String = sorteo.substr(-8);
 			tw_busq = [
 				tw_sorteo,
@@ -76,7 +79,18 @@ package helpers
 				tw_sorteo.substr(1).split(" ").join("")
 			];
 			if (tw_sorteo=="12:00 PM") tw_busq = ["12:00 M","12:00M","12:00 DM","12:00DM"]
-			tw_loader.load(tw_req);
+			tw_loader.load(tw_req);*/
+		}
+		
+		override protected function onComplete(event:Event):void {
+			if (numBusq++>60) return;
+			if (loader.data && loader.data!="") {
+				var src:Object = JSON.parse(loader.data);
+				//src.ganador = ObjectUtil.trailZero(src.ganador);
+				Loteria.console.log("Premio Tweeter:",srt,"(",src.ganador,")");
+				dispatchEventWith(Event.COMPLETE,false,src.ganador);
+				isComplete();
+			} else retry();
 		}
 		
 		protected function tw_onComplete(event:Event):void
@@ -122,7 +136,7 @@ package helpers
 		}
 		
 		
-		override protected function onComplete(event:Event):void {
+		protected function onComplete_web(event:Event):void {
 			if (numBusq>90) return;
 			var source:String = loader.data;
 			source = source.substr(source.indexOf('<div id="result">'));
@@ -145,15 +159,13 @@ package helpers
 			}
 		}
 		
-		override public function dispose():void {
+		/*override public function dispose():void {
 			super.dispose();
-			tw_loader.removeEventListener(Event.COMPLETE,tw_onComplete);
-			tw_loader.removeEventListener(IOErrorEvent.IO_ERROR,tw_error);
 			
 			tw_req = null;
 			tw_loader=null;
 			
 			clearTimeout(stTw);
-		}
+		}*/
 	}
 }

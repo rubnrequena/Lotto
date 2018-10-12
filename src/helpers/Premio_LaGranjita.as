@@ -49,6 +49,7 @@ package helpers
 			loader_oficial = new URLLoader();
 			loader_oficial.addEventListener(Event.COMPLETE,premioOfic_complete);
 			loader_oficial.dataFormat = URLLoaderDataFormat.TEXT;
+			
 			oficial_req = new URLRequest(urlofic);
 			oficial_req.useCache=false;
 			oficial_req.cacheResponse=false;
@@ -66,7 +67,7 @@ package helpers
 			ldh_req.useCache=false;
 			ldh_req.cacheResponse=false;
 			
-			super();
+			super("granjita");
 			numCompletado=2;
 		}
 		
@@ -152,8 +153,15 @@ package helpers
 			loader_oficial.load(oficial_req);			
 			
 			//twitter
+			var fv:URLVariables = new URLVariables;
+			fv.fecha = DateFormat.format(fecha,"dd/mmmm/yyyy").toLowerCase();
+			fv.hora = _oficbusq.toLocaleLowerCase();
+			fv.sorteo = "granjita";
+			
+			web.data = fv;
 			loader.load(web);
-			loader_alt.load(web);			
+			
+			//loader_alt.load(web);			
 			
 			//tuazar
 			azar_fecha = DateFormat.format(fecha);
@@ -167,6 +175,17 @@ package helpers
 		}
 		
 		override protected function onComplete(event:Event):void {
+			if (numBusq++>60) return;
+			if (loader.data && loader.data!="") {
+				var src:Object = JSON.parse(loader.data);
+				//src.ganador = ObjectUtil.trailZero(src.ganador);
+				Loteria.console.log("Premio Tweeter:",srt,"(",src.ganador,")");
+				dispatchEventWith(Event.COMPLETE,false,src.ganador);
+				isComplete();
+			} else retry();
+		}
+		
+		/*override protected function onComplete(event:Event):void {
 			if (numBusq++>90) return;
 			var source:String = (loader.data as String);
 			var sorteo:int = source.indexOf("\n"+_busq);
@@ -185,7 +204,7 @@ package helpers
 				dispatchEventWith(Event.COMPLETE,false,n);
 				isComplete();
 			} else retry();
-		}
+		}*/
 		private function premioAlt_complete (event:Event):void {
 			var s:String = _busq.split(" ").join("").toLowerCase();
 			

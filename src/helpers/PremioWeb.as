@@ -36,8 +36,10 @@ package helpers
 			
 			if (Loteria.setting.premios.sorteos.hasOwnProperty(name)) {
 				configs = Loteria.setting.premios.sorteos[name];
-				url = configs.webofic.url;
+			} else {
+				configs = Loteria.setting.premios.sorteos["predeterminado"]
 			}
+			url = configs.webofic.url;
 			
 			web = new URLRequest(url);
 			web.useCache = false;
@@ -56,7 +58,7 @@ package helpers
 		protected function error(event:IOErrorEvent):void {
 			Loteria.console.log("ERROR AL CONCECTAR CON SERVIDOR DE PREMIOS");
 			if (_retry++<3)
-				loader.load(web);
+				if (loader) loader.load(web);
 		}
 		
 		protected function onComplete(event:Event):void {

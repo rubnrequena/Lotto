@@ -4,33 +4,28 @@ package helpers
 	import flash.filesystem.File;
 	import flash.net.URLVariables;
 
-	public class Premio_GranRuleta extends PremioWeb implements IPremio
+	public class Premio_RuletonColombia extends PremioWeb implements IPremio
 	{
-		private var _sorteo:String;
-		private var _localFecha:String;
-		
-		private var stdLot:uint;
+		private var _sorteo:*;
 		private var localLog:File;
-		
-		public function Premio_GranRuleta()
-		{	
-			super("granruleta");
-			
+		public function Premio_RuletonColombia()
+		{
+			super("ruletoncol");
 		}
 		
 		override public function buscar(sorteo:String,fecha:Date=null):void {
 			super.buscar(sorteo,fecha);
 			
 			//_localFecha = DateFormat.format(fecha,"dd/mm/yyyy");
-			_busq = DateFormat.format(fecha,"dd DE mmmm").toLowerCase();
-			_sorteo = sorteo.substr(-8).split(" ").shift();
+			_busq = DateFormat.format(fecha,"dd/mm/yyyy").toLowerCase();
+			_sorteo = sorteo.split(" ").slice(-2).join("").toLowerCase();
 			
-			localLog = File.applicationStorageDirectory.resolvePath("GRANRULETA/"+sorteo.split(":").join("_")+".txt");
+			localLog = File.applicationStorageDirectory.resolvePath("RULETONCOL/"+sorteo.split(":").join("_")+".txt");
 			
 			var fv:URLVariables = new URLVariables;
 			fv.fecha = _busq.toLowerCase();
 			fv.hora = _sorteo.toLocaleLowerCase();
-			fv.sorteo = "granruleta";
+			fv.sorteo = "ruletoncol";
 			
 			web.data = fv;
 			loader.load(web);				
@@ -45,6 +40,6 @@ package helpers
 				dispatchEventWith(Event.COMPLETE,false,src.ganador);
 				isComplete();
 			} else retry();
-		}		
+		}
 	}
 }
