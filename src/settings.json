@@ -28,6 +28,12 @@
 			}
 		],
 		"sorteos":{
+			"predeterminado": {
+				"numCompletado":1,
+				"webofic":{
+					"url":"http://srq.com.ve/prm/"
+				}
+			},
 			"lottoactivo":{
 				"numCompletado":1,
 				"webofic":{
@@ -37,9 +43,22 @@
 			"ruletanimal":{
 				"numCompletado":1,
 				"webofic":{
-					"url":"http://localhost/prm/"
+					"url":"http://srq.com.ve/prm/"
+				}
+			},
+			"ruletaoriente":{
+				"numCompletado":1,
+				"webofic":{
+					"url":"http://srq.com.ve/prm/"
+				}
+			},
+			"lottoselva":{
+				"numCompletado":1,
+				"webofic":{
+					"url":"http://www.lotoselva.com/control/resultados.php"
 				}
 			}
+			
 		}
 	},
 	"console": {
@@ -68,7 +87,8 @@
 			"url":[
 				"http://104.129.171.16:8080/ws"
 			],
-			"psw":"srq-WS"
+			"psw":"srq-WS",
+			"pie_sms":"_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_"
 		},
 		"usuarios":{
 			"admin":"584149970167",
