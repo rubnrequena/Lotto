@@ -55,11 +55,13 @@ package db.sql
 		public var taquilla_id_usuario:SQLStatementPool;
 		public var taquillas_banca_act:SQLStatementPool;
 		public var taquillas_usuario_act:SQLStatementPool;
+		public var taquillas_usuariol:SQLStatementPool;
 		
 		public function TaquillasSQL() {
 			
 			taquillas = new SQLStatementPool('SELECT * FROM us.taquillas',null,Taquilla);
 			taquillas_usuario = new SQLStatementPool('SELECT * FROM us.taquillas WHERE usuarioID = :usuario',null,Taquilla);
+			taquillas_usuariol = new SQLStatementPool('SELECT nombre n, taquillaID id FROM us.taquillas WHERE usuarioID = :usuariol AND papelera = 0 AND activa = 1 ORDER BY nombre ASC');
 			taquillas_banca = new SQLStatementPool('SELECT * FROM us.taquillas WHERE bancaID = :banca',null,Taquilla);
 			
 			taquillas_usuario_act = new SQLStatementPool('SELECT * FROM us.taquillas WHERE usuarioID = :usuario AND papelera = 0 AND activa = :activa',null,Taquilla);

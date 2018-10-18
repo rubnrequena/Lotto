@@ -40,7 +40,7 @@ LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID
 WHERE ticket.anulado = 0 AND ticket.tiempo BETWEEN  :inicio AND :final AND ticket.bancaID = :bancaID 
 GROUP BY ticket.taquillaID ORDER BY ticket.taquillaID
 --usuario_diario
-SELECT sorteos.ganador, sorteos.descripcion desc, ROUND(SUM(elementos.monto),2) jugado, ROUND(SUM(elementos.premio),2) premios, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago
+SELECT sorteos.ganador, sorteos.descripcion desc, ROUND(SUM(elementos.monto),2) jugado, ROUND(SUM(elementos.premio),2) premios, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pago
 FROM "vt".ticket 
 JOIN "vt"."elementos" ON ticket.ticketID = elementos.ticketID 
 JOIN us.bancas ON bancas.bancaID = ticket.bancaID
@@ -51,17 +51,17 @@ GROUP BY elementos.sorteoID ORDER BY elementos.sorteoID
 --taq_sorteo_elem
 SELECT numero, ROUND(SUM(elementos.monto),2) monto FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID WHERE ticket.anulado = 0 AND ticket.taquillaID = :taquillaID AND elementos.sorteoID = :sorteoID GROUP BY numero
 --taq_dia_ventas
-SELECT ticket.codigo, ticket.ticketID, ticket.anulado, ROUND(SUM(elementos.monto),2) monto, ROUND(SUM(premio),2) premio, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID WHERE ticket.taquillaID = :taquillaID AND ticket.tiempo BETWEEN :inicio AND :final GROUP BY ticket.ticketID
+SELECT ticket.codigo, ticket.ticketID, ticket.anulado, ROUND(SUM(elementos.monto),2) monto, ROUND(SUM(premio),2) premio, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pago FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID WHERE ticket.taquillaID = :taquillaID AND ticket.tiempo BETWEEN :inicio AND :final GROUP BY ticket.ticketID
 --taq_ventas
-SELECT ticket.ticketID id, ticket.anulado a, ROUND(SUM(elementos.monto),2) m, ROUND(SUM(premio),2) pr, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pg FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID WHERE ticket.taquillaID = :taquillaID AND ticket.tiempo BETWEEN :inicio AND :final GROUP BY ticket.ticketID
+SELECT ticket.ticketID id, ticket.anulado a, ROUND(SUM(elementos.monto),2) m, ROUND(SUM(premio),2) pr, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pg FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID WHERE ticket.taquillaID = :taquillaID AND ticket.tiempo BETWEEN :inicio AND :final GROUP BY ticket.ticketID
 --taq_ventas_banca
-SELECT ticket.codigo c, ticket.ticketID id, ticket.anulado a, ROUND(SUM(elementos.monto),2) m, ROUND(SUM(premio),2) pr, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pg FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID WHERE ticket.taquillaID = :taquillaID AND ticket.tiempo BETWEEN :inicio AND :final GROUP BY ticket.ticketID
+SELECT ticket.codigo c, ticket.ticketID id, ticket.anulado a, ROUND(SUM(elementos.monto),2) m, ROUND(SUM(premio),2) pr, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pg FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID WHERE ticket.taquillaID = :taquillaID AND ticket.tiempo BETWEEN :inicio AND :final GROUP BY ticket.ticketID
 --taq_sorteo_ventas
-SELECT ticket.ticketID, ticket.anulado, ROUND(SUM(elementos.monto),2) monto, ROUND(SUM(premio),2) premio, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago FROM vt.ticket 
+SELECT ticket.ticketID, ticket.anulado, ROUND(SUM(elementos.monto),2) monto, ROUND(SUM(premio),2) premio, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pago FROM vt.ticket 
 JOIN vt.elementos ON ticket.ticketID = elementos.ticketID LEFT JOIN vt.pagos ON elementos.ventaID = pagos.ventaID 
 WHERE ticket.taquillaID = :taquillaID AND elementos.sorteoID = :sorteoID GROUP BY ticket.ticketID
 --taq_diario
-SELECT elementos.sorteoID, sorteos.descripcion sorteo, ganador, ROUND(SUM(elementos.monto),2) jugado, ROUND(SUM(premio),2) premio, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago 
+SELECT elementos.sorteoID, sorteos.descripcion sorteo, ganador, ROUND(SUM(elementos.monto),2) jugado, ROUND(SUM(premio),2) premio, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pago 
 FROM vt.ticket 
 JOIN vt.elementos ON ticket.ticketID = elementos.ticketID 
 JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID 

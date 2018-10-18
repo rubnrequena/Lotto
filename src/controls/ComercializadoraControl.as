@@ -247,10 +247,20 @@ package controls
 			});
 		}
 		private function taquillas(e:Event,m:Message):void {
-			if (usuario.tipo!=2) m.data.usuarioID = usuario.usuarioID;
+			//if (usuario.tipo!=2) m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
+				if (r.data.length>200) {
+					var block:int = Math.ceil(r.data.length/200);
+					for (var i:int = 0; i < block; i++) {
+						m.data = r.data.splice(0,100);
+						_cliente.sendMessage(m);
+					}
+					m.data = {code:Code.OK};
+					_cliente.sendMessage(m);
+				} else {
+					m.data = r.data;
+					_cliente.sendMessage(m);
+				}
 			});
 		}
 		

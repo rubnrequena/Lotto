@@ -122,6 +122,7 @@ package models
 					else sql.taquilla_id.run(filtro,cb);
 				}
 				else if (filtro.hasOwnProperty("usuario")) sql.taquillas_usuario.run(filtro,cb);
+				else if (filtro.hasOwnProperty("usuariol")) sql.taquillas_usuariol.run(filtro,cb);
 				else if (filtro.hasOwnProperty("banca")) sql.taquillas_banca.run(filtro,cb);
 				else if (filtro.hasOwnProperty("usuarioID")) sql.taquillas_banca_usr.run(filtro,cb);
 				else if (filtro.hasOwnProperty("usr")) sql.taquilla_usuario.run(filtro,cb);
