@@ -585,10 +585,11 @@ package controls
 				}
 			});
 		}
-		private function venta_premios(e:Event,m:Message):void {
+		private function venta_premios(e:Event,m:Message):void {			
 			_model.ventas.ticket(m.data,function (ticket:Object):void {
 				if (ticket && ticket.usuarioID==usuario.usuarioID) {
 					_model.ventas.ventas_elementos(m.data,function (premios:SQLResult):void {
+						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
 						m.data = {tk:ticket,prm:premios.data}
 						_cliente.sendMessage(m);
 					});

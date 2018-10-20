@@ -274,6 +274,7 @@ package controls
 			_model.ventas.ticket(m.data,function (ticket:Object):void {
 				if (ticket && ticket.bancaID==banca.bancaID) {
 					_model.ventas.ventas_elementos(m.data,function (premios:SQLResult):void {
+						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
 						m.data = {tk:ticket,prm:premios.data}
 						_cliente.sendMessage(m);
 					});
