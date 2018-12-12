@@ -17,6 +17,8 @@ package db.sql
 			
 			login = new SQLStatementPool(sentencia("login"),null,Usuario);
 			
+			usuarios = new SQLStatementPool(sentencia("usuarios"),null,Usuario);
+			
 			scan();
 		}
 	}

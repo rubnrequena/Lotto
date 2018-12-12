@@ -1,6 +1,5 @@
 --login
-SELECT * FROM "main"."admins" 
-WHERE usuario = :usr AND clave = :clv AND nivel = 1
+SELECT * FROM "main"."admins" WHERE usuario = :usr AND clave = :clv
 --sorteos_admin
 SELECT sorteoID, nombre  FROM admins_meta 
 JOIN main.sorteos ON admins_meta.valor = sorteos.sorteoID 
@@ -30,6 +29,8 @@ JOIN us.bancas ON bancas.bancaID = elementos.bancaID
 WHERE sorteos.fecha = :fecha AND sorteos.sorteo = :sorteo AND elementos.anulado = 0 
 GROUP BY elementos.sorteoID 
 ORDER BY sorteos.cierra ASC
+--sorteos_num_ultimos
+SELECT elementoID id,fecha f from numeros JOIN (SELECT fecha,ganador from vt.sorteos  where sorteo = :srt  GROUP BY ganador ORDER BY fecha DESC) as tiempo ON tiempo.ganador = elementoID where sorteo = :srt
 --sorteos_num_historia
 SELECT descripcion d, fecha f from vt.sorteos WHERE ganador = :n ORDER BY FECHA DESC LIMIT 5
 --monitor_vnt_ticket_num

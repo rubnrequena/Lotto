@@ -17,5 +17,9 @@ package vos
 		public var conectado:Number;
 		public var papelera:int;
 		public var creacion:String;
+		
+		public function get usID():String {
+			return "t"+taquillaID;
+		}
 	}
 }

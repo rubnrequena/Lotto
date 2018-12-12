@@ -365,6 +365,62 @@ package controls
 			addEventListener("balance-add",balance_add);
 			addEventListener("balance-clientes",balance_clientes);
 			addEventListener("balance-us",balance_us);
+			addEventListener("balance-pagos",balance_pagos);
+			addEventListener("balance-remover",balance_remover);
+			addEventListener("balance-pago",balance_pago);
+			addEventListener("balance-ppagos",balance_ppagos);
+			addEventListener("balance-confirmacion",balance_confirmacion);
+		}
+		private function balance_confirmacion(e:Event,m:Message):void {
+			m.data.rID = usuario.usID;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			m.data.tiempo = _model.ahora;
+			_model.balance.confirmar_pago(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_ppagos(e:Event,m:Message):void
+		{
+			m.data = {};
+			m.data.rID = usuario.usID;
+			m.data.inicio = "2018-01-01";
+			m.data.fin = "2900-12-31";
+			m.data.c = 0;
+			_model.balance.pagos_comercial(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_pago(e:Event,m:Message):void
+		{
+			m.data.usID = usuario.usID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.cdo = 0;
+			m.data.tiempo = _model.ahora;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_remover(e:Event,m:Message):void
+		{
+			m.data.rID = usuario.usID;
+			_model.balance.remover(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_pagos(e:Event,m:Message):void
+		{
+			m.data.rID = usuario.usID;
+			m.data.c = 1;
+			_model.balance.pagos_comercial(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function balance_us(e:Event,m:Message):void {
@@ -404,6 +460,7 @@ package controls
 		{
 			m.data.resID = usuario.usID;
 			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.tiempo = _model.ahora;
 			_model.balance.nuevo(m.data,function (r:SQLResult):void {
 				m.data.balID = r.lastInsertRowID;
 				_cliente.sendMessage(m);

@@ -11,6 +11,7 @@ package db.sql
 		public var sorteos:SQLStatementPool;
 		public var sorteos_dia:SQLStatementPool;	
 		public var sorteo_dia:SQLStatementPool;
+		public var sorteos_num_ultimos:SQLStatementPool;
 		public var sorteos_num_historia:SQLStatementPool;
 		public var numeros_admin:SQLStatementPool;
 		public var usuario_reg_sorteo:SQLStatementPool;

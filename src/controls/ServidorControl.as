@@ -42,7 +42,8 @@ package controls
 						code:Code.OK,
 						usr:usr
 					};
-					addListeners();
+					if (usr.nivel==1) addListeners();
+					else addListeners2();
 					_cliente.sendMessage(m);
 					
 					ObjectUtil.clear(m.data);
@@ -72,6 +73,24 @@ package controls
 			});
 		}
 		
+		private function addListeners2():void {
+			addEventListener("inicio",inicio);
+			addEventListener("lsorteos",lsorteos);
+			addEventListener("sorteo",sorteo);
+			addEventListener("sorteos",sorteos);
+			addEventListener("sorteo-registrar",sorteo_registrar);
+			addEventListener("sorteo-premiar",sorteo_premiar);
+			addEventListener("sorteo-reiniciar",sorteo_reinciar);
+			addEventListener("sorteo-editar",sorteo_editar);
+			addEventListener("sorteo-num-hist",sorteo_numHist);
+			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
+			
+			addEventListener("monitor",monitor);			
+			addEventListener("ticket",ticket);
+			
+			addEventListener("reporte-sorteo",reporte_sorteo);			
+			addEventListener("reporte-sorteo-global",reporte_sorteo_global);
+		}
 		
 		private function addListeners():void {
 			addEventListener("inicio",inicio);
@@ -117,8 +136,7 @@ package controls
 			addEventListener("reporte-recogedor",reporte_recogedor);
 			addEventListener("reporte-taquilla",reporte_taquilla);
 			
-			addEventListener("reporte-sorteo",reporte_sorteo);
-			
+			addEventListener("reporte-sorteo",reporte_sorteo);			
 			addEventListener("reporte-sorteo-global",reporte_sorteo_global);
 						
 			addEventListener("topes",topes);
@@ -140,9 +158,54 @@ package controls
 						
 			addEventListener("balance-add",balance_add);
 			addEventListener("balance-general",balance_general);
+			addEventListener("balance-pagos",balance_pagos);
+			addEventListener("balance-ppagos",balance_ppagos);
+			addEventListener("balance-confirmacion",balance_confirmacion);
+			addEventListener("balance-remover-pend",balance_rem_pendiente);
 			
 			/*_model.mSorteos.addEventListener(Event.OPEN,sorteo_abierto);
 			_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);*/
+		}
+		
+		private function balance_rem_pendiente(e:Event,m:Message):void
+		{
+			m.data.rID = usuario.usID;
+			_model.balance.remover_pend(m.data,function (r:SQLResult):void {
+				m.data.code = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_confirmacion(e:Event,m:Message):void {
+			m.data.rID = usuario.usID;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			m.data.tiempo = _model.ahora;
+			_model.balance.confirmar_pago(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_pagos(e:Event,m:Message):void
+		{
+			m.data.rID = usuario.usID;
+			m.data.c = 1;
+			_model.balance.pagos_operador(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_ppagos(e:Event,m:Message):void
+		{
+			m.data = {};
+			m.data.rID = usuario.usID;
+			m.data.inicio = "2018-01-01";
+			m.data.fin = "2900-12-31";
+			m.data.c = 0;
+			_model.balance.pagos_operador(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function balance_general(e:Event,m:Message):void
@@ -159,6 +222,7 @@ package controls
 		{
 			m.data.resID = "a"+usuario.adminID;
 			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.tiempo = _model.ahora;
 			_model.balance.nuevo(m.data,function (r:SQLResult):void {
 				m.data.balID = r.lastInsertRowID;
 				_cliente.sendMessage(m);
@@ -605,7 +669,7 @@ package controls
 							Loteria.console.log(usuario.usuario,"PREMIA SORTEO","#"+m.data.sorteoID,"NUM",m.data.elemento);
 							_model.sorteos.sorteo(s,function (sorteo:Sorteo):void {
 								var premiador:Object = Loteria.setting.premios.premiacion[sorteo.sorteo] || Loteria.setting.premios.premiacion[0];
-								var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,usuario.nivel==1?100:10);
+								var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,usuario.nivel==1?100:20);
 								if (numSol>=premiador.puntos) {
 									var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
 									var body:String = StringUtil.format(Mail.PREMIO_CONFIRMADO,

@@ -15,5 +15,9 @@ package vos
 		
 		public var papelera:Boolean;
 		public var creacion:String;
+		
+		public function get usID():String {
+			return "g"+bancaID;
+		}
 	}
 }

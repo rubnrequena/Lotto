@@ -69,7 +69,7 @@ LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID
 WHERE ticket.anulado = 0 AND ticket.tiempo BETWEEN :inicio AND :final AND ticket.taquillaID = :taquillaID 
 GROUP BY sorteos.sorteoID ORDER BY elementos.sorteoID
 --rp_taqs_gen
-SELECT taquillas.nombre desc, ROUND(SUM(jugada),2) jugada, ROUND(SUM(premio),2) premio, SUM(jugada*reportes.comision*0.01) comision, SUM(jugada*comisionBanca) cmBanca, round(SUM(jugada*renta),0) renta
+SELECT taquillas.taquillaID id, taquillas.nombre desc, ROUND(SUM(jugada),2) jugada, ROUND(SUM(premio),2) premio, ROUND(SUM(jugada*reportes.comision*0.01),2) comision, ROUND(SUM(jugada*comisionBanca),2) cmBanca
 FROM vt.reportes 
 JOIN us.taquillas ON taquillas.taquillaID = reportes.taquillaID
 WHERE fecha BETWEEN :inicio AND :fin AND reportes.bancaID = :bancaID 

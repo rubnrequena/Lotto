@@ -295,6 +295,12 @@ package controls
 							addListeners();
 							measure(m.command);
 							_cliente.sendMessage(m);
+							
+							_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+								m.data = r.data;
+								m.command = "balance-padre";
+								_cliente.sendMessage(m);
+							});
 						});
 						
 						initSolicitudesPremios();
@@ -365,6 +371,30 @@ package controls
 			addEventListener("sms-bandeja",sms_bandeja);
 			addEventListener("sms-leer",sms_leer);
 			addEventListener("sms-respuestas",sms_respuestas);
+			
+			addEventListener("balance-padre",balance_padre);
+			addEventListener("balance-pago",balance_pago);
+		}
+		
+		private function balance_pago(e:Event,m:Message):void
+		{
+			m.data.usID = usuario.usID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.cdo = 0;
+			m.data.tiempo = _model.ahora;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_padre(e:Event,m:Message):void {
+			m.data = {usID:usuario.usID,lm:10};
+			_model.balance.usID(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function banca_relacion(e:Event,m:Message):void {

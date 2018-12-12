@@ -8,6 +8,7 @@ package controls
 	
 	import helpers.Code;
 	import helpers.DateFormat;
+	import helpers.LTool;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
 	
@@ -24,7 +25,7 @@ package controls
 	public class BancaControl extends Control
 	{
 		private var msg:Message;
-		private var banca:Banca;
+		private var usuario:Banca;
 		
 		public function BancaControl(cliente:Client, model:ModelHUB) {
 			super(cliente, model);
@@ -35,25 +36,31 @@ package controls
 		private function login(e:Event,m:Message):void {
 			_model.bancas.login(m.data,function (r:SQLResult):void {
 				if (r.data) {
-					banca = r.data[0];
-					if (banca.activa) {
-						controlID = banca.bancaID; 
+					usuario = r.data[0];
+					if (usuario.activa) {
+						controlID = usuario.bancaID; 
 						m.data = {
 							usr:r.data[0],
 							tm:_model.ahora
 						}
-						_model.bancas.meta({bancaID:banca.bancaID,usuarioID:banca.usuarioID},function (mt:SQLResult):void {
+						_model.bancas.meta({bancaID:usuario.bancaID,usuarioID:usuario.usuarioID},function (mt:SQLResult):void {
 							m.data.meta = mt.data;
 							_cliente.sendMessage(m);
 							
 							m.data = {};
 							m.command = "init";
-							_model.sorteos.sorteos({usuarioID:banca.usuarioID},function (sorteos:SQLResult):void {
+							_model.sorteos.sorteos({usuarioID:usuario.usuarioID},function (sorteos:SQLResult):void {
 								m.data.s = sorteos.data;
 								_cliente.sendMessage(m);
 								measure(m.command);
 								addListeners();
 							});
+							_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+								m.data = r.data;
+								m.command = "balance-padre";
+								_cliente.sendMessage(m);
+							});
+							
 						});
 						initSolicitudesPremios();
 					} else {						
@@ -113,10 +120,123 @@ package controls
 			addEventListener("sms-leer",sms_leer);
 			addEventListener("sms-respuestas",sms_respuestas);
 			
+			addEventListener("balance-padre",balance_padre);
+			addEventListener("balance-add",balance_add);
+			addEventListener("balance-clientes",balance_clientes);
+			addEventListener("balance-us",balance_us);
+			addEventListener("balance-pagos",balance_pagos);
+			addEventListener("balance-remover",balance_remover);
+			addEventListener("balance-pago",balance_pago);
+			addEventListener("balance-ppagos",balance_ppagos);
+			addEventListener("balance-confirmacion",balance_confirmacion);
+			
 			//_model.mSorteos.addEventListener(Event.OPEN,sorteo_abierto);
 			//_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);
 		}
 		
+		private function balance_confirmacion(e:Event,m:Message):void {
+			m.data.rID = usuario.usID;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			m.data.tiempo = _model.ahora;
+			_model.balance.confirmar_pago(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_ppagos(e:Event,m:Message):void
+		{
+			m.data = {};
+			m.data.rID = usuario.usID;
+			m.data.inicio = "2018-01-01";
+			m.data.fin = "2900-12-31";
+			m.data.c = 0;
+			_model.balance.pagos_operador(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_pago(e:Event,m:Message):void
+		{
+			m.data.usID = usuario.usID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.cdo = 0;
+			m.data.tiempo = _model.ahora;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function balance_remover(e:Event,m:Message):void
+		{
+			m.data.rID = usuario.usID;
+			_model.balance.remover(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_pagos(e:Event,m:Message):void
+		{
+			m.data.rID = usuario.usID;
+			m.data.c = 1;
+			_model.balance.pagos_comercial(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_us(e:Event,m:Message):void {
+			m.data.rID = usuario.usID;
+			m.data.lm = 100;
+			_model.balance.usID(m.data,function (r:SQLResult):void {
+				if (r.data) {
+					var c:String = String(m.data.usID).charAt(0);
+					var _id:int = int(String(m.data.usID).slice(1));
+					m.data = {bl:r.data};
+					if (c=="g") {
+						m.data.us = LTool.findBy("bancaID",_id,_model.bancas.bancas);
+						_cliente.sendMessage(m);
+					} else if (c=="u") {
+						_model.usuarios.usuarios({id:_id},function (r:SQLResult):void {
+							m.data.us = r.data[0];
+							_cliente.sendMessage(m);
+						});
+					}
+				} else {
+					m.data = {code:Code.VACIO};
+					_cliente.sendMessage(m);
+				}
+			});
+		}
+		
+		private function balance_clientes(e:Event,m:Message):void
+		{
+			m.data = {usID:usuario.usID};
+			_model.balance.cm_clientes(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_add(e:Event,m:Message):void
+		{
+			m.data.resID = usuario.usID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.tiempo = _model.ahora;
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function balance_padre(e:Event,m:Message):void {
+			m.data = {usID:usuario.usID,lm:10};
+			_model.balance.usID(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
 		private function taquilla_metas(e:Event,m:Message):void {
 			var a:int=0;
 			for (var meta:String in m.data.meta) {
@@ -140,7 +260,7 @@ package controls
 		}
 		
 		private function taquillas_act(e:Event,m:Message):void {
-			m.data.banca = banca.bancaID;
+			m.data.banca = usuario.bancaID;
 			_model.taquillas.buscar_activa(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -148,9 +268,9 @@ package controls
 		}
 		
 		private function sms_nuevo (e:Event,m:Message):void {
-			m.data.origen = banca.bancaID;
+			m.data.origen = usuario.bancaID;
 			m.data.tiempo = _model.ahora;
-			if (m.data.destino==null) m.data.destino = [banca.usuarioID];
+			if (m.data.destino==null) m.data.destino = [usuario.usuarioID];
 			_model.sms.envGrupoBanca(m.data,function (r:Vector.<SQLResult>):void {
 				m.data = {code:Code.OK,n:r.length};
 				_cliente.sendMessage(m);
@@ -158,7 +278,7 @@ package controls
 		}
 		
 		private function sms_bandeja (e:Event,m:Message):void {
-			m.data = {grupoID:banca.bancaID};
+			m.data = {grupoID:usuario.bancaID};
 			_model.sms.bandejaGrupo(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -168,9 +288,9 @@ package controls
 		private function sms_leer (e:Event,m:Message):void {
 			_model.sms.leerGrupo(m.data,function (r:SQLResult):void {
 				if (r.data) {
-					if (r.data[0].destino==banca.bancaID) {
+					if (r.data[0].destino==usuario.bancaID) {
 						m.data = r.data[0];
-						if(m.data.leido==false) _model.sms.leido({rutaGrupo:banca.bancaID,smsID:m.data.smsID});
+						if(m.data.leido==false) _model.sms.leido({rutaGrupo:usuario.bancaID,smsID:m.data.smsID});
 					} else m.data = {code:Code.NO_EXISTE};
 				} else {
 					m.data = {code:Code.NO_EXISTE};
@@ -188,7 +308,7 @@ package controls
 		
 		private function taquilla_fpclear(e:Event,m:Message):void {
 			m.data = m.data || {};
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.taquillas.fingerClear_grupo(m.data,function (r:SQLResult):void {
 				m.data.ok = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -197,7 +317,7 @@ package controls
 		
 		private function taquilla_flock(e:Event,m:Message):void {
 			m.data = m.data || {};
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.taquillas.fingerlock_grupo(m.data,function (r:SQLResult):void {
 				m.data.ok = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -208,7 +328,7 @@ package controls
 			//validar ticket			
 			_model.ventas.ticket(m.data,function (ticket:Object):void {
 				m.data.codigo = m.data.codigo || 0;
-				if (ticket && ticket.bancaID==banca.bancaID && ticket.codigo==m.data.codigo) {
+				if (ticket && ticket.bancaID==usuario.bancaID && ticket.codigo==m.data.codigo) {
 					_model.ventas.ventas_elementos({ticket:ticket.ticketID},function (tventas:SQLResult):void {
 						var sorteoCerrado:Boolean=false;
 						var cierre:Number = _model.ahora;
@@ -221,8 +341,8 @@ package controls
 							delete m.data.codigo;
 							var _taq:Taquilla = _model.taquillas.buscarCliente("taquillaID",ticket.taquillaID);
 							_model.ventas.anular(m.data,_taq,function (r:SQLResult):void {
-								_model.bMan.clear(banca.bancaID); //TODO OPT: DESCONTAR EL MONTO DE CADA ANIMAL
-								_model.uMan.clear(banca.usuarioID); //TODO OPT: DESCONTAR EL MONTO DE CADA ANIMAL
+								_model.bMan.clear(usuario.bancaID); //TODO OPT: DESCONTAR EL MONTO DE CADA ANIMAL
+								_model.uMan.clear(usuario.usuarioID); //TODO OPT: DESCONTAR EL MONTO DE CADA ANIMAL
 								m.data = r.lastInsertRowID;
 								_cliente.sendMessage(m);
 								
@@ -248,8 +368,8 @@ package controls
 		}
 		
 		private function taquilla_remover(e:Event,m:Message):void {
-			m.data.usuarioID = banca.usuarioID;
-			m.data.bancaID = banca.bancaID;
+			m.data.usuarioID = usuario.usuarioID;
+			m.data.bancaID = usuario.bancaID;
 			m.data.papelera = m.data.papelera;
 			_model.taquillas.editar(m.data,function (r:SQLResult):void {
 				m.data = {code:r.rowsAffected};
@@ -258,12 +378,12 @@ package controls
 		}
 		
 		private function conexiones(e:Event,m:Message):void {
-			m.data = _model.taquillas.explorarClientes("bancaID",banca.bancaID);
+			m.data = _model.taquillas.explorarClientes("bancaID",usuario.bancaID);
 			_cliente.sendMessage(m);
 		}
 		
 		private function taquilla_panic(e:Event,m:Message):void {
-			m.data = {bancaID:banca.bancaID};
+			m.data = {bancaID:usuario.bancaID};
 			_model.taquillas.panic(m.data,function (numTaq:int):void {
 				m.data = numTaq;
 				_cliente.sendMessage(m);
@@ -272,7 +392,7 @@ package controls
 		
 		private function venta_premios(e:Event,m:Message):void {
 			_model.ventas.ticket(m.data,function (ticket:Object):void {
-				if (ticket && ticket.bancaID==banca.bancaID) {
+				if (ticket && ticket.bancaID==usuario.bancaID) {
 					_model.ventas.ventas_elementos(m.data,function (premios:SQLResult):void {
 						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
 						m.data = {tk:ticket,prm:premios.data}
@@ -286,7 +406,7 @@ package controls
 		}
 				
 		private function elementos(e:Event,m:Message):void {
-			m.data = {usuarioID:banca.usuarioID};
+			m.data = {usuarioID:usuario.usuarioID};
 			_model.sistema.elementos_us(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -298,11 +418,11 @@ package controls
 		private var solPremios:Array;
 		private function initSolicitudesPremios():void
 		{
-			if (_solPremios.hasOwnProperty(banca.usuario)) {
-				solPremios = _solPremios[banca.usuario];
+			if (_solPremios.hasOwnProperty(usuario.usuario)) {
+				solPremios = _solPremios[usuario.usuario];
 			} else {
 				solPremios = [];
-				_solPremios[banca.usuario] = solPremios; 
+				_solPremios[usuario.usuario] = solPremios; 
 			}
 		}
 		
@@ -325,7 +445,7 @@ package controls
 							var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,1);
 							if (numSol>=premiador.puntos) {
 								var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
-								Mail.sendAdmin("PREMIACION CONFIRMADA POR BANCA "+DateFormat.format(null),StringUtil.format(Mail.PREMIO_CONFIRMADO,sorteo.sorteoID,sorteo.descripcion,e.numero,banca.nombre,Loteria.setting.servidor),null);
+								Mail.sendAdmin("PREMIACION CONFIRMADA POR BANCA "+DateFormat.format(null),StringUtil.format(Mail.PREMIO_CONFIRMADO,sorteo.sorteoID,sorteo.descripcion,e.numero,usuario.nombre,Loteria.setting.servidor),null);
 								_model.ventas.premiar(sorteo,e,function (sorteo:Object):void {
 									m.data = {code:Code.OK};
 									_cliente.sendMessage(m);
@@ -343,14 +463,14 @@ package controls
 			});
 		}
 		private function sorteos_publicos_remover(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.sorteos.publicos_remover(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
 		}
 		private function sorteos_publicos_editar(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.sorteos.publicos_editar(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -358,7 +478,7 @@ package controls
 		}
 		
 		private function sorteos_publicos(e:Event,m:Message):void {
-			m.data = {bancaID:banca.bancaID};
+			m.data = {bancaID:usuario.bancaID};
 			_model.sorteos.publicos(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -384,7 +504,7 @@ package controls
 		}
 		
 		private function monitor(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.ventas.monitor(m.data,function (r:Object):void {
 				m.data = r;
 				_cliente.sendMessage(m);
@@ -400,7 +520,7 @@ package controls
 		}
 		
 		private function taquilla(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
 				m.data = r.data[0];		
 				_model.taquillas.metas({taquillaID:m.data.taquillaID},function (meta:Object):void {
@@ -433,8 +553,8 @@ package controls
 		}
 		
 		private function tope_nuevo(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
-			m.data.usuarioID = banca.usuarioID;
+			m.data.bancaID = usuario.bancaID;
+			m.data.usuarioID = usuario.usuarioID;
 			_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
@@ -442,7 +562,7 @@ package controls
 		}
 		
 		private function topes(e:Event,m:Message):void {
-			m.data = {bancaID:banca.bancaID,usuarioID:banca.usuarioID};
+			m.data = {bancaID:usuario.bancaID,usuarioID:usuario.usuarioID};
 			_model.topes.topes(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -451,7 +571,7 @@ package controls
 		}
 		
 		private function reporte_sorteo(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
+			m.data.bancaID = usuario.bancaID;
 			_model.reportes.banca(m.data,function (reporte:Object):void {
 				m.data = reporte;
 				_cliente.sendMessage(m);
@@ -481,7 +601,7 @@ package controls
 			});
 		}
 		private function reporte_diario(e:Event,m:Message):void {			
-			_model.reportes.diario({bancaID:banca.bancaID,fecha:m.data.fecha},function (r:SQLResult):void {
+			_model.reportes.diario({bancaID:usuario.bancaID,fecha:m.data.fecha},function (r:SQLResult):void {
 				if (r.data) {
 					m.data = {
 						data:r.data,
@@ -504,7 +624,7 @@ package controls
 		}
 		
 		private function reporte_banca(e:Event,m:Message):void {
-			m.data.s.bancaID = banca.bancaID;
+			m.data.s.bancaID = usuario.bancaID;
 			if (m.data.g==0) _model.reportes.general(m.data.s,result);
 			else if (m.data.g==1) _model.reportes.general_sorteo(m.data.s,result);
 			else  _model.reportes.fecha(m.data.s,result);
@@ -529,7 +649,7 @@ package controls
 		}
 		
 		private function taquillas(e:Event,m:Message):void {
-			m.data = {banca:banca.bancaID};
+			m.data = {banca:usuario.bancaID};
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -537,8 +657,8 @@ package controls
 			});
 		}
 		private function taquilla_nueva(e:Event,m:Message):void {
-			m.data.bancaID = banca.bancaID;
-			m.data.usuarioID = banca.usuarioID;
+			m.data.bancaID = usuario.bancaID;
+			m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.nueva(m.data,function (id:int):void {
 				m.data.taquillaID = id;
 				_cliente.sendMessage(m);
@@ -550,7 +670,7 @@ package controls
 		}
 		
 		private function sorteos(e:Event,m:Message):void {
-			m.data.usuarioID = banca.usuarioID;
+			m.data.usuarioID = usuario.usuarioID;
 			_model.sorteos.sorteos(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -558,7 +678,7 @@ package controls
 		}
 		
 		private function inicio(e:Event,m:Message):void {
-			m.data = {bancaID:banca.bancaID,fecha:DateFormat.format(_model.ahora)};
+			m.data = {bancaID:usuario.bancaID,fecha:DateFormat.format(_model.ahora)};
 			
 			_model.reportes.diario(m.data,function (r:SQLResult):void {
 				if (r.data) {

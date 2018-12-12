@@ -42,7 +42,8 @@ package models
 			sql.sorteos_admin.run(s,cb);
 		}
 		public function historia_numero (s:Object,cb:Function):void {
-			sql.sorteos_num_historia.run(s,cb);
+			if (s.hasOwnProperty("n")) sql.sorteos_num_historia.run(s,cb);
+			else if (s.hasOwnProperty("srt")) sql.sorteos_num_ultimos.run(s,cb);
 		}
 		public function monitor_venta_tickets (s:Object,cb:Function):void {
 			sql.monitor_vnt_ticket_num.run(s,cb);
