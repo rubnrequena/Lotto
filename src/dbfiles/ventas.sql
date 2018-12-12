@@ -115,7 +115,7 @@ FROM elementos
 	JOIN us.taquillas ON taquillas.taquillaID = elementos.taquillaID 
 	JOIN us.bancas ON bancas.bancaID = elementos.bancaID 
 	LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID
-WHERE elementos.sorteoID = 29460 AND elementos.anulado = 0 
+WHERE elementos.sorteoID = :sorteoID AND elementos.anulado = 0 
 GROUP BY elementos.taquillaID
 ORDER BY elementos.bancaID ASC, elementos.taquillaID ASC
 --jugadas_srv_banca
