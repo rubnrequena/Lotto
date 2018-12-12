@@ -106,15 +106,16 @@ WHERE elementos.ticketID = :ticketID
 SELECT sorteoID, numero, monto FROM vt.elementos WHERE elementos.ticketID = :ticketID
 --reporte_nuevo
 INSERT INTO reportes (fecha,sorteoID,bancaID,taquillaID,jugada,premio,renta,comisionBanca,comision,pago) 
-SELECT sorteos.fecha, sorteos.sorteoID, elementos.bancaID, elementos.taquillaID, ROUND(SUM(monto),2) jugado, ROUND(SUM(premio),2) premio, bancas.renta, bancas.comision, taquillas.comision,
-SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago
+SELECT sorteos.fecha, sorteos.sorteoID, elementos.bancaID, elementos.taquillaID, ROUND(SUM(monto),2) jugado, ROUND(SUM(premio),2) premio, bancas.renta, bancas.comision, 
+COALESCE((SELECT comision FROM taquillas_comision WHERE taquillaID = taquillas.taquillaID AND sorteo = sorteos.sorteo),taquillas.comision) comision,
+ROUND(SUM((case when pagos.tiempo > 0 then premio else 0 end)),2) pago
 FROM elementos 
-JOIN numeros ON elementos.numero = numeros.elementoID 
-JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID 
-JOIN us.taquillas ON taquillas.taquillaID = elementos.taquillaID 
-JOIN us.bancas ON bancas.bancaID = elementos.bancaID 
-LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID
-WHERE elementos.sorteoID = :sorteoID AND elementos.anulado = 0 
+	JOIN numeros ON elementos.numero = numeros.elementoID 
+	JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID 
+	JOIN us.taquillas ON taquillas.taquillaID = elementos.taquillaID 
+	JOIN us.bancas ON bancas.bancaID = elementos.bancaID 
+	LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID
+WHERE elementos.sorteoID = 29460 AND elementos.anulado = 0 
 GROUP BY elementos.taquillaID
 ORDER BY elementos.bancaID ASC, elementos.taquillaID ASC
 --jugadas_srv_banca

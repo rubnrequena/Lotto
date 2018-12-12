@@ -256,7 +256,6 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
-		
 		private function taquilla_metas(e:Event,m:Message):void {
 			var a:int=0;
 			for (var meta:String in m.data.meta) {
@@ -278,7 +277,28 @@ package controls
 				}
 			}
 		}
+		private function taquilla_comisiones(e:Event,m:Message):void {
+			//validar usuario y banca de taquilla
+			_model.taquillas.comisiones(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function taquilla_comision_dl(e:Event,m:Message):void
+		{
+			_model.taquillas.comision_dl(m.data,function(r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
 		
+		private function taquilla_comision_nv(e:Event,m:Message):void
+		{
+			_model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
+				m.data.comID = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
 		private function login(e:Event,m:Message):void {
 			_model.usuarios.login(m.data,function (u:Usuario):void {
 				if (u) {
@@ -329,6 +349,9 @@ package controls
 			addEventListener("taquilla-panic",taquilla_panic);
 			addEventListener("taquilla-remover",taquilla_remover);
 			addEventListener("taquilla-metas",taquilla_metas);
+			addEventListener("taquilla-comisiones",taquilla_comisiones);
+			addEventListener("taquilla-comision-nv",taquilla_comision_nv);
+			addEventListener("taquilla-comision-dl",taquilla_comision_dl);
 			
 			addEventListener("taquilla-flock",taquilla_flock);
 			addEventListener("taquilla-fpclear",taquilla_fpclear);
@@ -375,6 +398,7 @@ package controls
 			addEventListener("balance-padre",balance_padre);
 			addEventListener("balance-pago",balance_pago);
 		}
+
 		
 		private function balance_pago(e:Event,m:Message):void
 		{

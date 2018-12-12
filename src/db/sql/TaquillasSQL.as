@@ -56,6 +56,9 @@ package db.sql
 		public var taquillas_banca_act:SQLStatementPool;
 		public var taquillas_usuario_act:SQLStatementPool;
 		public var taquillas_usuariol:SQLStatementPool;
+		public var comisiones:SQLStatementPool;
+		public var comision_nv:SQLStatementPool;
+		public var comision_dl:SQLStatementPool;
 		
 		public function TaquillasSQL() {
 			
@@ -114,6 +117,9 @@ package db.sql
 			fingerclear_usr = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE taquillaID = :taquillaID AND usuarioID = :usuarioID');
 			fingerclear_usr_all = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE usuarioID = :usuarioID');
 			
+			comisiones = new SQLStatementPool('SELECT * FROM taquillas_comision WHERE taquillaID = :taquillaID');
+			comision_nv = new SQLStatementPool('INSERT INTO taquillas_comision (sorteo,comision,taquillaID) VALUES (:sorteo,:comision,:taquillaID)');
+			comision_dl = new SQLStatementPool('DELETE FROM taquillas_comision WHERE comID = :comID');
 		}
 	}
 }

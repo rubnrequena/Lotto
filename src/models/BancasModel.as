@@ -1,11 +1,8 @@
 package models
 {
-	import com.hurlant.util.ArrayUtil;
-	
 	import flash.data.SQLResult;
 	import flash.errors.SQLError;
 	
-	import db.SQLStatementPool;
 	import db.sql.BancasSQL;
 	
 	import helpers.DateFormat;

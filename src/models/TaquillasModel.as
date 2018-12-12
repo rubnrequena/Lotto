@@ -278,5 +278,15 @@ package models
 			if (data.hasOwnProperty("taquillaID")) sql.fingerlock_usr.run(data,cb);
 			else sql.fingerlock_usr_all.run(data,cb);
 		}
+	
+		public function comisiones (data:Object,cb:Function):void {
+			sql.comisiones.run(data,cb);
+		}
+		public function comision_nv (data:Object,cb:Function):void {
+			sql.comision_nv.run(data,cb);
+		}
+		public function comision_dl(data:Object,cb:Function):void {
+			sql.comision_dl.run(data,cb);
+		}
 	}
 }
