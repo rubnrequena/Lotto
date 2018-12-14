@@ -1,5 +1,7 @@
 package
 {
+	import flash.filesystem.File;
+	
 	import be.aboutme.airserver.AIRServer;
 	import be.aboutme.airserver.endpoints.socket.SocketEndPoint;
 	import be.aboutme.airserver.endpoints.socket.handlers.websocket.WebSocketClientHandlerFactory;
@@ -51,6 +53,15 @@ package
 			
 			WS.init();
 			
+			//validar disco duro
+			var f:File = File.createTempFile();
+			var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
+			Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
+			if (size<Loteria.setting.minEspacioDisponible) {
+				WS.enviar(Loteria.setting.plataformas.usuarios.admin,
+					"["+Loteria.setting.servidor+"] ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
+			}
+			
 			var n:int=0;
 			model = new ModelHUB();
 			model.addEventListener(Event.READY,function ():void {
@@ -62,6 +73,7 @@ package
 					clientes.start();
 					usuarios.start();
 					comercializadora.start();
+					
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
 						var m:Message = new Message;

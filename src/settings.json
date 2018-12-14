@@ -1,6 +1,7 @@
 {
 	"servidor":"local",
 	"gmt":0,
+	"minEspacioDisponible":20,
 	"db": {
 		"root":"D:\\User\\My Documents\\db\\loteria",
 		"log":"D:\\User\\My Documents\\db\\logs"
