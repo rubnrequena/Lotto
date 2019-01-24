@@ -176,11 +176,9 @@ package models
 			}
 		}*/
 		public function premiar (sorteo:Sorteo,elemento:Elemento,cb:Function):void {
-			sorteos_premiados[sorteo.sorteoID]=true;
-			
-			var srt:Object = {numero:elemento.elementoID,sorteoID:sorteo.sorteoID};
-			
-			tmr.stop();		
+			sorteos_premiados[sorteo.sorteoID]=true;			
+			var srt:Object = {numero:elemento.elementoID,sorteoID:sorteo.sorteoID};			
+			tmr.stop();
 			
 			t = getTimer();
 			var relacion:Array; 

@@ -5,11 +5,12 @@ SELECT * FROM sorteos
 --sorteos_fecha
 SELECT * FROM vt.sorteos WHERE fecha = :fecha ORDER BY cierra
 --sorteos_fecha_taq
-SELECT sorteoID, descripcion, fecha, abierta, abre, cierra, ganador, sorteos.sorteo FROM vt.sorteos 
+SELECT vt.sorteos.sorteoID, descripcion, fecha, abierta, abre, cierra, ganador, vt.sorteos.sorteo, main.sorteos.zodiacal FROM vt.sorteos 
 JOIN (SELECT * FROM (SELECT * FROM us.taquillas_sorteo 
  WHERE (taquillas_sorteo.banca = :banca OR taquillas_sorteo.banca = 0) AND (taquillas_sorteo.taquilla = :taquilla OR taquillas_sorteo.taquilla = 0) ORDER BY taquilla ASC, banca ASC, ID ASC) GROUP BY sorteo ) as taquillas 
-ON taquillas.sorteo = sorteos.sorteo 
-WHERE sorteos.fecha = :fecha AND taquillas.publico = 1
+ON taquillas.sorteo = vt.sorteos.sorteo 
+JOIN main.sorteos ON main.sorteos.sorteoID = vt.sorteos.sorteo
+WHERE vt.sorteos.fecha = :fecha AND taquillas.publico = 1
 --sorteos_dia
 SELECT * FROM vt.sorteos WHERE fecha = :dia AND abierta = true ORDER BY abre
 --sorteos_fecha_lista

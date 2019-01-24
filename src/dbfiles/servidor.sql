@@ -47,6 +47,8 @@ ORDER BY elementos.ticketID DESC
 select * from elementos where sorteoID = :sorteo GROUP BY ticketID
 --numeros_admin
 SELECT elementoID, numero, descripcion, numeros.sorteo FROM numeros JOIN admins_meta ON admins_meta.valor = numeros.sorteo WHERE adminID = :adminID ORDER BY numeros.sorteo, numeros.numero
+--numeros_admin_sorteo
+SELECT elementoID, numero, descripcion, numeros.sorteo FROM numeros JOIN admins_meta ON admins_meta.valor = numeros.sorteo WHERE adminID = :adminID and sorteo = :sorteo ORDER BY numeros.sorteo, numeros.numero
 --usuario_reg_sorteo
 INSERT INTO us.usuario_sorteos (usuarioID,sorteo) VALUES (:usuarioID,:sorteo)
 --usuario_del_sorteo

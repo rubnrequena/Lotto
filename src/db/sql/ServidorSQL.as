@@ -19,6 +19,7 @@ package db.sql
 		public var usuario_sorteos:SQLStatementPool;
 		public var usuario_sorteo_id:SQLStatementPool;
 		public var monitor_vnt_ticket_num:SQLStatementPool;
+		public var numeros_admin_sorteo:SQLStatementPool;
 		
 		public function ServidorSQL()
 		{

@@ -89,12 +89,30 @@ package controls
 			
 			addEventListener("ticket-anulado",ticket_anulado);
 			
+			addEventListener("elementos-init",elementos_init);
+			
 			//addEventListener("notificar",sistema_notificar);
 						
 			_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.addEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.addEventListener(Event.CHANGE,model_tp_topeNuevo);			
 			_model.ventas.addEventListener(ModelEvent.PREMIO,ventasModel_premio);
+		}
+		
+		private function elementos_init(e:Event,m:Message):void {
+			var tq:Object = {
+				fecha:DateFormat.format(new Date),
+				taquilla:_taquilla.taquillaID,
+				banca:_taquilla.bancaID
+			}
+			_model.sistema.elementos_gtag(tq,function (r:SQLResult):void {
+				for each (var i:Object in r.data) {
+					m.data = _model.sistema.elementos_sorteo_min(i.s);
+					_cliente.sendMessage(m);
+				}
+				m.data = "end";
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function sistema_notificar(e:Event,m:Message):void {
@@ -235,18 +253,20 @@ package controls
 					var hoy:String = DateFormat.format(null);
 					var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
 					_model.sorteos.sorteos(f,function (r:SQLResult):void {
-						m.data.sorteos = r.data						
-						_model.sistema.elementos_taq(f,function (r:SQLResult):void {
-							m.data.elementos = r.data;
+						m.data.sorteos = r.data
+						m.data.elementos = _model.sistema.eleHash;
+						_cliente.sendMessage(m);
+						
+						_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function (meta:Object):void {
+							m.command = "metas";
+							m.data = meta;
 							_cliente.sendMessage(m);
+							measure("login");
+						})
+						
+						/*_model.sistema.elementos_taq(f,function (r:SQLResult):void {
 							
-							_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function (meta:Object):void {
-								m.command = "metas";
-								m.data = meta;
-								_cliente.sendMessage(m);
-								measure("login");
-							})
-						});
+						});*/
 					});
 				} else {
 					m.data = {code:Code.NO_EXISTE};

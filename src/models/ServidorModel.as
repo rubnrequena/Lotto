@@ -49,7 +49,8 @@ package models
 			sql.monitor_vnt_ticket_num.run(s,cb);
 		}
 		public function numeros (s:Object,cb:Function):void {
-			sql.numeros_admin.run(s,cb);
+			if (s.hasOwnProperty("sorteo")) sql.numeros_admin_sorteo.run(s,cb);
+			else sql.numeros_admin.run(s,cb);
 		}
 		public function est_inicio (s:Object,cb:Function):void {
 			if (s.hasOwnProperty("sorteo")) sql.sorteo_dia.run(s,cb);

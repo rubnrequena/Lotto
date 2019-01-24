@@ -36,10 +36,10 @@ package helpers
 			if (loader.data && loader.data!="") {
 				var src:Object = JSON.parse(loader.data);
 				//src.ganador = ObjectUtil.trailZero(src.ganador);
-				Loteria.console.log("Premio Tweeter:",srt,"(",src.ganador,")");
+				Loteria.console.log("Premio SRQBrigde:",srt,"(",src.ganador,")");
 				dispatchEventWith(Event.COMPLETE,false,src.ganador);
 				isComplete();
 			} else retry();
-		}
+		}		
 	}
 }

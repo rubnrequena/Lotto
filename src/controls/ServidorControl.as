@@ -47,21 +47,20 @@ package controls
 					_cliente.sendMessage(m);
 					
 					ObjectUtil.clear(m.data);
-					m.command = "init";
-					
+					m.command = "init";					
+					m.data.sorteos = _model.sistema.sorteos;
 					
 					if (Loteria.setting.servidor!="local") {
 						if (usr.nivel==1) {
 							var u:Object = Loteria.setting.plataformas;
 							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Administrador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
-							m.data.sorteos = _model.sistema.sorteos;
 						} else if (usr.nivel==2) {
 							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Premiador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
 						}
 					}
 					
 					_model.servidor.numeros({adminID:usr.adminID},function (r:SQLResult):void {
-						m.data.elem = r.data;
+						//m.data.elem = r.data;
 						_cliente.sendMessage(m);
 					});
 					
@@ -84,6 +83,7 @@ package controls
 			addEventListener("sorteo-editar",sorteo_editar);
 			addEventListener("sorteo-num-hist",sorteo_numHist);
 			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
+			addEventListener("elementos",elementos);
 			
 			addEventListener("monitor",monitor);			
 			addEventListener("ticket",ticket);
@@ -110,6 +110,8 @@ package controls
 			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
 			
 			addEventListener("elemento-nuevo",elemento_nuevo);
+			addEventListener("elementos",elementos);
+			addEventListener("elemento-nuevo-zodiaco",elemento_nv_zodiaco);
 			
 			addEventListener("usuarios",usuarios);
 			addEventListener("usuario-nuevo",usuario_nuevo);
@@ -741,12 +743,27 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
-		
+		private function elementos(e:Event,m:Message):void {
+			m.data = _model.sistema.elementos_sorteo(m.data.sorteo);
+			_cliente.sendMessage(m);
+		}
 		private function elemento_nuevo(e:Event,m:Message):void {
 			_model.sistema.elemento_nuevo(m.data,function (r:SQLResult):void {
 				m.data = r.lastInsertRowID;
 				_cliente.sendMessage(m);
 			});
+		}
+		private function elemento_nv_zodiaco(e:Event,m:Message):void {
+			for each (var d:Object in m.data.numeros) {
+				d.sorteo = m.data.sorteo;
+				d.adicional = m.data.adicional;
+			}
+			
+			_model.sistema.elemento_nuevo(m.data.numeros,function (r:*):void {
+				m.data = r.length;
+				_cliente.sendMessage(m);
+			});
+			/*_model.sistema.elementos_limpiar({sorteo:m.data.sorteo},function (r:SQLResult):void {});*/
 		}
 		
 		private function sorteo_registrar(e:Event,m:Message):void {

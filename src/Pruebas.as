@@ -5,15 +5,8 @@ package
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.PremioWeb;
-	import helpers.Premio_GranRuleta;
-	import helpers.Premio_LaGranjita;
 	import helpers.Premio_LotoSelva;
-	import helpers.Premio_LottoActivo;
-	import helpers.Premio_LottoLeon;
-	import helpers.Premio_MiniLottico;
-	import helpers.Premio_RuletAnimal;
-	import helpers.Premio_RuletaOriente;
-	import helpers.Premio_RuletonPeru;
+	import helpers.Premio_SRQWeb;
 	
 	import models.ModelHUB;
 	
@@ -45,7 +38,13 @@ package
 			/*model = new ModelHUB();
 			model.addEventListener(Event.READY,onReady);*/
 			
-			test_sorteos();
+			//test_sorteos();
+			
+			var prm:Premio_SRQWeb = new Premio_SRQWeb("granjamanimal");
+			prm.buscar('granja millonaria animal 09:00am',new Date);
+			prm.addEventListener(Event.COMPLETE,function (e:Event):void {
+				trace(e.data);
+			});
 		}
 		
 		

@@ -3,6 +3,8 @@ package models
 	import flash.data.SQLResult;
 	import flash.utils.getTimer;
 	
+	import by.blooddy.crypto.MD5;
+	
 	import db.DB;
 	import db.SQLStatementPool;
 	import db.sql.SistemaSQL;
@@ -10,19 +12,17 @@ package models
 	import helpers.Code;
 	import helpers.DateFormat;
 	import helpers.IPremio;
-	import helpers.Premio_DineRuleta;
-	import helpers.Premio_FrutaActiva;
 	import helpers.Premio_GranRuleta;
 	import helpers.Premio_LaGranjita;
 	import helpers.Premio_LotoSelva;
 	import helpers.Premio_LottoActivo;
-	import helpers.Premio_LottoLeon;
 	import helpers.Premio_MiniLottico;
 	import helpers.Premio_ReyAnzoategui;
 	import helpers.Premio_RuletAnimal;
 	import helpers.Premio_RuletaOriente;
 	import helpers.Premio_RuletonColombia;
 	import helpers.Premio_RuletonPeru;
+	import helpers.Premio_SRQWeb;
 	
 	import starling.events.EventDispatcher;
 	import starling.utils.execute;
@@ -37,21 +37,34 @@ package models
 		private var sorteosClaz:Object = {
 			lotto:Premio_LottoActivo,
 			granruleta:Premio_GranRuleta,
-			frutactiva:Premio_FrutaActiva,
 			ruletaoriente:Premio_RuletaOriente,
-			dineruleta:Premio_DineRuleta,
 			reyanz:Premio_ReyAnzoategui,
 			granjita:Premio_LaGranjita,
 			ruletanimal:Premio_RuletAnimal,
 			lotoselva:Premio_LotoSelva,
-			lottoleon:Premio_LottoLeon,
 			mini:Premio_MiniLottico,
 			ruletonperu:Premio_RuletonPeru,
 			ruletoncol:Premio_RuletonColombia
 		}
 		
+		private var _eleHash:String;
+		public function get eleHash():String { return _eleHash; }
+
+		private var _elementos_min:Array;
 		private static var _elementos:Vector.<Elemento>;
 		public function get elementos():Vector.<Elemento> { return _elementos };
+		
+		
+		public function elementos_sorteo (sorteo:int):Vector.<Elemento> {
+			return _elementos.filter(function (a:Elemento,b:Boolean,c:*):Boolean {
+				return a.sorteo==sorteo;
+			});
+		}
+		public function elementos_sorteo_min (sorteo:int):Array {
+			return _elementos_min.filter(function (a:*,b:Boolean,c:*):Boolean {
+				return a.s==sorteo;
+			});
+		}		
 		
 		public function elemento (id:int):Elemento {
 			for each (var el:Elemento in _elementos) {
@@ -74,8 +87,11 @@ package models
 		public function get sorteos():Vector.<Sorteo> { return _sorteos; }
 		
 		public function getPremiosClass (clase:String):IPremio {
-			if (sorteosClaz.hasOwnProperty(clase)) return new sorteosClaz[clase];
-			return null;
+			if (sorteosClaz.hasOwnProperty(clase)) {
+				return new sorteosClaz[clase];
+			} else {
+				return new Premio_SRQWeb(clase); 
+			}
 		}
 		public function getPremiosClassByID (id:int):IPremio {
 			for each (var s:Sorteo in _sorteos) {
@@ -91,8 +107,6 @@ package models
 			update_sorteos();
 		}
 		
-		
-		
 		private function update_sorteos():void {
 			s.sorteos.run(null,sorteos_act);
 		}
@@ -102,20 +116,37 @@ package models
 		}
 		
 		public function update_elementos():void {
-			s.elementos.run(null,elementos_act);
-			s.gelementos.run(null,agrupados);
-			function agrupados (r:SQLResult):void {
-				_numeros = r.data;	
-			};
-		}		
-		public function elementos_act (r:SQLResult):void {
-			_elementos = r.data?Vector.<Elemento>(r.data):null;
-		}		
-		public function elemento_nuevo (elemento:Object,cb:Function):void {
-			s.elementos_nuevo.run(elemento,function (r:SQLResult):void {
-				update_elementos();
-				execute(cb,r);
+			s.elementos_hash.run(null,function (r:SQLResult):void {
+				var hs:String="";
+				for each (var e:Object in r.data) { hs += e.hash; }
+				_eleHash = MD5.hash(hs);
+				
+				s.elementos.run(null,elementos_act);
+				s.elementos_min.run(null,min);
+				s.gelementos.run(null,agrupados);
+				
+				function agrupados (r:SQLResult):void { _numeros = r.data; };
+				function min (r:SQLResult):void { 
+					_elementos_min = r.data; 
+				};
 			});
+		}		
+		public function elementos_act (r:SQLResult):void {			
+			_elementos = r.data?Vector.<Elemento>(r.data):null;
+			
+		}		
+		public function elementos_limpiar (data:Object,cb:Function):void {
+			s.elementos_limpiar.run(data,cb);
+		}
+		public function elemento_nuevo (elemento:*,cb:Function):void {
+			if (elemento is Array) {
+				s.elementos_nuevo.batch(elemento,cb);
+			} else {
+				s.elementos_nuevo.run(elemento,function (r:SQLResult):void {
+					update_elementos();
+					execute(cb,r);
+				});
+			}
 		}
 		public function elemento_remover (elemento:Object,cb:Function):void {
 			s.elementos_remover.run(elemento,function (r:SQLResult):void {
@@ -129,6 +160,9 @@ package models
 		}
 		public function elementos_us (us:Object,cb:Function):void {
 			s.elementos_us.run(us,cb);
+		}
+		public function elementos_gtag (taq:Object,cb:Function):void {
+			s.elementos_gtaq.run(taq,cb);
 		}
 		
 		public function elemento_num (num:String,sorteo:int):Elemento {

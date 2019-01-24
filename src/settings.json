@@ -1,6 +1,6 @@
 {
 	"servidor":"local",
-	"gmt":-43200000,
+	"gmt":0,
 	"minEspacioDisponible":5,
 	"db": {
 		"root":"D:\\User\\My Documents\\db\\loteria",
@@ -32,7 +32,7 @@
 			"predeterminado": {
 				"numCompletado":1,
 				"webofic":{
-					"url":"http://srq.com.ve/prm/"
+					"url":"http://localhost/prm/"
 				}
 			},
 			"lottoactivo":{
@@ -93,7 +93,7 @@
 		},
 		"usuarios":{
 			"admin":"584149970167",
-			"premios":["584149970167","584148261242"]
+			"premios":["584149970167"]
 		}
 	}
 }

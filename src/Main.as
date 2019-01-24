@@ -72,8 +72,7 @@ package
 					bancas.start();
 					clientes.start();
 					usuarios.start();
-					comercializadora.start();
-					
+					comercializadora.start();					
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
 						var m:Message = new Message;
