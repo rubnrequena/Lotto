@@ -22,3 +22,13 @@ UPDATE us.meta SET valor = :valor WHERE metaID = :meta AND usuarioID = :usuarioI
 DELETE FROM us.meta WHERE metaID = :meta AND usuarioID = :usuarioID
 --usuarios_comer
 SELECT usuarioID,usuario,clave,activo,registrado,nombre,tipo,renta,comision,participacion FROM comer_usuario JOIN usuarios ON usuarios.usuarioID = comer_usuario.uID WHERE cID = :comercial
+--listaSuspender
+select sID, substr(sid,1,1) c, trim(sid,"cug") id, minMonto, limite, nombre from suspender
+JOIN usuarios ON usuarios.usuarioID = id where (c = "c" OR c = "u") AND resID = :resID
+UNION
+select sID, substr(sid,1,1) c, trim(sid,"cug") id, minMonto, limite,nombre from suspender
+JOIN bancas ON bancas.bancaID = id where c = "g" AND resID = :resID
+--suspender_nuevo
+INSERT INTO suspender (sID,limite,minMonto,resID) VALUES (:sID,:limite,:minMonto,:resID)
+--suspender_remover
+DELETE FROM suspender WHERE sID = :uID AND resID = :resID

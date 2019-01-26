@@ -5,6 +5,7 @@ package vos
 		public static const SUSPENDIDO:int = 0;
 		public static const USUARIO_SUSPENDIDO:int = 1;
 		public static const GRUPOS_SUSPENDIDOS:int = 2;
+		public static const PAGO_SUSPENDIDO:int = -10;
 		public static const ACTIVO:int = 3;
 		
 		public var usuarioID:int;

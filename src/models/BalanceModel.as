@@ -1,5 +1,8 @@
 package models
 {
+	import flash.display.IBitmapDrawable;
+	
+	import db.SQLStatementPool;
 	import db.sql.BalanceSQL;
 	
 	import starling.events.EventDispatcher;
@@ -10,6 +13,13 @@ package models
 		public function BalanceModel() {
 			sql = new BalanceSQL;
 			super();
+		}
+		
+		public function validar(data:Object,cb:Function):void {
+			sql.autoSuspension.run(data,cb);
+		}
+		public function validarUsuario (s:Object,cb:Function):void {
+			sql.usuario_suspendido.run(s,cb);
 		}
 		
 		public function nuevo (data:Object,cb:Function):void {

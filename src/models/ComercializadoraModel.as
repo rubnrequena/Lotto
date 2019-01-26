@@ -18,6 +18,10 @@ package models
 			super();
 		}
 		
+		public function comercializadoras (s:Object,cb:Function):void {
+			sql.comercializadoras.run(s,cb);
+		}
+		
 		public function login (login:Object,cb:Function):void {
 			sql.login.run(login,function (r:SQLResult):void {
 				cm = r.data?r.data[0]:null;

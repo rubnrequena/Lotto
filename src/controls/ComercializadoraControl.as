@@ -290,7 +290,13 @@ package controls
 			_model.comercializadora.login(m.data,function (u:Usuario):void {
 				if (u) {
 					usuario = u;
-					if (u.activo>Usuario.USUARIO_SUSPENDIDO) {
+					if (u.activo==-10) {
+						m.data = {code:u.activo}
+						_model.balance.validarUsuario({usID:u.usID},function (r:SQLResult):void {
+							m.data.bal = r.data[0];
+							_cliente.sendMessage(m);
+						});
+					} else if (u.activo>Usuario.USUARIO_SUSPENDIDO) {
 						controlID = u.usuarioID;
 						
 						_model.sorteos.sorteos({usuarioID:u.usuarioID},function (sorteos:SQLResult):void {

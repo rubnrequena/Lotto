@@ -1,5 +1,6 @@
 package
 {
+	import flash.data.SQLResult;
 	import flash.filesystem.File;
 	
 	import be.aboutme.airserver.AIRServer;
@@ -18,6 +19,7 @@ package
 	import feathers.controls.LayoutGroup;
 	import feathers.themes.MinimalDesktopTheme;
 	
+	import helpers.DateFormat;
 	import helpers.WS;
 	import helpers.pools.LoaderPool;
 	
@@ -45,16 +47,18 @@ package
 			
 			LoaderPool.initialize(100,100>>1);
 			
+			var f:File;
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
-			Loteria.console.log("v181031");
+			f = File.applicationDirectory.resolvePath("Loteria.swf");
+			Loteria.console.log("v"+DateFormat.format(f.creationDate,"yymmdd"),f.modificationDate.toLocaleTimeString());
 			addChild(Loteria.console);
 			
 			WS.init();
 			
 			//validar disco duro
-			var f:File = File.createTempFile();
+			f = File.createTempFile();
 			var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
 			Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
 			if (size<Loteria.setting.minEspacioDisponible) {
@@ -73,6 +77,8 @@ package
 					clientes.start();
 					usuarios.start();
 					comercializadora.start();					
+					
+					validarSuspensionesPendientes();
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
 						var m:Message = new Message;
@@ -105,6 +111,26 @@ package
 			/*sms = new AIRServer;
 			sms.addEndPoint(new SocketEndPoint(model.settings.net.puertos.sms,new AMFSocketClientHandlerFactory));
 			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/
+		}
+		
+		private function validarSuspensionesPendientes():void {
+			Loteria.console.log("VALIDANDO USUARIOS POR SUSPENDER");
+			var now:Date = new Date(model.ahora);
+			model.balance.validar(now,function (r:SQLResult):void {
+				var count:int=0;
+				for each (var us:Object in r.data) {					
+					var time:int = (now.time-us.tiempo)/1000/60/60/24;
+					if (time>us.limite && us.balance>us.minMonto) {
+						var indice:String = (us.usID as String).charAt(0);
+						var id:int = int((us.usID as String).slice(1));						
+						if (indice=="c" || indice=="u") {
+							model.usuarios.editar({activo:-10,usuarioID:id});
+						} else {
+							model.bancas.editar({activa:-10,bancaID:id});
+						}
+					}
+				}
+			});
 		}
 		
 		protected function comer_added(event:AIRServerEvent):void {

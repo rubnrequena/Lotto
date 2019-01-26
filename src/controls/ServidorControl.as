@@ -117,6 +117,11 @@ package controls
 			addEventListener("usuario-nuevo",usuario_nuevo);
 			addEventListener("usuario-editar",usuario_editar);
 			addEventListener("usuario-asignar",usuario_asignar);
+			addEventListener("usuario-listaSuspender",usuarioLSuspender);
+			addEventListener("usuario-susprem",usuario_suspremover);
+			addEventListener("usuario-suspnvo",usuario_suspnuevo);
+			
+			addEventListener("comerciales",usuario_comercializadoras);
 			
 			addEventListener("bancas",bancas);
 			addEventListener("bancas-nombres",bancas_nombres);
@@ -167,6 +172,39 @@ package controls
 			
 			/*_model.mSorteos.addEventListener(Event.OPEN,sorteo_abierto);
 			_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);*/
+		}
+		
+		private function usuario_comercializadoras(e:Event,m:Message):void
+		{
+			_model.comercializadora.comercializadoras(null,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function usuario_suspnuevo(e:Event,m:Message):void
+		{
+			m.data.resID = usuario.usID;
+			_model.usuarios.suspender_nuevo(m.data,function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function usuario_suspremover(e:Event,m:Message):void
+		{
+			m.data.resID = usuario.usID;
+			_model.usuarios.suspender_remover(m.data,function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function usuarioLSuspender(e:Event,m:Message):void {
+			_model.usuarios.listaSuspender(usuario.usID,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
 		}
 		
 		private function balance_rem_pendiente(e:Event,m:Message):void

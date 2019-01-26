@@ -70,7 +70,7 @@ package models
 			} else sql.nombres.run(null,cb);
 		}
 		
-		public function editar(banca:Object, cb:Function):void {
+		public function editar(banca:Object, cb:Function=null):void {
 			if (banca.hasOwnProperty("clave")) sql.clave.run(banca,result);
 			else if (banca.hasOwnProperty("activa")) sql.activa.run(banca,result);
 			else if (banca.hasOwnProperty("renta")) sql.renta.run(banca,result);

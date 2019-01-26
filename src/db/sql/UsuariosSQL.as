@@ -19,6 +19,9 @@ package db.sql
 		public var usuario_editar:SQLStatementPool;
 		public var usuario_activar:SQLStatementPool;
 		public var usuarios_comer:SQLStatementPool;
+		public var listaSuspender:SQLStatementPool;
+		public var suspender_nuevo:SQLStatementPool;
+		public var suspender_remover:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');

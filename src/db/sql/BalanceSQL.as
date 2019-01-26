@@ -17,6 +17,8 @@ package db.sql
 		public var balance_pagos_comer:SQLStatementPool;
 		public var confirmar_pago:SQLStatementPool;
 		public var nuevo_pago:SQLStatementPool;
+		public var autoSuspension:SQLStatementPool;
+		public var usuario_suspendido:SQLStatementPool;
 		
 		public function BalanceSQL()
 		{

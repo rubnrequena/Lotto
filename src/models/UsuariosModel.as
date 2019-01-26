@@ -25,6 +25,17 @@ package models
 			sql = new UsuariosSQL;			
 		}
 		
+		public function listaSuspender (usuario:String,cb:Function):void {
+			sql.listaSuspender.run({resID:usuario},cb);
+		}
+		
+		public function suspender_nuevo (data:Object,cb:Function):void {
+			sql.suspender_nuevo.run(data,cb);
+		}
+		public function suspender_remover (data:Object,cb:Function):void {
+			sql.suspender_remover.run(data,cb);
+		}
+		
 		public function nuevo (usuario:Object,cb:Function):void {			
 			usuario.registrado = (new Date).time;
 			usuario.clave = StringUtil.trim(usuario.clave).toLowerCase();
@@ -47,11 +58,9 @@ package models
 				dispatchEventWith(ModelEvent.LOGIN,false,usr);
 			});
 		}
-		public function editar (filtro:Object,cb:Function,error:Function=null):void {
+		public function editar (filtro:Object,cb:Function=null,error:Function=null):void {
 			if (filtro.hasOwnProperty("activo")) {
-				sql.usuario_activar.run(filtro,function (r:SQLResult):void {
-					
-				},error);
+				sql.usuario_activar.run(filtro,cb);
 			}
 			else sql.usuario_editar.run(filtro,cb,error);
 		}
@@ -68,7 +77,6 @@ package models
 		public function permiso_remove (meta:Object,cb:Function):void {
 			sql.permiso_remove.run(meta,cb);
 		}
-		
 		public function usuarios (filtro:Object,cb:Function):void {
 			if (filtro) {
 				if (filtro.hasOwnProperty("id")) sql.usuario_id.run(filtro,cb);
