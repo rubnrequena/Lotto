@@ -2,6 +2,7 @@ package models
 {
 	import flash.data.SQLConnection;
 	import flash.data.SQLResult;
+	import flash.data.SQLStatement;
 	import flash.errors.SQLError;
 	import flash.events.SQLEvent;
 	import flash.filesystem.File;
@@ -46,7 +47,10 @@ package models
 		public var sorteos:SorteosModel;
 		public var sistema:SistemaModel;
 		
-		public var usuarios:UsuariosModel;
+		static public var modusuarios:UsuariosModel;
+		public function get usuarios():UsuariosModel {
+			return modusuarios;
+		}
 		public var comercializadora:ComercializadoraModel;
 		public var taquillas:TaquillasModel;
 		public var topes:TopesModel;		
@@ -310,7 +314,7 @@ package models
 		}
 		
 		private function init_usuarios(e:SQLEvent):void {
-			usuarios = new UsuariosModel;
+			modusuarios = new UsuariosModel;
 			comercializadora = new ComercializadoraModel;
 			bancas = new BancasModel;
 			taquillas = new TaquillasModel;
@@ -319,7 +323,7 @@ package models
 			balance = new BalanceModel;
 			dispatchEventWith(Event.READY,null,"usuarios");
 			Loteria.console.log("MODEL USUARIOS RDY");
-						
+			
 			Starling.juggler.delayCall(function ():void {
 				conexion.attach("vt",ventasDB,new Responder(init_ventas));
 			},1);

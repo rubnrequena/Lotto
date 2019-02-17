@@ -32,7 +32,7 @@
 			"predeterminado": {
 				"numCompletado":1,
 				"webofic":{
-					"url":"http://localhost/prm/"
+					"url":"http://srq.com.ve/prm/"
 				}
 			},
 			"lottoactivo":{
@@ -79,7 +79,7 @@
 			"activa":1
 		},
 		"sms":{
-			"activa":0,
+			"activa":1,
 			"admins":["04149970167"],
 			"premios":["04149970167"]
 		},

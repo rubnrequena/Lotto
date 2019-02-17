@@ -2,6 +2,7 @@ package models
 {
 	import flash.data.SQLResult;
 	
+	import db.SQLStatementPool;
 	import db.sql.SorteosSQL;
 	
 	import starling.events.EventDispatcher;
@@ -122,6 +123,9 @@ package models
 				dispatchEventWith(ModelEvent.SORTEOS_REGISTRADOS,false,fecha);
 			});
 		}
+		public function convertir_zodiaco (s:Object,cb:Function):void {
+			sql.convertir_zodiaco.run(s,cb);	
+		}
 
 		
 		//PRE SORTEOS
@@ -129,6 +133,12 @@ package models
 			sql.presorteo_nuevo.run(sorteo,function (r:SQLResult):void {
 				execute(cb,r);
 				pre_sorteos(null,pre_sorteosFunction);
+			});
+		}
+		public function remover_sorteo (s:Object,cb:Function):void {
+			sql.remover_sorteo.multi(s,null,function (res:*):void {
+				pre_sorteos(null,pre_sorteosFunction);
+				execute(cb,res);
 			});
 		}
 		public function remover (sorteo:Object,cb:Function):void {

@@ -50,14 +50,15 @@ package controls
 					m.command = "init";					
 					m.data.sorteos = _model.sistema.sorteos;
 					
-					if (Loteria.setting.servidor!="local") {
+					//ws Obsoleto
+					/*if (Loteria.setting.servidor!="local") {
 						if (usr.nivel==1) {
 							var u:Object = Loteria.setting.plataformas;
 							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Administrador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
 						} else if (usr.nivel==2) {
 							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Premiador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
 						}
-					}
+					}*/
 					
 					_model.servidor.numeros({adminID:usr.adminID},function (r:SQLResult):void {
 						//m.data.elem = r.data;
@@ -105,6 +106,7 @@ package controls
 			addEventListener("sorteo-registrar",sorteo_registrar);
 			addEventListener("sorteo-premiar",sorteo_premiar);
 			addEventListener("sorteo-reiniciar",sorteo_reinciar);
+			addEventListener("sorteo-remover",sorteo_remover);
 			addEventListener("sorteo-editar",sorteo_editar);
 			addEventListener("sorteo-num-hist",sorteo_numHist);
 			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
@@ -767,6 +769,14 @@ package controls
 				});
 			});
 		}
+		private function sorteo_remover(e:Event,m:Message):void {
+			_model.sorteos.remover_sorteo(m.data,function (res:Vector.<SQLResult>):void {
+				_model.sistema.update_elementos();
+				_model.sistema.update_sorteos();
+				m.data = Code.OK;
+				_cliente.sendMessage(m);
+			});
+		}
 		
 		private function sorteo(e:Event,m:Message):void {
 			_model.sorteos.sorteo(m.data,function (s:Sorteo):void {
@@ -797,11 +807,16 @@ package controls
 				d.adicional = m.data.adicional;
 			}
 			
-			_model.sistema.elemento_nuevo(m.data.numeros,function (r:*):void {
-				m.data = r.length;
-				_cliente.sendMessage(m);
+			var s:Object = {sorteo:m.data.sorteo};
+			_model.sistema.elementos_limpiar(s,function (r:SQLResult):void {
+				_model.sistema.elemento_nuevo(m.data.numeros,function (r:*):void {
+					m.data = r.length;
+					_model.sorteos.convertir_zodiaco(s,null);
+					_model.sistema.update_elementos();
+					_model.sistema.update_sorteos();
+					_cliente.sendMessage(m);
+				});
 			});
-			/*_model.sistema.elementos_limpiar({sorteo:m.data.sorteo},function (r:SQLResult):void {});*/
 		}
 		
 		private function sorteo_registrar(e:Event,m:Message):void {

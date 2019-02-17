@@ -4,6 +4,7 @@ package models
 	import flash.errors.SQLError;
 	
 	import db.DB;
+	import db.SQLStatementPool;
 	import db.sql.UsuariosSQL;
 	
 	import starling.events.Event;
@@ -85,6 +86,9 @@ package models
 				//filtrar por activos
 				//filtrar por tipo
 			} else sql.usuarios.run(null,cb);
+		}
+		public function usuario_comer (uID:int,cb:Function):void {
+			sql.usuario_comer.run({uid:uID},cb);
 		}
 	}
 }

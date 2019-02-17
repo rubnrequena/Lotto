@@ -20,12 +20,14 @@ package
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.DateFormat;
+	import helpers.SMS;
 	import helpers.WS;
 	import helpers.pools.LoaderPool;
 	
 	import models.ModelHUB;
 	
 	import starling.events.Event;
+	import starling.utils.StringUtil;
 	
 	public class Main extends LayoutGroup
 	{
@@ -56,6 +58,7 @@ package
 			addChild(Loteria.console);
 			
 			WS.init();
+			SMS.init();
 			
 			//validar disco duro
 			f = File.createTempFile();
@@ -76,7 +79,12 @@ package
 					bancas.start();
 					clientes.start();
 					usuarios.start();
-					comercializadora.start();					
+					comercializadora.start();		
+					
+					SMS.sendMulti(SMS.ADMIN_CONTACTS,StringUtil.format("Servidor {0} iniciado a las: {1}",
+						Loteria.setting.servidor,	//0
+						DateFormat.format(null,DateFormat.masks.isoDateTime))
+					);	//1
 					
 					validarSuspensionesPendientes();
 					

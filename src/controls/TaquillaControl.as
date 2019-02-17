@@ -110,7 +110,7 @@ package controls
 					m.data = _model.sistema.elementos_sorteo_min(i.s);
 					_cliente.sendMessage(m);
 				}
-				m.data = "end";
+				m.data = {hash:_model.sistema.eleHash};
 				_cliente.sendMessage(m);
 			});
 		}
@@ -228,51 +228,61 @@ package controls
 			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla):void {
 				_taquilla = taquilla;
 				if (taquilla) {
-					var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
-					controlID = _taquilla.taquillaID;		
-					if (_taquilla.fingerlock==true && _taquilla.fingerprint) {
-						if (fp != efp) {
-							m.data = {code:Code.INVALIDO};
+					_model.taquillas.estaActiva(taquilla.taquillaID,function (act:Boolean):void {
+						if (act) continuarLogin();
+						else {
+							m.data = {code:Code.SUSPENDIDO};
 							_cliente.sendMessage(m);
-							return;
-						} //else initLog();
-					} else {
-						if (fp != efp) {
-							msg.command = "fingerprint";
-							_cliente.sendMessage(msg);
-						} //else initLog();
-					}
-					_taquilla.conectado = _model.ahora;
-					m.data = {
-						taq:taquilla,
-						numeros:_model.sistema.numeros,
-						time:_taquilla.conectado							
-					};
-					addListeners();
-					
-					var hoy:String = DateFormat.format(null);
-					var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
-					_model.sorteos.sorteos(f,function (r:SQLResult):void {
-						m.data.sorteos = r.data
-						m.data.elementos = _model.sistema.eleHash;
-						_cliente.sendMessage(m);
-						
-						_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function (meta:Object):void {
-							m.command = "metas";
-							m.data = meta;
-							_cliente.sendMessage(m);
-							measure("login");
-						})
-						
-						/*_model.sistema.elementos_taq(f,function (r:SQLResult):void {
-							
-						});*/
-					});
+						}
+					})
 				} else {
 					m.data = {code:Code.NO_EXISTE};
 					_cliente.sendMessage(m);
 				}
 			});
+			
+			function continuarLogin():void {
+				var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
+				controlID = _taquilla.taquillaID;		
+				if (_taquilla.fingerlock==true && _taquilla.fingerprint) {
+					if (fp != efp) {
+						m.data = {code:Code.INVALIDO};
+						_cliente.sendMessage(m);
+						return;
+					} //else initLog();
+				} else {
+					if (fp != efp) {
+						msg.command = "fingerprint";
+						_cliente.sendMessage(msg);
+					} //else initLog();
+				}
+				_taquilla.conectado = _model.ahora;
+				m.data = {
+					taq:_taquilla,
+					numeros:_model.sistema.numeros,
+						time:_taquilla.conectado							
+				};
+				addListeners();
+				
+				var hoy:String = DateFormat.format(null);
+				var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
+				_model.sorteos.sorteos(f,function (r:SQLResult):void {
+					m.data.sorteos = r.data
+					m.data.elementos = _model.sistema.eleHash;
+					_cliente.sendMessage(m);
+					
+					_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function (meta:Object):void {
+						m.command = "metas";
+						m.data = meta;
+						_cliente.sendMessage(m);
+						measure("login");
+					})
+					
+					/*_model.sistema.elementos_taq(f,function (r:SQLResult):void {
+					
+					});*/
+				});
+			}
 		}
 		
 		private function initLog():void {

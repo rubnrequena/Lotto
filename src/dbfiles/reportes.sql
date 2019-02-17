@@ -102,9 +102,9 @@ JOIN us.bancas ON bancas.bancaID = reportes.bancaID
 WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
 GROUP BY bancas.bancaID
 --comercial_general
-SELECT bancas.usuarioID id,usuarios.nombre desc, ROUND(SUM(jugada),2) jg, ROUND(SUM(premio),2) pr, partBanca pb, cmBanca cb, 
-	ROUND(SUM(jugada*cmBanca),2) cm, round(SUM(jugada*reportes.renta),2) rt, 
-	ROUND(SUM((jugada-premio-(jugada*cmBanca))*partBanca),2) prt
+SELECT bancas.usuarioID id,usuarios.nombre desc, usuarios.comision cb, usuarios.participacion pb,
+	ROUND(SUM(jugada),2) jg, ROUND(SUM(premio),2) pr, ROUND(SUM(jugada*usuarios.comision),2) cm, 
+	round(SUM(jugada*reportes.renta),2) rt, ROUND(SUM((jugada-premio-(jugada*usuarios.comision))*usuarios.participacion),2) prt	
 FROM vt.reportes
 JOIN us.bancas ON bancas.bancaID = reportes.bancaID 
 JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID 

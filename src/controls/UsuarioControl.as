@@ -303,9 +303,8 @@ package controls
 			_model.usuarios.login(m.data,function (u:Usuario):void {
 				if (u) {
 					usuario = u;
-					if (u.activo>Usuario.USUARIO_SUSPENDIDO) {
-						controlID = u.usuarioID;
-						
+					if (u.activo==Usuario.USUARIO_ACTIVO) {
+						controlID = u.usuarioID;						
 						_model.sorteos.sorteos({usuarioID:u.usuarioID},function (sorteos:SQLResult):void {
 							m.data = {
 								us:u,
@@ -325,8 +324,10 @@ package controls
 						
 						initSolicitudesPremios();
 					} else {
-						m.data = {code:Code.INVALIDO};
-						_cliente.sendMessage(m);	
+						_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+							m.data = {code:Code.SUSPENDIDO,info:r.data};
+							_cliente.sendMessage(m);
+						});
 					}
 				} else {
 					m.data = {code:Code.NO_EXISTE};
@@ -397,8 +398,14 @@ package controls
 			
 			addEventListener("balance-padre",balance_padre);
 			addEventListener("balance-pago",balance_pago);
+			
+			addEventListener("suspension-info",suspension_info);
 		}
-
+		
+		private function suspension_info(e:Event,m:Message):void
+		{
+			
+		}
 		
 		private function balance_pago(e:Event,m:Message):void
 		{

@@ -5,7 +5,10 @@ SELECT * FROM us.usuarios WHERE usuarioID = :id
 --usuario_user
 SELECT * FROM us.usuarios WHERE usuario = :usuario
 --usuario_login
-SELECT usuarioID,usuario,nombre,tipo,activo,renta,comision,participacion FROM us.usuarios WHERE tipo = 1 AND usuario = :us AND clave = :cl
+SELECT usuarioID,usuario,nombre,tipo,activo,renta,comision,participacion FROM us.usuarios 
+JOIN comer_usuario ON usuarios.usuarioID = comer_usuario.uid
+WHERE tipo = 1 AND usuario = :us AND clave = :cl 
+AND (SELECT activo FROM us.usuarios WHERE usuarioID = cID) = 3
 --usuario_nuevo
 INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta,comision,participacion) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta,:comision,:participacion)
 --usuario_editar
@@ -32,3 +35,7 @@ JOIN bancas ON bancas.bancaID = id where c = "g" AND resID = :resID
 INSERT INTO suspender (sID,limite,minMonto,resID) VALUES (:sID,:limite,:minMonto,:resID)
 --suspender_remover
 DELETE FROM suspender WHERE sID = :uID AND resID = :resID
+--usuario_comer
+select * from comer_usuario
+join us.usuarios ON usuarios.usuarioID = comer_usuario.cid
+WHERE uid = :uid;

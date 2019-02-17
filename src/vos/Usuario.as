@@ -1,10 +1,13 @@
 package vos
 {
+	import models.ModelHUB;
+
 	public class Usuario
 	{
 		public static const SUSPENDIDO:int = 0;
-		public static const USUARIO_SUSPENDIDO:int = 1;
+		public static const SUSPENDIDO_PAGO:int = 1;
 		public static const GRUPOS_SUSPENDIDOS:int = 2;
+		public static const USUARIO_ACTIVO:int = 3;
 		public static const PAGO_SUSPENDIDO:int = -10;
 		public static const ACTIVO:int = 3;
 		

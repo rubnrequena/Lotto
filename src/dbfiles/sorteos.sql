@@ -63,4 +63,14 @@ JOIN us.usuario_sorteos ON sorteos.sorteo = usuario_sorteos.sorteo
 LEFT JOIN main.numeros ON sorteos.ganador = numeros.elementoID 
 WHERE fecha = :lista AND (usuarioID = :usuarioID OR usuarioID = 0) 
 ORDER BY sorteos.sorteo, sorteos.cierra
---end
+--remover_sorteo
+DELETE FROM sorteos WHERE sorteoID = :sID;
+DELETE FROM pre_sorteos WHERE sorteo = :sID;
+DELETE FROM numeros WHERE sorteo = :sID;
+DELETE FROM admins_meta WHERE meta = "prm_sorteo" AND valor = :sID;
+DELETE FROM us.relacion_pago WHERE sorteo = :sID;
+DELETE FROM us.taquillas_comision WHERE sorteo = :sID;
+DELETE FROM us.taquillas_sorteo WHERE sorteo = :sID;
+DELETE FROM us.topes WHERE sorteo = :sID;
+DELETE FROM us.usuario_sorteos WHERE sorteo = :sID;
+DELETE from vt.sorteos WHERE sorteo = :sID;

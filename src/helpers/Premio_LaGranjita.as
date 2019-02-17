@@ -160,18 +160,6 @@ package helpers
 			
 			web.data = fv;
 			loader.load(web);
-			
-			//loader_alt.load(web);			
-			
-			//tuazar
-			azar_fecha = DateFormat.format(fecha);
-			azar_busq = _busq.split(" ")[0];
-			azar_loader.load(azar_req);
-			
-			//ldh
-			if (_busq.substr(0,1)=="0") ldh_busq = 'Granjita '+_busq.substr(1);
-			else ldh_busq = 'Granjita '+_busq;
-			ldh_loader.load(ldh_req);
 		}
 		
 		override protected function onComplete(event:Event):void {

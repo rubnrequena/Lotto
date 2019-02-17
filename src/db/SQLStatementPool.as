@@ -91,6 +91,24 @@ package db
 			pool.push(sql);
 		}
 		
+		public function multi (params:Object=null,onNext:Function=null,onComplete:Function=null,onError:Function=null,batch:Boolean=false):void {
+			var s:Array = _sentencia.split(";");
+			var len:int = s.length;
+			var resultLen:int;
+			var results:Vector.<SQLResult> = new Vector.<SQLResult>();
+			
+			if (batch) _conexion.begin();
+			for (var i:int = 0; i < len; i++) {
+				run(params, function (result:SQLResult):void {
+					results.push(result);
+					if (++resultLen==len) {
+						if (batch) _conexion.commit();
+						execute(onComplete,results);
+					} else execute(onNext,s[resultLen-1]);
+				},onError || DB.ERROR_HANDLER);
+			}
+		}
+		
 		public function batch (data:Array,onComplete:Function,onError:Function=null):void {						
 			var len:int = data.length;
 			var resultLen:int;

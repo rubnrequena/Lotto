@@ -288,5 +288,11 @@ package models
 		public function comision_dl(data:Object,cb:Function):void {
 			sql.comision_dl.run(data,cb);
 		}
+		public function estaActiva (id:int,cb:Function):void {
+			sql.taquilla_activa.run({tID:id},function (res:SQLResult):void {
+				if (res.data) execute(cb,true);
+				else execute(cb,false);
+			});
+		}
 	}
 }

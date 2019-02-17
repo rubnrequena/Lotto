@@ -106,9 +106,10 @@ package models
 			if (lockVentas) return;
 			
 			var vt:Object; // TODO: object pool
-			
+						
 			var m:Number=0;
-			var ID:int = ++lastID;			
+			var ID:int = ++lastID;
+			
 			for each (v in ventas) { 
 				m += Number(v.monto.toFixed(2));
 			}			

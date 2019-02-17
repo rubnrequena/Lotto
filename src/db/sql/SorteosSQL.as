@@ -34,6 +34,8 @@ package db.sql
 		public var usuario_publico:SQLStatementPool;
 		public var fecha_usuario:SQLStatementPool;
 		public var lista_usuario:SQLStatementPool;
+		public var remover_sorteo:SQLStatementPool;
+		public var convertir_zodiaco:SQLStatementPool;
 		
 		public function SorteosSQL()
 		{			
@@ -69,7 +71,9 @@ package db.sql
 			remover_publico = new SQLStatementPool('DELETE FROM us.taquillas_sorteo WHERE ID = :id AND banca = :bancaID');
 			editar_publico = new SQLStatementPool('UPDATE us.taquillas_sorteo SET publico = :publico WHERE ID = :id AND banca = :bancaID');
 			
-			usuario_publico = new SQLStatementPool('SELECT sorteoID, nombre FROM us.usuario_sorteos JOIN main.sorteos ON usuario_sorteos.sorteo = sorteos.sorteoID WHERE (usuarioID = :usuarioID OR usuarioID = 0)');			
+			usuario_publico = new SQLStatementPool('SELECT sorteoID, nombre FROM us.usuario_sorteos JOIN main.sorteos ON usuario_sorteos.sorteo = sorteos.sorteoID WHERE (usuarioID = :usuarioID OR usuarioID = 0)');
+			
+			scan(SQLStatementPool.DEFAULT_CONNECTION);
 		}
 	}
 }

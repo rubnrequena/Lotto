@@ -107,7 +107,7 @@ package models
 			update_sorteos();
 		}
 		
-		private function update_sorteos():void {
+		public function update_sorteos():void {
 			s.sorteos.run(null,sorteos_act);
 		}
 		

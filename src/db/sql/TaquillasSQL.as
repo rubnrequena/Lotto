@@ -4,7 +4,7 @@ package db.sql
 	
 	import vos.Taquilla;
 
-	public class TaquillasSQL
+	public class TaquillasSQL extends SQLBase
 	{
 		
 		public var taquilla_nueva:SQLStatementPool;
@@ -59,8 +59,10 @@ package db.sql
 		public var comisiones:SQLStatementPool;
 		public var comision_nv:SQLStatementPool;
 		public var comision_dl:SQLStatementPool;
+		public var taquilla_activa:SQLStatementPool;
 		
 		public function TaquillasSQL() {
+			super('taquillas.sql');
 			
 			taquillas = new SQLStatementPool('SELECT * FROM us.taquillas',null,Taquilla);
 			taquillas_usuario = new SQLStatementPool('SELECT * FROM us.taquillas WHERE usuarioID = :usuario',null,Taquilla);
@@ -78,7 +80,7 @@ package db.sql
 			taquilla_id_banca = new SQLStatementPool('SELECT taquillas.taquillaID, taquillas.nombre, taquillas.usuarioID, taquillas.usuario, taquillas.clave, taquillas.bancaID, taquillas.activa, taquillas.comision, bancas.nombre "banca", bancas.activa "banca_activa" FROM us.taquillas JOIN us.bancas ON taquillas.bancaID = bancas.bancaID WHERE taquillaID = :id AND taquillas.bancaID = :bancaID');
 			taquilla_id_usuario = new SQLStatementPool('SELECT taquillas.taquillaID, taquillas.nombre, taquillas.usuarioID, taquillas.usuario, taquillas.clave, taquillas.bancaID, taquillas.activa, taquillas.comision, bancas.nombre "banca", bancas.activa "banca_activa" FROM us.taquillas JOIN us.bancas ON taquillas.bancaID = bancas.bancaID WHERE taquillaID = :id AND taquillas.usuarioID = :usuarioID');
 			
-			taquilla_login = new SQLStatementPool('SELECT taquillaID, taquillas.usuario, taquillas.usuarioID, taquillas.bancaID, taquillas.nombre, taquillas.activa, taquillas.comision, fingerprint, fingerlock FROM us.taquillas JOIN us.bancas ON bancas.bancaID = taquillas.bancaID JOIN us.usuarios ON usuarios.usuarioID = taquillas.usuarioID WHERE taquillas.usuario = :usuario AND taquillas.clave = :clave AND (taquillas.activa = 1 AND bancas.activa >= 1 AND usuarios.activo >= 1 AND taquillas.papelera = 0)',null,Taquilla);
+			taquilla_login = new SQLStatementPool(sentencia('taquilla_login'),null,Taquilla);
 			taquilla_nueva = new SQLStatementPool('INSERT INTO us.taquillas (usuarioID,bancaID,nombre,usuario,clave,activa,comision,creacion) VALUES (:usuarioID,:bancaID,:nombre,:usuario,:clave,:activa,:comision,:creacion)',null);
 			taquilla_rem_bid = new SQLStatementPool('DELETE FROM us.taquillas WHERE taquillaID = :taquillaID AND bancaID = :bancaID');
 			taquilla_rem_uid = new SQLStatementPool('DELETE FROM us.taquillas WHERE taquillaID = :taquillaID AND usuarioID = :usuarioID');
@@ -120,6 +122,8 @@ package db.sql
 			comisiones = new SQLStatementPool('SELECT * FROM taquillas_comision WHERE taquillaID = :taquillaID');
 			comision_nv = new SQLStatementPool('INSERT INTO taquillas_comision (sorteo,comision,taquillaID) VALUES (:sorteo,:comision,:taquillaID)');
 			comision_dl = new SQLStatementPool('DELETE FROM taquillas_comision WHERE comID = :comID');
+			
+			scan();
 		}
 	}
 }

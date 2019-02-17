@@ -37,41 +37,46 @@ package controls
 			_model.bancas.login(m.data,function (r:SQLResult):void {
 				if (r.data) {
 					usuario = r.data[0];
-					if (usuario.activa) {
-						controlID = usuario.bancaID; 
-						m.data = {
-							usr:r.data[0],
-							tm:_model.ahora
-						}
-						_model.bancas.meta({bancaID:usuario.bancaID,usuarioID:usuario.usuarioID},function (mt:SQLResult):void {
-							m.data.meta = mt.data;
-							_cliente.sendMessage(m);
-							
-							m.data = {};
-							m.command = "init";
-							_model.sorteos.sorteos({usuarioID:usuario.usuarioID},function (sorteos:SQLResult):void {
-								m.data.s = sorteos.data;
-								_cliente.sendMessage(m);
-								measure(m.command);
-								addListeners();
-							});
-							_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
-								m.data = r.data;
-								m.command = "balance-padre";
-								_cliente.sendMessage(m);
-							});
-							
-						});
-						initSolicitudesPremios();
-					} else {						
-						m.data = {code:Code.INVALIDO};
+					_model.bancas.estaActiva(usuario.bancaID,function (act:Boolean):void {
+					if (act) contLogin();
+					else {						
+						m.data = {code:Code.SUSPENDIDO};
 						_cliente.sendMessage(m);
 					}
+					});
 				} else {
 					m.data = {code:Code.NO_EXISTE};
 					_cliente.sendMessage(m);
 				}
 			});	
+			
+			function contLogin():void {
+				controlID = usuario.bancaID; 
+				m.data = {
+					usr:usuario,
+						tm:_model.ahora
+				}
+				_model.bancas.meta({bancaID:usuario.bancaID,usuarioID:usuario.usuarioID},function (mt:SQLResult):void {
+					m.data.meta = mt.data;
+					_cliente.sendMessage(m);
+					
+					m.data = {};
+					m.command = "init";
+					_model.sorteos.sorteos({usuarioID:usuario.usuarioID},function (sorteos:SQLResult):void {
+						m.data.s = sorteos.data;
+						_cliente.sendMessage(m);
+						measure(m.command);
+						addListeners();
+					});
+					_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+						m.data = r.data;
+						m.command = "balance-padre";
+						_cliente.sendMessage(m);
+					});
+					
+				});
+				initSolicitudesPremios();
+			}
 		}
 		
 		private function addListeners():void {

@@ -22,6 +22,7 @@ package db.sql
 		public var listaSuspender:SQLStatementPool;
 		public var suspender_nuevo:SQLStatementPool;
 		public var suspender_remover:SQLStatementPool;
+		public var usuario_comer:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');

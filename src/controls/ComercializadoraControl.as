@@ -296,7 +296,7 @@ package controls
 							m.data.bal = r.data[0];
 							_cliente.sendMessage(m);
 						});
-					} else if (u.activo>Usuario.USUARIO_SUSPENDIDO) {
+					} else if (u.activo==Usuario.ACTIVO) {
 						controlID = u.usuarioID;
 						
 						_model.sorteos.sorteos({usuarioID:u.usuarioID},function (sorteos:SQLResult):void {

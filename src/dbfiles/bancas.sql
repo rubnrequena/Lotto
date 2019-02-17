@@ -3,6 +3,13 @@ SELECT bancaID,bancas.nombre,bancas.usuario,bancas.renta,bancas.usuarioID,comisi
 FROM us.bancas 
 JOIN us.usuarios ON usuarios.usuarioID = bancas.usuarioID
 WHERE bancas.usuario = :us AND bancas.clave = :cl AND usuarios.activo >= 1
+--banca_activa
+SELECT activa, usuarios.activo uact FROM bancas 
+JOIN us.usuarios ON usuarios.usuarioID = bancas.usuarioID 
+JOIN us.comer_usuario ON usuarios.usuarioID = comer_usuario.uid
+WHERE bancaID = :gID 
+	AND activa = 1 AND usuarios.activo = 3 
+	AND (SELECT activo FROM us.usuarios WHERE usuarioID = cID) = 3
 --meta
 SELECT mt.metaID metaID, meta_info.campo campo, CAST(valor AS INTEGER) valor 
 FROM (SELECT * FROM us.meta WHERE (usuarioID = 0 OR usuarioID = :usuarioID) AND (bancaID = 0 OR bancaID = :bancaID) ORDER BY metaID) AS mt JOIN us.meta_info ON meta_info.metaID = mt.campoID 

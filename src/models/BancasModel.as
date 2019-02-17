@@ -97,5 +97,12 @@ package models
 		public function transferir(data:Object, cb:Function):void {
 			sql.transferir.run(data,cb);
 		}
+		
+		public function estaActiva (id:int,cb:Function):void {
+			sql.banca_activa.run({gID:id},function (res:SQLResult):void {
+				if (res.data) execute(cb,true);
+				else execute(cb,false);
+			});
+		}
 	}
 }
