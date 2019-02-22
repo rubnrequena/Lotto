@@ -29,6 +29,8 @@ package
 	import starling.events.Event;
 	import starling.utils.StringUtil;
 	
+	import vos.Usuario;
+	
 	public class Main extends LayoutGroup
 	{
 		private var bancas:AIRServer;
@@ -121,6 +123,7 @@ package
 			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/
 		}
 		
+		//autoSuspender
 		private function validarSuspensionesPendientes():void {
 			Loteria.console.log("VALIDANDO USUARIOS POR SUSPENDER");
 			var now:Date = new Date(model.ahora);
@@ -131,11 +134,9 @@ package
 					if (time>us.limite && us.balance>us.minMonto) {
 						var indice:String = (us.usID as String).charAt(0);
 						var id:int = int((us.usID as String).slice(1));						
-						if (indice=="c" || indice=="u") {
-							model.usuarios.editar({activo:-10,usuarioID:id});
-						} else {
-							model.bancas.editar({activa:-10,bancaID:id});
-						}
+						if (indice=="c" || indice=="u") model.usuarios.editar({activo:Usuario.SUSPENDIDO,usuarioID:id});
+						else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
+						Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.usID));
 					}
 				}
 			});
