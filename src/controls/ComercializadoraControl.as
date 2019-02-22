@@ -402,6 +402,35 @@ package controls
 			addEventListener("balance-pago",balance_pago);
 			addEventListener("balance-ppagos",balance_ppagos);
 			addEventListener("balance-confirmacion",balance_confirmacion);
+			
+			addEventListener("usuario-listaSuspender",usuarioLSuspender);
+			addEventListener("usuario-susprem",usuario_suspremover);
+			addEventListener("usuario-suspnvo",usuario_suspnuevo);
+		}
+		
+		private function usuario_suspnuevo(e:Event,m:Message):void
+		{
+			m.data.resID = usuario.usID;
+			_model.usuarios.suspender_nuevo(m.data,function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function usuario_suspremover(e:Event,m:Message):void
+		{
+			m.data.resID = usuario.usID;
+			_model.usuarios.suspender_remover(m.data,function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function usuarioLSuspender(e:Event,m:Message):void {
+			_model.usuarios.listaSuspender(usuario.usID,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
 		}
 		private function balance_confirmacion(e:Event,m:Message):void {
 			m.data.rID = usuario.usID;
