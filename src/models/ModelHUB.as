@@ -280,14 +280,15 @@ package models
 			if (premiador.activo) {				
 				var pw:IPremio = sistema.getPremiosClassByID(s.sorteo); 
 				if (pw) {					
-					pw.addEventListener(Event.COMPLETE,function (e:Event,pleno:String):void {
-						pleno = ObjectUtil.extractAndTrail(pleno);
+					pw.addEventListener(Event.COMPLETE,function (e:Event,pleno:Object):void {
+						var fpleno:String = pleno.ganador;
+						if (!pleno.hasOwnProperty("zodiaco")) fpleno = ObjectUtil.extractAndTrail(pleno.ganador);						
 						sorteos.premio({sorteoID:s.sorteoID},function (r:SQLResult):void {
 							if (s.sorteoID in ventas.sorteos_premiados) {												
 								Loteria.console.log("[JV] SORTEO PREVIAMENTE PREMIADO, OMITIENDO PREMIACION");
 							} else {
 								Loteria.console.log("[JV] PREMIO RECIBIDO ",s.descripcion,"PLENO:",pleno);												
-								var e:Elemento = sistema.elemento_num(pleno,s.sorteo);
+								var e:Elemento = sistema.elemento_num(fpleno,s.sorteo);
 								if (e) {
 									var numSol:int = mSorteos.solicitudPremio(s,e.elementoID,13); 
 									if (numSol>=premiador.puntos) {
