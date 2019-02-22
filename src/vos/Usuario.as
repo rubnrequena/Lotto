@@ -1,6 +1,6 @@
 package vos
 {
-	import models.ModelHUB;
+	
 
 	public class Usuario
 	{

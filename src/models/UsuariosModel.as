@@ -4,7 +4,6 @@ package models
 	import flash.errors.SQLError;
 	
 	import db.DB;
-	import db.SQLStatementPool;
 	import db.sql.UsuariosSQL;
 	
 	import starling.events.Event;
