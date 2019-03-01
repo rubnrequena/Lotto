@@ -1,6 +1,7 @@
 package helpers
 {
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestMethod;
@@ -49,12 +50,16 @@ package helpers
 				r.data = v;
 				
 				l.addEventListener(Event.COMPLETE,sms_complete);
+				l.addEventListener(IOErrorEvent.IO_ERROR,onError);
 				l.load(r);
 				
 				function sms_complete (e:Event):void {
 					l.removeEventListener(Event.COMPLETE,sms_complete);
 					LoaderPool.dispose(l);
 					if (cb!=null) execute(cb,l.data);
+				};
+				function onError (e:IOErrorEvent):void {
+					Loteria.console.log("ERROR al conectar con ",r.url);	
 				};
 			}
 			return Loteria.setting.plataformas.sms.activa;
