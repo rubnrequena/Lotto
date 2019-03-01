@@ -13,6 +13,7 @@ CREATE TABLE taquillas_comision (
 + [OP] Balance: ocultar suspendidos, boton suspender, enlazar los pagos con los cobros
 + [OP] Crear registro $config para configuraciones locales persistentes
 + [CM] Eliminar reportes de pago duplicados o invalidos.
++ [JV] Premiar sorteos zodiacales
 --19.02.XX
 - Balance: hacer los botones un menu flotante con modals.
 - Modulo verificar resultados de sorteos
