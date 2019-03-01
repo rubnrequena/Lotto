@@ -132,11 +132,11 @@ package
 				for each (var us:Object in r.data) {					
 					var time:int = (now.time-us.tiempo)/1000/60/60/24;
 					if (time>us.limite && us.balance>us.minMonto) {
-						var indice:String = (us.usID as String).charAt(0);
-						var id:int = int((us.usID as String).slice(1));						
+						var indice:String = (us.sID as String).charAt(0);
+						var id:int = int((us.sID as String).slice(1));						
 						if (indice=="c" || indice=="u") model.usuarios.editar({activo:Usuario.SUSPENDIDO,usuarioID:id});
 						else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
-						Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.usID));
+						Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
 					}
 				}
 			});

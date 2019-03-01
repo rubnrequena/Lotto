@@ -32,9 +32,9 @@ UNION
 select sID, substr(sid,1,1) c, trim(sid,"cug") id, minMonto, limite,nombre from suspender
 JOIN bancas ON bancas.bancaID = id where c = "g" AND resID = :resID
 --suspender_nuevo
-INSERT INTO suspender (sID,limite,minMonto,resID) VALUES (:usID,:limite,:minMonto,:resID)
+INSERT INTO suspender (sID,limite,minMonto,resID) VALUES (:sID,:limite,:minMonto,:resID)
 --suspender_remover
-DELETE FROM suspender WHERE sID = :uID AND resID = :resID
+DELETE FROM suspender WHERE sID = :sID AND resID = :resID
 --usuario_comer
 select * from comer_usuario
 join us.usuarios ON usuarios.usuarioID = comer_usuario.cid
