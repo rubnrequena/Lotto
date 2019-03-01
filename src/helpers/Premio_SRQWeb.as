@@ -62,7 +62,7 @@ package helpers
 				var src:Object = JSON.parse(loader.data);
 				//src.ganador = ObjectUtil.trailZero(src.ganador);
 				Loteria.console.log("Premio SRQBridge:",srt,"(",src.ganador,")");
-				dispatchEventWith(Event.COMPLETE,false,src);
+				dispatchEventWith(Event.COMPLETE,false,src.ganador);
 				isComplete();
 			} else retry();
 		}
