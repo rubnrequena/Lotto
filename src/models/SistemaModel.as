@@ -60,6 +60,11 @@ package models
 				return a.sorteo==sorteo;
 			});
 		}
+		public function elementos_sorteos (sorteos:Array):Vector.<Elemento> {
+			return _elementos.filter(function (a:Elemento,b:Boolean,c:*):Boolean {
+				return sorteos.indexOf(a.sorteo)>-1;
+			});
+		}
 		public function elementos_sorteo_min (sorteo:int):Array {
 			return _elementos_min.filter(function (a:*,b:Boolean,c:*):Boolean {
 				return a.s==sorteo;

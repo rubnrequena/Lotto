@@ -74,3 +74,5 @@ DELETE FROM us.taquillas_sorteo WHERE sorteo = :sID;
 DELETE FROM us.topes WHERE sorteo = :sID;
 DELETE FROM us.usuario_sorteos WHERE sorteo = :sID;
 DELETE from vt.sorteos WHERE sorteo = :sID;
+--pendientes
+SELECT fecha,descripcion,sorteo,sorteoID,ganador gid FROM vt.sorteos where ganador = 0 AND fecha BETWEEN :desde and :hasta and abierta = false

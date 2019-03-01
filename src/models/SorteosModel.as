@@ -154,5 +154,9 @@ package models
 		protected function pre_sorteosFunction(r:SQLResult):void {
 			_presorteos = r.data;
 		}
+		
+		public function pendientes(data:Object, cb:Function):void {
+			sql.pendientes.run(data,cb);
+		}
 	}
 }

@@ -36,6 +36,7 @@ package db.sql
 		public var lista_usuario:SQLStatementPool;
 		public var remover_sorteo:SQLStatementPool;
 		public var convertir_zodiaco:SQLStatementPool;
+		public var pendientes:SQLStatementPool;
 		
 		public function SorteosSQL()
 		{			

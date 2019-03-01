@@ -84,6 +84,7 @@ package controls
 			addEventListener("sorteo-editar",sorteo_editar);
 			addEventListener("sorteo-num-hist",sorteo_numHist);
 			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
+			addEventListener("sorteo-pendientes",sorteo_pendientes);
 			addEventListener("elementos",elementos);
 			
 			addEventListener("monitor",monitor);			
@@ -110,6 +111,7 @@ package controls
 			addEventListener("sorteo-editar",sorteo_editar);
 			addEventListener("sorteo-num-hist",sorteo_numHist);
 			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
+			addEventListener("sorteo-pendientes",sorteo_pendientes);
 			
 			addEventListener("elemento-nuevo",elemento_nuevo);
 			addEventListener("elementos",elementos);
@@ -299,6 +301,15 @@ package controls
 		
 		private function sorteo_monitor_vnt(e:Event,m:Message):void {
 			_model.servidor.monitor_venta_tickets(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		
+		private function sorteo_pendientes(e:Event,m:Message):void
+		{
+			_model.sorteos.pendientes(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			});
@@ -792,8 +803,19 @@ package controls
 			});
 		}
 		private function elementos(e:Event,m:Message):void {
-			m.data = _model.sistema.elementos_sorteo(m.data.sorteo);
-			_cliente.sendMessage(m);
+			if (m.data.hasOwnProperty("sorteo")) {
+				m.data = _model.sistema.elementos_sorteo(m.data.sorteo);
+				_cliente.sendMessage(m);
+			}
+			else if (m.data.hasOwnProperty("sorteos")) {
+				var elm:Vector.<Elemento> =_model.sistema.elementos_sorteos(m.data.sorteos); 
+				while (elm.length>0) {
+					m.data = elm.splice(0,100);
+					_cliente.sendMessage(m);
+				}
+				m.data = "end";
+				_cliente.sendMessage(m);
+			}
 		}
 		private function elemento_nuevo(e:Event,m:Message):void {
 			_model.sistema.elemento_nuevo(m.data,function (r:SQLResult):void {
