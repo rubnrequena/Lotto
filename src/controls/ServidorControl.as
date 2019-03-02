@@ -46,22 +46,9 @@ package controls
 					else addListeners2();
 					_cliente.sendMessage(m);
 					
-					ObjectUtil.clear(m.data);
-					m.command = "init";					
-					m.data.sorteos = _model.sistema.sorteos;
-					
-					//ws Obsoleto
-					/*if (Loteria.setting.servidor!="local") {
-						if (usr.nivel==1) {
-							var u:Object = Loteria.setting.plataformas;
-							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Administrador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
-						} else if (usr.nivel==2) {
-							WS.enviar(Loteria.setting.plataformas.usuarios.admin,StringUtil.format("[{1}][JV] Premiador *{0}* Inicio sesion",usr.usuario,Loteria.setting.servidor));
-						}
-					}*/
-					
-					_model.servidor.numeros({adminID:usr.adminID},function (r:SQLResult):void {
-						//m.data.elem = r.data;
+					_model.servidor.sorteos({adminID:usuario.adminID},function (s:SQLResult):void {
+						m.command = "init";
+						m.data = {sorteos:s.data};
 						_cliente.sendMessage(m);
 					});
 					
@@ -309,6 +296,7 @@ package controls
 		
 		private function sorteo_pendientes(e:Event,m:Message):void
 		{
+			m.data.a = usuario.adminID;
 			_model.sorteos.pendientes(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -577,7 +565,8 @@ package controls
 		private function reporte_sorteo_global (e:Event,m:Message):void {
 			_model.servidor.sorteos({adminID:usuario.adminID},function (s:SQLResult):void {
 				if (s.data) {
-					m.data.d.sorteo = s.data[0].sorteoID;
+					//m.data.d.sorteo = s.data[0].sorteoID;
+					m.data.d.aID = usuario.adminID;
 					if (m.data.a==1) _model.reportes.sorteo_global_fecha(m.data.d,result);
 					else if (m.data.a==2) _model.reportes.sorteo_global_grupo(m.data.d,result);
 					else _model.reportes.sorteo_global(m.data.d,result);

@@ -24,16 +24,8 @@ package db.sql
 		public function ServidorSQL()
 		{
 			super("servidor.sql");
-			login = new SQLStatementPool(sentencia("login"),SQLStatementPool.ADMIN_CONN,Admin);
-			
-			scan(SQLStatementPool.ADMIN_CONN);
-			
-			/*sorteos_admin = new SQLStatementPool(sentencia('sorteos_admin'),SQLStatementPool.ADMIN_CONN);
-			sorteos = new SQLStatementPool(sentencia('sorteos'),SQLStatementPool.ADMIN_CONN);
-			sorteos_dia = new SQLStatementPool(sentencia('sorteos_dia'),SQLStatementPool.ADMIN_CONN);
-			
-			numeros_admin = new SQLStatementPool(sentencia('numeros_admin'),SQLStatementPool.ADMIN_CONN);*/
-			
+			login = new SQLStatementPool(sentencia("login"),SQLStatementPool.ADMIN_CONN,Admin);			
+			scan(SQLStatementPool.ADMIN_CONN);			
 		}		
 		
 	}

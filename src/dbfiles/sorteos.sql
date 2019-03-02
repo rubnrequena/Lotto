@@ -75,4 +75,6 @@ DELETE FROM us.topes WHERE sorteo = :sID;
 DELETE FROM us.usuario_sorteos WHERE sorteo = :sID;
 DELETE from vt.sorteos WHERE sorteo = :sID;
 --pendientes
-SELECT fecha,descripcion,sorteo,sorteoID,ganador gid FROM vt.sorteos where ganador = 0 AND fecha BETWEEN :desde and :hasta and abierta = false
+SELECT fecha,descripcion,sorteo,sorteoID,ganador gid FROM vt.sorteos 
+WHERE ganador = 0 AND fecha BETWEEN :desde and :hasta and abierta = false
+and sorteos.sorteo IN (SELECT sorteoID  FROM admins_meta JOIN main.sorteos ON admins_meta.valor = sorteos.sorteoID WHERE adminID = :aID)

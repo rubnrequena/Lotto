@@ -85,22 +85,43 @@ SELECT fecha desc, ROUND(SUM(jugada),2) jugada, ROUND(SUM(premio),2) premio, SUM
 WHERE fecha BETWEEN :inicio AND :fin AND reportes.bancaID = :bancaID 
 GROUP BY reportes.fecha ORDER BY reportes.fecha
 --sorteo_glb
-SELECT usuarios.nombre desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, SUM(jugada*reportes.comision*0.01) comision FROM reportes
-JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID 
-JOIN us.bancas ON bancas.bancaID = reportes.bancaID 
-JOIN us.usuarios ON usuarios.usuarioID = bancas.usuarioID
-WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
-GROUP BY bancas.usuarioID
+SELECT cID, sorteo, usuarios.nombre desc, jugada, premio, r.comision FROM (
+  SELECT sorteos.sorteo, cid, usuarios.nombre desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, ROUND(SUM(jugada*reportes.comision*0.01),0) comision FROM reportes
+  JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID 
+  JOIN us.bancas ON bancas.bancaID = reportes.bancaID 
+  JOIN us.usuarios ON usuarios.usuarioID = bancas.usuarioID
+  JOIN us.comer_usuario ON comer_usuario.uid = bancas.usuarioID
+  WHERE 
+  sorteos.sorteo IN (SELECT sorteoID  FROM admins_meta JOIN main.sorteos ON admins_meta.valor = sorteos.sorteoID WHERE adminID = :aID)
+  AND reportes.fecha BETWEEN :inicio AND :fin
+  GROUP BY sorteos.sorteo, comer_usuario.cID
+  ORDER BY sorteos.sorteo
+) as r JOIN us.usuarios ON usuarios.usuarioID = r.cID
 --sorteo_glb_fecha
-SELECT reportes.fecha desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, SUM(jugada*reportes.comision*0.01) comision FROM reportes
-JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
-GROUP BY reportes.fecha
+SELECT fecha, cID, sorteo, usuarios.nombre desc, jugada, premio, r.comision FROM (
+  SELECT reportes.fecha, sorteos.sorteo, cid, usuarios.nombre desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, ROUND(SUM(jugada*reportes.comision*0.01),0) comision FROM reportes
+  JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID 
+  JOIN us.bancas ON bancas.bancaID = reportes.bancaID 
+  JOIN us.usuarios ON usuarios.usuarioID = bancas.usuarioID
+  JOIN us.comer_usuario ON comer_usuario.uid = bancas.usuarioID
+  WHERE 
+  sorteos.sorteo IN (SELECT sorteoID  FROM admins_meta JOIN main.sorteos ON admins_meta.valor = sorteos.sorteoID WHERE adminID = :aID)
+  AND reportes.fecha BETWEEN :inicio AND :fin
+  GROUP BY reportes.fecha, comer_usuario.cID
+  ORDER BY reportes.fecha
+) as r JOIN us.usuarios ON usuarios.usuarioID = r.cID
 --sorteo_glb_grupo
 SELECT bancas.nombre desc, SUM(reportes.jugada) jugada, SUM(reportes.premio) premio, SUM(jugada*reportes.comision*0.01) comision FROM reportes
 JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID 
 JOIN us.bancas ON bancas.bancaID = reportes.bancaID
 WHERE sorteos.sorteo = :sorteo AND reportes.fecha BETWEEN :inicio AND :fin
 GROUP BY bancas.bancaID
+--sorteo_glb_sorteo
+SELECT sum(jugada) jg, sorteos.descripcion from reportes 
+	JOIN vt.sorteos ON reportes.sorteoID = sorteos.sorteoID
+WHERE reportes.fecha between "2019-03-01" AND "2019-03-01" 
+	AND sorteos.sorteo IN (SELECT sorteoID  FROM admins_meta JOIN main.sorteos ON admins_meta.valor = sorteos.sorteoID WHERE adminID = 2)
+GROUP BY reportes.sorteoID
 --comercial_general
 SELECT bancas.usuarioID id,usuarios.nombre desc, usuarios.comision cb, usuarios.participacion pb,
 	ROUND(SUM(jugada),2) jg, ROUND(SUM(premio),2) pr, ROUND(SUM(jugada*usuarios.comision),2) cm, 
