@@ -19,6 +19,7 @@ package controls
 	import helpers.LTool;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
+	import helpers.SMS;
 	import helpers.WS;
 	import helpers.bm.EGrupo;
 	import helpers.print.ModoExtremo;
@@ -259,8 +260,7 @@ package controls
 				_taquilla.conectado = _model.ahora;
 				m.data = {
 					taq:_taquilla,
-					numeros:_model.sistema.numeros,
-						time:_taquilla.conectado							
+					time:_taquilla.conectado							
 				};
 				addListeners();
 				
@@ -599,6 +599,7 @@ package controls
 						if (ventasUsuario) merge(ventasUsuario.sorteos);
 						measure(m.command+" #"+ticket.ticketID+" | "+ids.join(","));
 						m.data.format = "print";
+						
 						if (meta.hasOwnProperty("mail")) {
 							m.data.format = "mail";
 							
@@ -623,21 +624,24 @@ package controls
 								//mail send
 							});
 						}
-						/*if (meta.hasOwnProperty("sms")) {
+						if (meta.hasOwnProperty("sms")) {
 							m.data.format = "sms";
+							if (!meta.hasOwnProperty("key") || meta.key==null) {
+								m.data.error = {
+									code:400,
+									msg:"campo key obligatorio"
+								};
+								_cliente.sendMessage(m);
+								return;
+							}							
 							var sms:String = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);
 							
-							if (SMS.send(meta.sms,sms)) {
-								MonitorSistema.monitor.ms_last_desc = "venta_sms";
-								m.data.code = Code.SMS_ENVIADO;
-							} else {
-								m.data.code = Code.SMS_NODISPONIBLE;
-							}
-							_model.dispatchEventWith("sms_send",false,{
+							SMS.send(meta.sms,sms,smsResult,meta.key);
+							/*_model.dispatchEventWith("sms_send",false,{
 								command:"sms",
 								data:{t:meta.sms,m:sms,c:_cliente}
 							});
-						}*/
+						}
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
 							m.data.format = "ws";
@@ -670,6 +674,17 @@ package controls
 					}
 				}
 			}
+		}
+		
+		public function smsResult (err:Object,data:Object=null):void {
+			var m:Message = new Message;
+			m.command = "sms-result";						
+			if (err) m.data = err;
+			else m.data = {
+					num:data.numero,
+					id:data._id
+			};
+			_cliente.sendMessage(m);
 		}
 		private function validarTopes (porJugar:Array,jugadas:Array,compartido:int=0):void {
 			var tope:Tope; var sorteo:Sorteo;

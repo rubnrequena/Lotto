@@ -47,7 +47,7 @@ package helpers.print
 			else 
 				_lineas.push("*T:"+Number(ticket.monto).toFixed(2)+"*");
 			
-			return _lineas.join("\\n");
+			return _lineas.join("\n");
 		}
 		
 		private static function sorteos_order (a:Object,b:Object):int {

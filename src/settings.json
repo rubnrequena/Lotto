@@ -79,6 +79,8 @@
 			"activa":1
 		},
 		"sms":{
+			"uri":"http://srq-hermes.herokuapp.com/api/enviar/{0}",
+			"key":"5c7bf36c5831c61b9451036b",
 			"activa":1,
 			"admins":["04149970167"],
 			"premios":["04149970167"]
