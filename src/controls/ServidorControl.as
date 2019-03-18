@@ -296,7 +296,7 @@ package controls
 		
 		private function sorteo_pendientes(e:Event,m:Message):void
 		{
-			m.data.a = usuario.adminID;
+			m.data.aID = usuario.adminID;
 			_model.sorteos.pendientes(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
