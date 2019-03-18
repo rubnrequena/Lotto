@@ -68,7 +68,7 @@ package helpers
 					Loteria.console.log("ERROR al conectar con ",r.url,JSON.stringify(r.data));	
 					l.removeEventListener(Event.COMPLETE,sms_complete);
 					l.removeEventListener(IOErrorEvent.IO_ERROR,onError);
-					if (cb!=null) execute(cb,JSON.parse(l.data));
+					//if (cb!=null) execute(cb,JSON.parse(l.data));
 				};
 			}
 			return Loteria.setting.plataformas.sms.activa;
