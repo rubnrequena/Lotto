@@ -8,6 +8,7 @@ package helpers
 	import flash.net.URLVariables;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+	import flash.events.IOErrorEvent;
 
 	public class Premio_LaGranjita extends PremioWeb implements IPremio
 	{
@@ -48,6 +49,7 @@ package helpers
 			
 			loader_oficial = new URLLoader();
 			loader_oficial.addEventListener(Event.COMPLETE,premioOfic_complete);
+			loader_oficial.addEventListener(IOErrorEvent.IO_ERROR,onIOError);
 			loader_oficial.dataFormat = URLLoaderDataFormat.TEXT;
 			
 			oficial_req = new URLRequest(urlofic);
@@ -57,12 +59,14 @@ package helpers
 			
 			azar_loader = new URLLoader();
 			azar_loader.addEventListener(Event.COMPLETE,azar_complete);
+			azar_loader.addEventListener(IOErrorEvent.IO_ERROR,onIOError);
 			azar_req = new URLRequest('https://www.tuazar.com/loteria/lagranjita/resultados/');
 			azar_req.useCache=false;
 			azar_req.cacheResponse=false;
 			
 			ldh_loader = new URLLoader();
 			ldh_loader.addEventListener(Event.COMPLETE,ldh_complete);
+			ldh_loader.addEventListener(IOErrorEvent.IO_ERROR,onIOError);
 			ldh_req = new URLRequest('http://www.loteriadehoy.com/animalitos/');
 			ldh_req.useCache=false;
 			ldh_req.cacheResponse=false;
@@ -70,9 +74,10 @@ package helpers
 			super("granjita");
 			numCompletado=2;
 		}
-		
-		protected function premioOfic_complete(event:Event):void
-		{
+		protected function onIOError (err:IOErrorEvent):void {
+			Loteria.console.log(err.text);
+		}
+		protected function premioOfic_complete(event:Event):void {
 			if (numBusq++>90) return;
 			var src:Array = JSON.parse(loader_oficial.data) as Array;
 			var n:String; var r:Object;
