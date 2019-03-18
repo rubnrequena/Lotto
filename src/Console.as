@@ -86,15 +86,15 @@ package
 				});
 			},1000);
 						
-			setInterval(function ():void {
-				if (sql_buffer.length>0) {
-					sqlfn = Loteria.setting.servidor+DateFormat.format(null,"_yyyymmdd_HH")+".sql";
-					sql_stream.open(sql_cfolder.resolvePath(sqlfn),FileMode.APPEND);
-					sql_stream.writeUTFBytes(sql_buffer);
-					sql_stream.close();
-					sql_buffer = "";
-				}
-			},60000);
+			// setInterval(function ():void {
+			// 	if (sql_buffer.length>0) {
+			// 		sqlfn = Loteria.setting.servidor+DateFormat.format(null,"_yyyymmdd_HH")+".sql";
+			// 		sql_stream.open(sql_cfolder.resolvePath(sqlfn),FileMode.APPEND);
+			// 		sql_stream.writeUTFBytes(sql_buffer);
+			// 		sql_stream.close();
+			// 		sql_buffer = "";
+			// 	}
+			// },60000);
 		}
 		
 		private var rg:RegExp = /(INSERT INTO|DELETE|UPDATE|CREATE)/gm;
