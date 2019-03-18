@@ -83,7 +83,7 @@ package
 					usuarios.start();
 					comercializadora.start();		
 					
-					SMS.sendMulti(SMS.ADMIN_CONTACTS,StringUtil.format("Servidor {0} iniciado a las: {1}",
+					SMS.sendMulti(SMS.ADMIN_CONTACTS,StringUtil.format("Servidor {0} iniciado a las:\n {1}",
 						Loteria.setting.servidor,	//0
 						DateFormat.format(null,DateFormat.masks.isoDateTime))
 					);	//1
@@ -128,17 +128,14 @@ package
 			Loteria.console.log("VALIDANDO USUARIOS POR SUSPENDER");
 			var now:Date = new Date(model.ahora);
 			model.balance.validar(now,function (r:SQLResult):void {
-				var count:int=0;
 				for each (var us:Object in r.data) {					
-					var time:int = (now.time-us.tiempo)/1000/60/60/24;
-					if (time>us.limite && us.balance>us.minMonto) {
-						var indice:String = (us.sID as String).charAt(0);
-						var id:int = int((us.sID as String).slice(1));						
-						if (indice=="c" || indice=="u") model.usuarios.editar({activo:Usuario.SUSPENDIDO,usuarioID:id});
-						else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
-						Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
-					}
+					var indice:String = (us.sID as String).charAt(0);
+					var id:int = int((us.sID as String).slice(1));						
+					if (indice=="c" || indice=="u") model.usuarios.editar({activo:Usuario.SUSPENDIDO,usuarioID:id});
+					else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
+					Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
 				}
+				if (r.data) Loteria.console.log(StringUtil.format("[JV] Total usuarios suspendidos {0}",r.data.length));
 			});
 		}
 		

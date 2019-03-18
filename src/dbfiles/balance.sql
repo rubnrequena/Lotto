@@ -59,9 +59,13 @@ where monto < 0 and fecha between :inicio and :fin and resID = :rID AND confirma
 UPDATE balances SET confirmado = 1, monto = :monto, balance = (SELECT balance FROM balances WHERE usID == :usID AND confirmado = 1 ORDER BY tiempo desc LIMIT 1)-abs(:monto), tiempo = :tiempo 
 WHERE balID = :bID AND resID = :rID;
 --autoSuspension
-SELECT * FROM suspender
-JOIN (SELECT usID,balance,tiempo FROM balances WHERE confirmado = 1 GROUP BY usID ORDER BY tiempo asc) as bal 
+SELECT *,hoy - ultPago diff FROM suspender
+JOIN (SELECT usID,balance,
+	  CAST(strftime('%Y%m%d', tiempo / 1000, 'unixepoch','localtime') AS INTEGER) ultPago,
+	  	CAST(STRFTIME('%Y%m%d', 'now') AS INTEGER) hoy
+	  FROM balances WHERE confirmado = 1 GROUP BY usID ORDER BY tiempo asc) as bal 
 ON suspender.sID = bal.usID
+WHERE diff >= limite
 --usuario_suspendido
 SELECT * FROM suspender
 JOIN (SELECT usID,balance,tiempo FROM balances WHERE confirmado = 1 GROUP BY usID ORDER BY tiempo asc) as bal 
