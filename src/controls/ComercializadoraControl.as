@@ -314,8 +314,15 @@ package controls
 						
 						initSolicitudesPremios();
 					} else {
-						m.data = {code:Code.INVALIDO};
-						_cliente.sendMessage(m);	
+						_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+							if (r.data && r.data[0].balance>0) {
+								m.data = {code:Code.SUSPENDIDO,info:r.data[0]};
+								addEventListener("balance-pago",balance_pago);
+							} else {
+								m.data = {code:Code.SUSPENDIDO};
+							}
+							_cliente.sendMessage(m);
+						});
 					}
 				} else {
 					m.data = {code:Code.NO_EXISTE};
@@ -462,7 +469,24 @@ package controls
 			m.data.monto = Math.abs(m.data.monto)*-1;
 			_model.balance.nuevo(m.data,function (r:SQLResult):void {
 				m.data.balID = r.lastInsertRowID;
-				_cliente.sendMessage(m);
+
+				if (usuario.activo==false) {
+					_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+						if (!r.data) return;
+						if (r.data[0].d>0) { //sigue suspendido
+							m.data = {code:Code.SUSPENDIDO,msg:"Su credito es insuficiente, comuniquese con su administrador"}
+							_cliente.sendMessage(m);
+						} else {
+							_model.usuarios.editar({activo:3,usuarioID:usuario.usuarioID},function (r:SQLResult):void {
+								m.data = {code:Code.OK,msg:"Pago recibido exitosamente, el usuario será activado temporalmente mientras se confirma su pago."}
+								_cliente.sendMessage(m);
+							})
+						}
+
+					})
+				} else {
+					_cliente.sendMessage(m);
+				}
 			});
 		}
 		private function balance_remover(e:Event,m:Message):void
