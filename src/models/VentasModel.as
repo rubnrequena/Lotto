@@ -20,6 +20,7 @@ package models
 	import vos.Elemento;
 	import vos.Sorteo;
 	import vos.Taquilla;
+	import helpers.WS;
 	
 	public class VentasModel extends Model
 	{
@@ -258,8 +259,7 @@ package models
 			}
 		}
 		
-		public function reiniciar_sorteo (sorteo:Object,cb:Function):void {
-			Loteria.console.log("REINICIANDO PREMIOS PARA:",JSON.stringify(sorteo));
+		public function reiniciar_sorteo (sorteo:Object,cb:Function):void {			
 			sorteo.numero = 0;
 			delete sorteos_premiados[sorteo.sorteoID];
 			sql.premiar.run(sorteo,function (r:SQLResult):void {

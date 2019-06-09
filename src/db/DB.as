@@ -13,7 +13,7 @@ package db
 
 	public class DB extends EventDispatcher
 	{
-		public static var DEBUG:Boolean = false;
+		public static var DEBUG:Boolean = true;
 		
 		protected var _conexion:SQLConnection;
 

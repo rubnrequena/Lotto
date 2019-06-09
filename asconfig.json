@@ -16,7 +16,7 @@
 	],
 	"application": "src/Loteria-app.xml",
 	"copySourcePathAssets": true,
-	"additionalOptions": "-locale en_US -define=CONFIG::debug,true",
+	"additionalOptions": "-define=CONFIG::debug,true",
 	"airOptions": {
 		"windows": {
 			"target": "native",

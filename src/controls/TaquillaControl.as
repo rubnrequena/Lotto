@@ -347,8 +347,7 @@ package controls
 			delete m.data.cod;
 			_model.ventas.ticket({ticketID:m.data.tk,codigo:_valCod},function (ticket:Object):void {
 				if (ticket && ticket.taquillaID==_taquilla.taquillaID && ticket.anulado==0) { //validar taquilla
-					_valTiempo = _model.ahora-ticket.tiempo;
-					//trace("ventasModel::time",time,259200000,msToString(time));
+					_valTiempo = _model.ahora-ticket.tiempo;					
 					if (_valTiempo<259200000 && ticket.codigo==_valCod) { // validar ticket (no mayor de 3 dias, codigo de seguridad)
 						_model.ventas.pagar({
 							id:m.data.id,
@@ -472,7 +471,7 @@ package controls
 			});
 		}
 		
-		
+		private var ultVenta:Object;
 		private var _ventas:Array
 		private var _sorteo:Sorteo;
 		private var _cache:Array;
@@ -482,12 +481,26 @@ package controls
 		
 		private  var invalidos:Array = [];
 		private function venta(e:Event,m:Message):void {
+			var i:int;
 			var meta:Object = m.data.m || {};
 			/*if (meta.hasOwnProperty("sms") && SMSControl._clientes.length==0) {
 				m.data = {code:Code.SMS_NODISPONIBLE};
 				_cliente.sendMessage(m);
 				return;
 			}*/
+
+			if (ultVenta) {
+				var mt:Number=0;
+				var len:int = m.data.v.length
+				for(i = 0; i < len; i++) mt+= m.data.v[i].monto;
+				var ahora:Number = new Date().time;
+				var tiempo:Number = ultVenta.tk.tiempo+60000;
+				if (mt==ultVenta.tk.monto && len==ultVenta.vt.length && tiempo-ahora>0) {
+					m.data = {code:Code.DUPLICADO,venta:ultVenta};
+					_cliente.sendMessage(m);
+					return;
+				}
+			}
 			
 			var t:int = getTimer();
 			_ventas = m.data.v as Array;
@@ -498,7 +511,7 @@ package controls
 			}		
 			//validar duplicados
 			_ventas.sortOn(["sorteoID","numero"],Array.NUMERIC);
-			var i:int, j:int;
+			var j:int;
 			for (i = _ventas.length-1; i > 0; i--) {
 				if (_ventas[i].sorteoID==_ventas[i-1].sorteoID && _ventas[i].numero==_ventas[i-1].numero) {
 					_ventas[i-1].monto += _ventas[i].monto;
@@ -581,7 +594,7 @@ package controls
 						m.data = {code:Code.TOPE_TAQUILLA_EXEDIDO,elementos:invalidos}
 						_cliente.sendMessage(m);
 					} else { // VENTA VALIDA
-						//Loteria.console.log('Recibiendo venta, ',JSON.stringify(m.data));
+						//Loteria.console.log('Recibiendo venta, ',JSON.stringify(m.data));												
 						realizarVenta();
 					}
 					invalidos.length = 0;
@@ -589,10 +602,11 @@ package controls
 				function realizarVenta ():void {
 					_model.ventas.venta(_ventas,_taquilla,function (ticket:Object,ventasID:Array,ids:Array):void {
 						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.i18n["default"]);
-						m.data = {
+						ultVenta = {
 							tk:ticket,
 							vt:ventasID
-						}
+						};
+						m.data = ultVenta;						
 						t=getTimer();
 						merge(_cache);
 						if (ventasBanca) merge(ventasBanca.sorteos);
@@ -640,15 +654,14 @@ package controls
 							/*_model.dispatchEventWith("sms_send",false,{
 								command:"sms",
 								data:{t:meta.sms,m:sms,c:_cliente}
-							});
+							});*/
 						}
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
 							m.data.format = "ws";
-							/*m.data.ws = meta.ws;
-							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);*/
-							
-							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model)+"\\n"+WS.preferencias.pie_sms);
+							m.data.ws = meta.ws;
+							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);							
+							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
 						_cliente.sendMessage(m);
 					});
@@ -724,8 +737,7 @@ package controls
 					}
 				}
 			}
-		}
-		
+		}		
 		private function addInvalido (item:Object):void {
 			var l:int = invalidos.length;
 			for (var i:int = l-1; i > -1; i--) {

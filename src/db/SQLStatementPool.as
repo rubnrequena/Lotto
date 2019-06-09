@@ -58,9 +58,6 @@ package db
 			setParams(sql,params);
 			
 			if (LOG) execute(LOG,_sentencia,params);
-			CONFIG::debug {
-				trace("[SQL]",_sentencia,JSON.stringify(params));
-			}
 			return sql;
 		}
 		protected var time:int;

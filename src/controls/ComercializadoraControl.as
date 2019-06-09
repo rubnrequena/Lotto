@@ -67,6 +67,9 @@ package controls
 		
 		private function taquilla_comision_nv(e:Event,m:Message):void
 		{
+			if (m.data.hasOwnProperty("taquillaID")==false) m.data.taquillaID = 0;
+			if (m.data.hasOwnProperty("grupoID")==false) m.data.grupoID = 0;
+			if (m.data.hasOwnProperty("bancaID")==false) m.data.bancaID = 0;
 			_model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
 				m.data.comID = r.lastInsertRowID;
 				_cliente.sendMessage(m);
@@ -220,13 +223,6 @@ package controls
 		}	
 		private function banca_editar(e:Event,m:Message):void {
 			_model.bancas.editar(m.data,function (r:SQLResult):void {
-				/*if (r.rowsAffected>0) {
-					var b:Banca = LTool.findBy("bancaID",m.data.bancaID,_model.bancas.bancas);
-					if (m.data.hasOwnProperty("activa")) b.activa = m.data.activa;
-					if (m.data.hasOwnProperty("nombre")) b.nombre = m.data.nombre;
-					if (m.data.hasOwnProperty("clave")) b.clave = m.data.clave;
-					if (m.data.hasOwnProperty("comision")) b.comision = m.data.comision;
-				}*/
 				if (r.rowsAffected>0) m.data.code = Code.OK;
 				else m.data.code = Code.INVALIDO;
 				_cliente.sendMessage(m);

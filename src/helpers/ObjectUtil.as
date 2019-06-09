@@ -33,7 +33,7 @@ package helpers
 		}
 		
 		static public function trailZero (n:String):String {
-			if (int(n)==0) return n.toString();
+			if (n=="0" || n=="00") return n.toString();
 			return int(n)<10?"0"+int(n):n.toString();
 		}
 		static public function extractAndTrail (n:String):String {

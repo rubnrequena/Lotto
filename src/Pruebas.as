@@ -4,14 +4,13 @@ package
 	
 	import feathers.themes.MinimalDesktopTheme;
 	
-	import helpers.PremioWeb;
-	import helpers.Premio_LotoSelva;
 	import helpers.Premio_SRQWeb;
 	
 	import models.ModelHUB;
 	
 	import starling.display.Sprite;
 	import starling.events.Event;
+	import helpers.IPremio;
 	
 	public class Pruebas extends Sprite
 	{
@@ -50,7 +49,7 @@ package
 		
 		private function test_sorteos():void {
 			sorteos = selva;
-			pr = new helpers.Premio_LotoSelva; 
+			pr = new Premio_SRQWeb("lotoselva");
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
@@ -58,23 +57,22 @@ package
 			pr.buscar(sorteos[pri],hoy);
 		}
 		
-		private function onComplete(e:Event,n:String):void
-		{
+		private function onComplete(e:Event,n:String):void {
 			Loteria.console.log("GANADOR:",n);
 		}
 		
-		private function onReady(e:Event,p:PremioWeb):void
+		private function onReady(e:Event,p:IPremio):void
 		{
-			Loteria.console.log("GANADOR:",p.srt);
+			Loteria.console.log("GANADOR:");
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_LotoSelva; 
+				pr = new Premio_SRQWeb("lotoselva"); 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
 			}
 		}
-		private var pr:PremioWeb;
+		private var pr:IPremio;
 		private var pri:int;
 		private var hoy:Date = new Date;
 		

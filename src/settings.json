@@ -1,7 +1,7 @@
 {
 	"servidor":"local",
 	"gmt":0,
-	"minEspacioDisponible":5,
+	"minEspacioDisponible":1,
 	"db": {
 		"root":"D:\\User\\My Documents\\db\\loteria",
 		"log":"D:\\User\\My Documents\\db\\logs"
@@ -13,7 +13,7 @@
 			"taquilla":4022,
 			"usuario":4023,
 			"comercializadora":4024,
-			"sms":0
+			"api":4025
 		}
 	},
 	"premios":{
@@ -56,7 +56,7 @@
 			"lottoselva":{
 				"numCompletado":1,
 				"webofic":{
-					"url":"http://www.lotoselva.com/control/resultados.php"
+					"url":"http://srq.com.ve/prm/"
 				}
 			}
 			
@@ -86,15 +86,14 @@
 			"premios":["04149970167"]
 		},
 		"ws":{
-			"yowdir":"D:\\yowsup2",
-			"url":[
-				"http://104.129.171.16:8080/ws"
-			],
+			"url":"http://104.129.171.16:3000/enviar/{0}?texto={1}",
 			"psw":"srq-WS",
-			"pie_sms":"_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_"
+			"pie_sms":"%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
+			"separador_lineas":"%0A"
 		},
 		"usuarios":{
 			"admin":"584149970167",
+			"soporte":["584149970167"],
 			"premios":["584149970167"]
 		}
 	}

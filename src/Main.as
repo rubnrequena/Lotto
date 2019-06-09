@@ -30,6 +30,10 @@ package
 	import starling.utils.StringUtil;
 	
 	import vos.Usuario;
+	import http.HttpServer;
+	import http.TaqControl;
+	import http.APIControl;
+	import flash.utils.setInterval;
 	
 	public class Main extends LayoutGroup
 	{
@@ -63,13 +67,14 @@ package
 			SMS.init();
 			
 			//validar disco duro
-			f = File.createTempFile();
-			var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
-			Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
-			if (size<Loteria.setting.minEspacioDisponible) {
-				WS.enviar(Loteria.setting.plataformas.usuarios.admin,
-					"["+Loteria.setting.servidor+"] ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
-			}
+			setInterval(function ():void {
+				f = File.createTempFile();
+				var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
+				Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
+				if (size<Loteria.setting.minEspacioDisponible) {
+					WS.emitir(WS.usuarios.soporte,"["+Loteria.setting.servidor+"] ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
+				}
+			},1000*60*30); // verificar cada 30m
 			
 			var n:int=0;
 			model = new ModelHUB();
@@ -83,7 +88,7 @@ package
 					usuarios.start();
 					comercializadora.start();		
 					
-					SMS.sendMulti(SMS.ADMIN_CONTACTS,StringUtil.format("Servidor {0} iniciado a las:\n {1}",
+					WS.enviar(WS.usuarios.admin,StringUtil.format("Servidor {0} iniciado a las:\n {1}",
 						Loteria.setting.servidor,	//0
 						DateFormat.format(null,DateFormat.masks.isoDateTime))
 					);	//1
@@ -121,6 +126,11 @@ package
 			/*sms = new AIRServer;
 			sms.addEndPoint(new SocketEndPoint(model.settings.net.puertos.sms,new AMFSocketClientHandlerFactory));
 			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/
+
+			var webserv:HttpServer = new HttpServer();
+			webserv.listen(Loteria.setting.net.puertos.api);
+			webserv.registerController(new TaqControl(model));
+			webserv.registerController(new APIControl(model));
 		}
 		
 		//autoSuspender
@@ -135,7 +145,11 @@ package
 					else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
 					Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
 				}
-				if (r.data) Loteria.console.log(StringUtil.format("[JV] Total usuarios suspendidos {0}",r.data.length));
+				if (r.data) {
+					var m:String = StringUtil.format("[JV] Total usuarios suspendidos {0}",r.data.length);
+					Loteria.console.log(m);
+					WS.enviar("584149970167",m);
+				}
 			});
 		}
 		

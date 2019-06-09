@@ -62,10 +62,10 @@ WHERE balID = :bID AND resID = :rID;
 SELECT *,hoy - ultPago diff FROM suspender
 JOIN (SELECT usID,balance,
 	  CAST(strftime('%Y%m%d', tiempo / 1000, 'unixepoch','localtime') AS INTEGER) ultPago,
-	  	CAST(STRFTIME('%Y%m%d', 'now') AS INTEGER) hoy
+	  CAST(STRFTIME('%Y%m%d', 'now') AS INTEGER) hoy
 	  FROM balances WHERE confirmado = 1 GROUP BY usID ORDER BY tiempo asc) as bal 
 ON suspender.sID = bal.usID
-WHERE diff >= limite
+WHERE diff >= limite and balance > minmonto
 --usuario_suspendido
 SELECT * FROM suspender
 JOIN (SELECT usID,balance,tiempo FROM balances WHERE confirmado = 1 GROUP BY usID ORDER BY tiempo asc) as bal 

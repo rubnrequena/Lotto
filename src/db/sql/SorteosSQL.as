@@ -62,7 +62,7 @@ package db.sql
 			remover = new SQLStatementPool("DELETE FROM vt.sorteos WHERE sorteoID = :sorteoID");
 			editar = new SQLStatementPool("UPDATE vt.sorteos SET abierta = :abierta WHERE sorteoID = :sorteo");
 			
-			premio = new SQLStatementPool("SELECT sorteoID,descripcion,ganador FROM vt.sorteos WHERE sorteoID = :sorteoID");
+			premio = new SQLStatementPool("SELECT sorteoID,descripcion,ganador,abierta,sorteo FROM vt.sorteos WHERE sorteoID = :sorteoID");
 			
 			presorteo_nuevo = new SQLStatementPool("INSERT INTO pre_sorteos (descripcion,inicio,final,sorteo) VALUES (:descripcion,:inicio,:final,:sorteo)");
 			presorteo_remover = new SQLStatementPool('DELETE FROM pre_sorteos WHERE sorteoID = :sorteoID');

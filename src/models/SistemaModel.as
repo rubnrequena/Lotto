@@ -12,41 +12,18 @@ package models
 	import helpers.Code;
 	import helpers.DateFormat;
 	import helpers.IPremio;
-	import helpers.Premio_GranRuleta;
-	import helpers.Premio_LaGranjita;
-	import helpers.Premio_LotoSelva;
-	import helpers.Premio_LottoActivo;
-	import helpers.Premio_MiniLottico;
-	import helpers.Premio_ReyAnzoategui;
-	import helpers.Premio_RuletAnimal;
-	import helpers.Premio_RuletaOriente;
-	import helpers.Premio_RuletonColombia;
-	import helpers.Premio_RuletonPeru;
-	import helpers.Premio_SRQWeb;
 	
 	import starling.events.EventDispatcher;
 	import starling.utils.execute;
 	
 	import vos.Elemento;
 	import vos.sistema.Sorteo;
+	import helpers.Premio_SRQWeb;
 	
 	public class SistemaModel extends EventDispatcher
 	{
 		private var s:SistemaSQL;
-		
-		private var sorteosClaz:Object = {
-			lotto:Premio_LottoActivo,
-			granruleta:Premio_GranRuleta,
-			ruletaoriente:Premio_RuletaOriente,
-			reyanz:Premio_ReyAnzoategui,
-			granjita:Premio_LaGranjita,
-			ruletanimal:Premio_RuletAnimal,
-			lotoselva:Premio_LotoSelva,
-			mini:Premio_MiniLottico,
-			ruletonperu:Premio_RuletonPeru,
-			ruletoncol:Premio_RuletonColombia
-		}
-		
+				
 		private var _eleHash:String;
 		public function get eleHash():String { return _eleHash; }
 
@@ -92,11 +69,7 @@ package models
 		public function get sorteos():Vector.<Sorteo> { return _sorteos; }
 		
 		public function getPremiosClass (clase:String):IPremio {
-			if (sorteosClaz.hasOwnProperty(clase)) {
-				return new sorteosClaz[clase];
-			} else {
-				return new Premio_SRQWeb(clase); 
-			}
+			return new Premio_SRQWeb(clase);
 		}
 		public function getPremiosClassByID (id:int):IPremio {
 			for each (var s:Sorteo in _sorteos) {

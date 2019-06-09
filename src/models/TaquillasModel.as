@@ -18,6 +18,9 @@ package models
 	import starling.utils.execute;
 	
 	import vos.Taquilla;
+	import flash.utils.getTimer;
+	import by.blooddy.crypto.MD5;
+	import vos.Sesion;
 	
 	public class TaquillasModel extends EventDispatcher
 	{			
@@ -26,10 +29,12 @@ package models
 		private var taquillas:Vector.<Taquilla>;
 		private var clientes:Vector.<Client>;
 		private var msgDuplicado:Message;
+		private var sessions:Array;
 		
 		public function TaquillasModel() {
 			super();
 			sql = new TaquillasSQL;
+			sessions = new Array;
 			
 			taquillas = new Vector.<Taquilla>;
 			clientes = new Vector.<Client>;
@@ -46,6 +51,34 @@ package models
 				clientes.removeAt(i);*/
 				taquillas.removeAt(i);
 			}
+		}
+		public function httpSesion(session:String):Sesion {
+			var i:int;
+			for each(var s:Sesion in sessions) {
+				if (s.hash==session) {
+					if (s.esValida) return s;
+					else {
+						sessions.removeAt(i);
+						return null;
+					}
+				}
+				i++;
+			}
+			return null;
+		}
+		public function httpLogin (usuario:String,clave:String,res:Function):void {
+			sql.taquilla_login.run({"usuario":usuario,"clave":clave},function (r:SQLResult):void {
+				if (!r.data) {res({error:"usuario no existe"}); return};
+				var taq:Taquilla = r.data[0];
+				if (taq.activa==0) {res({error:"usuario inactivo"}); return};
+				//TODO: notificar inicio de sesion a otros usuarios
+				//registra sesion
+				var now:int = getTimer();
+
+				var sesion:Sesion = new Sesion(taq);
+				sessions.push(sesion);
+				res({"sesion":sesion.hash,"taq":taq});
+			});
 		}
 		public function login (login:Object,cl:Client,cb:Function):void {
 			sql.taquilla_login.run(login,function (r:SQLResult):void {
@@ -280,7 +313,9 @@ package models
 		}
 	
 		public function comisiones (data:Object,cb:Function):void {
-			sql.comisiones.run(data,cb);
+			if (data.hasOwnProperty("taquillaID")) sql.comisiones.run(data,cb);
+			else if (data.hasOwnProperty("grupoID")) sql.comisiones_grupo.run(data,cb);
+			else if (data.hasOwnProperty("bancaID")) sql.comisiones_banca.run(data,cb);
 		}
 		public function comision_nv (data:Object,cb:Function):void {
 			sql.comision_nv.run(data,cb);

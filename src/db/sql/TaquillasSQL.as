@@ -58,7 +58,11 @@ package db.sql
 		public var taquillas_usuariol:SQLStatementPool;
 		public var comisiones:SQLStatementPool;
 		public var comision_nv:SQLStatementPool;
-		public var comision_dl:SQLStatementPool;
+		public var comision_dl:SQLStatementPool;	
+
+		public var comisiones_banca:SQLStatementPool;
+		public var comisiones_grupo:SQLStatementPool;
+
 		public var taquilla_activa:SQLStatementPool;
 		
 		public function TaquillasSQL() {
@@ -87,7 +91,7 @@ package db.sql
 			taquilla_rem_us = new SQLStatementPool('DELETE FROM us.taquillas WHERE usuarioID = :usuarioID');
 			taquilla_edt_activa = new SQLStatementPool('UPDATE us.taquillas SET activa = :activa WHERE taquillaID = :taquillaID');
 			taquilla_edt_clave = new SQLStatementPool('UPDATE us.taquillas SET clave = :clave WHERE taquillaID = :taquillaID');
-			taquilla_edt_papelera = new SQLStatementPool('UPDATE us.taquillas SET papelera = :papelera WHERE taquillaID = :taquillaID AND (bancaID = :bancaID OR usuarioID = :usuarioID)');
+			taquilla_edt_papelera = new SQLStatementPool('UPDATE us.taquillas SET activa = false, papelera = :papelera WHERE taquillaID = :taquillaID AND (bancaID = :bancaID OR usuarioID = :usuarioID)');
 			taquilla_editar = new SQLStatementPool('UPDATE us.taquillas SET nombre = :nombre, usuario = :usuario, comision = :comision WHERE taquillaID = :taquillaID');
 			
 			panic_banca = new SQLStatementPool('UPDATE us.taquillas SET activa = 0 WHERE activa = 1 AND bancaID = :bancaID');
@@ -120,10 +124,14 @@ package db.sql
 			fingerclear_usr_all = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE usuarioID = :usuarioID');
 			
 			comisiones = new SQLStatementPool('SELECT * FROM taquillas_comision WHERE taquillaID = :taquillaID');
-			comision_nv = new SQLStatementPool('INSERT INTO taquillas_comision (sorteo,comision,taquillaID) VALUES (:sorteo,:comision,:taquillaID)');
+			comision_nv = new SQLStatementPool('INSERT INTO taquillas_comision (sorteo,comision,taquillaID,grupoID,bancaID) VALUES (:sorteo,:comision,:taquillaID,:grupoID,:bancaID)');
 			comision_dl = new SQLStatementPool('DELETE FROM taquillas_comision WHERE comID = :comID');
 			
+			comisiones_grupo = new SQLStatementPool('SELECT * FROM taquillas_comision WHERE grupoID = :grupoID');
+			comisiones_banca = new SQLStatementPool('SELECT * FROM taquillas_comision WHERE bancaID = :bancaID');
+
 			scan();
 		}
+
 	}
 }

@@ -107,7 +107,7 @@ SELECT sorteoID, numero, monto FROM vt.elementos WHERE elementos.ticketID = :tic
 --reporte_nuevo
 INSERT INTO reportes (fecha,sorteoID,bancaID,taquillaID,jugada,premio,renta,comisionBanca,comision,pago) 
 SELECT sorteos.fecha, sorteos.sorteoID, elementos.bancaID, elementos.taquillaID, ROUND(SUM(monto),2) jugado, ROUND(SUM(premio),2) premio, bancas.renta, bancas.comision, 
-COALESCE((SELECT comision FROM taquillas_comision WHERE taquillaID = taquillas.taquillaID AND sorteo = sorteos.sorteo),taquillas.comision) comision,
+COALESCE((SELECT comision FROM taquillas_comision WHERE (taquillaID = taquillas.taquillaID OR grupoID = taquillas.bancaID OR bancaID = taquillas.usuarioID) AND sorteo = sorteos.sorteo ORDER BY bancaID ASC, grupoid ASC, taquillaID ASC LIMIT 1),taquillas.comision) comision,
 ROUND(SUM((case when pagos.tiempo > 0 then premio else 0 end)),2) pago
 FROM elementos 
 	JOIN numeros ON elementos.numero = numeros.elementoID 

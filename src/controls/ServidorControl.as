@@ -703,7 +703,6 @@ package controls
 			_model.sorteos.premio(s,function (r:SQLResult):void {				
 				if (r.data) {
 					if (r.data[0].abierta==true) {
-						_model.ventas.sorteos_premiados[m.data.sorteoID]=true;
 						m.data = {code:Code.INVALIDO};
 						_cliente.sendMessage(m);
 					} else if (r.data[0].ganador>0) {
