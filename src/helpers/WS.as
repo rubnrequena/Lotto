@@ -50,6 +50,8 @@ package helpers
 		}
 
 		public static function enviar (numero:String,mensaje:String):void {
+			mensaje = encodeURIComponent(mensaje);
+			mensaje = mensaje.replace("\n","%0A");
 			req = new URLRequest(StringUtil.format(Loteria.setting.plataformas.ws.url,numero,mensaje));
 			url.load(req);
 		}
