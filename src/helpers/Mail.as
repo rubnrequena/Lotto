@@ -27,7 +27,7 @@ package helpers
 		public static const VENTA_CONFIRMADA:String = "<p>AGENCIA: {0}</p><p>FECHA: {1}</p><p>SERIAL: {2}</p><p>CODIGO SEG: {3}</p><p>TOTAL JUGADO: {4}</p><p><b>JUGADAS</b></p>{5}<p>TICKET EXPIRA EN 3 DIAS</p>";
 		
 		private static var loader:URLLoader;
-		private static var req:URLRequest = new URLRequest("http://srq.com.ve/mailed.php");
+		private static var req:URLRequest = new URLRequest(Loteria.setting.plataformas.correo.url);
 		private static var vars:URLVariables = new URLVariables;
 		public static function send (to:String,subject:String,body:String,cb:Function=null):Boolean {
 			if (Loteria.setting.plataformas.correo.activa==1) {
@@ -61,7 +61,10 @@ package helpers
 		}
 		public static function sendAdmin (subject:String,body:String,cb:Function=null):Boolean {
 			if (Loteria.setting.servidor=="local") return false;
-			return send("rubnrequena@gmail.com","["+Loteria.setting.servidor+"] "+subject,body,cb);
+			for each(var correo:String in Loteria.setting.plataformas.correo.admins) {
+				send(correo,"["+Loteria.setting.servidor+"] "+subject,body,cb);
+			}
+			return true;
 		}
 	}
 }
