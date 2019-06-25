@@ -30,6 +30,7 @@ package models
 	
 	import vos.Elemento;
 	import vos.Sorteo;
+	import flash.utils.setTimeout;
 	
 	public class ModelHUB extends EventDispatcher
 	{
@@ -108,7 +109,7 @@ package models
 					trace("[SQL ERROR]",e.details);
 				}
 				Loteria.console.log("[SQL ERROR]",e.detailID,e.message,e.details);
-				WS.enviar(Loteria.setting.plataformas.usuarios.admin,"["+Loteria.setting.servidor+"] *"+e.message+"* \\n"+e.details);
+				WS.enviar(Loteria.setting.plataformas.usuarios.admin,"["+Loteria.setting.servidor+"] *"+e.message+"* %0A"+e.details);
 			}
 			//DB.DEBUG = true;
 			
@@ -125,24 +126,17 @@ package models
 		private function jv_sysMonitor ():void {
 			var fn:File = File.applicationStorageDirectory.resolvePath("sysmonitor/"+DateFormat.format(null)+".json");
 			Console.saveTo(JSON.stringify(MonitorSistema.acciones_contar,null,2),fn);
-			Loteria.console.log("[JV] Informe monitor registrado exitosamente");
-			
-			try {
-				
-			} catch (e:*) {
-				Loteria.console.log("[JV] Error al registrar informe monitor");
-			}
+			Loteria.console.log("[JV] Informe monitor registrado exitosamente");			
 		}
 		
 		private function jv_midas ():void {
-			var hoy:String = DateFormat.format(hoy);
-			Loteria.console.log("[JV][MIDAS] Iniciando MIDAS","fecha:",hoy);
-			
+			var hoy:String = DateFormat.format(null);
+			Loteria.console.log("[JV][MIDAS] Iniciando MIDAS","fecha:",hoy);			
 			reportes.midas({fecha:hoy},jv_midasHandler);
 		}
 		
 		public function jv_midasHandler (r:SQLResult):void {
-			var hoy:String = DateFormat.format(hoy);
+			var hoy:String = DateFormat.format(null);
 			var a:Array=[], t:int, p:int;
 			var len:int = r.data?r.data.length:0;
 			for (var i:int = 0; i < len; i++) {
@@ -154,19 +148,11 @@ package models
 				}
 			}				
 			if (a.length>0) {
-				if (a.length==1) {
-					Mail.sendAdmin("[JV][MIDAS SORTEO]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
-					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
-					WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"] Revisar sorteo\\n"+a.join());
-				} else {
-					Mail.sendAdmin("[JV][MIDAS]",StringUtil.format(Loteria.setting.servidor+Mail.JV_MIDAS_INCONSISTENCIA,a.length,hoy,nameSorteos(a).join("<br/>")),null);
-					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS, NOTIFICANDO AL ADMINISTRADOR");
-				}
-			} else {
-				//Mail.sendAdmin("[JV][MIDAS]",StringUtil.format(Mail.JV_MIDAS_OK,hoy,t,p),null);
+				nameSorteos(a);
+				WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"] Revisar sorteos:\n"+a.join("\n"));
+				Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS "+a.join(",")+"; NOTIFICANDO AL ADMINISTRADOR");				
 			}
-			a=null;
-			hoy=null;
+			a=null; hoy=null;
 		}
 		
 		private function nameSorteos (sorteos:Array):Array {
@@ -272,6 +258,10 @@ package models
 			mSorteos = new SorteosManager(this);
 			bMan = new BManager(this);
 			uMan = new BManager(this);
+			
+			setTimeout(function ():void {
+				jv_midas();
+			},5000)
 		}
 		
 		private function sorteo_close (e:Event,s:Sorteo):void {							
