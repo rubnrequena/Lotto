@@ -6,6 +6,9 @@
 		"root":"D:\\User\\My Documents\\db\\loteria",
 		"log":"D:\\User\\My Documents\\db\\logs"
 	},
+	"taquilla": {
+		"ticketDuplicado":180000
+	},
 	"net": {
 		"puertos": {
 			"servidor":4020,
@@ -76,6 +79,8 @@
 	},
 	"plataformas":{
 		"correo":{
+			"url":"http://srq.com.ve/mailed.php",
+			"admins":["rubnrequena@gmail.com"],
 			"activa":1
 		},
 		"sms":{

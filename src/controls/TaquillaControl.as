@@ -489,14 +489,14 @@ package controls
 				return;
 			}*/
 
-			if (ultVenta) {
+			if (ultVenta && !meta.hasOwnProperty("rw")) {
 				var mt:Number=0;
 				var len:int = m.data.v.length
 				for(i = 0; i < len; i++) mt+= m.data.v[i].monto;
 				var ahora:Number = new Date().time;
-				var tiempo:Number = ultVenta.tk.tiempo+60000;
+				var tiempo:Number = ultVenta.tk.tiempo+Loteria.setting.taquilla.ticketDuplicado;
 				if (mt==ultVenta.tk.monto && len==ultVenta.vt.length && tiempo-ahora>0) {
-					m.data = {code:Code.DUPLICADO,venta:ultVenta};
+					m.data = {code:Code.DUPLICADO,venta:m.data};
 					_cliente.sendMessage(m);
 					return;
 				}
