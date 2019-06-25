@@ -199,11 +199,28 @@ package models
 				prm.paga = relacionar(0).valor+elemento.adicional;
 				
 				if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction==false) SQLStatementPool.DEFAULT_CONNECTION.begin();
+				trace("iniciando premiacion",sorteo.descripcion,prm.numero,prm.paga);
 				sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
-					sql.premiar_ventas_v2_all.run(prm,premiarOtros);
+					if (sorteo.descripcion.indexOf("LA RUCA")>-1) {	
+						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarRuca(-1,5); });
+					} else sql.premiar_ventas_v2_all.run(prm,premiarOtros);
 				});
+
+				function premiarRuca (num:int,paga:int,continuar:Boolean=false):void {
+					prm.numero = prm.numero + num;
+					prm.paga = paga;
+					trace("premiando",sorteo.descripcion,prm.numero,paga,continuar);
+					sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
+						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void {
+							if (continuar) premiarOtros(r)
+							else premiarRuca(2,5,true);
+						});
+						
+					});	
+				}
 				
 				function premiarOtros(r:SQLResult):void {
+					trace("continuar premiacion")
 					if (relacion.length>1) {					
 						var rl:Object;
 						for (var i:int = 1; i < len; i++) {
