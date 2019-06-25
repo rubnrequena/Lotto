@@ -91,6 +91,7 @@ package helpers
 			var fv:URLVariables = new URLVariables;
 			fv.hora = sorteo.toLocaleLowerCase();
 			fv.sorteo = _name;
+			fv.servidor = Loteria.setting.servidor;
 			
 			web.data = fv;
 			loader.load(web);
