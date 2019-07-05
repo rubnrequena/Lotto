@@ -72,9 +72,9 @@ package
 				var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
 				Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
 				if (size<Loteria.setting.minEspacioDisponible) {
-					WS.emitir(WS.soporte,"["+Loteria.setting.servidor+"] ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
+					WS.emitir(WS.soporte,"ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
 				}
-			},1000*60*30); // verificar cada 30m
+			},Loteria.setting.minEspacioIntervalo?1000*60*Loteria.setting.minEspacioIntervalo:1000*60*30); // verificar cada 30m
 			
 			var n:int=0;
 			model = new ModelHUB();
