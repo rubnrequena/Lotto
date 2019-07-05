@@ -67,8 +67,7 @@ package
 			
 			log('BIENVENIDO AL SISTEMA DE LOTERIA');
 			
-			setTimeout(function ():void {
-				
+			setTimeout(function ():void {				
 				NativeApplication.nativeApplication.addEventListener("exiting",function (e:*):void {
 					if (exit==false) {
 						e.preventDefault();
@@ -86,23 +85,23 @@ package
 				});
 			},1000);
 						
-			// setInterval(function ():void {
-			// 	if (sql_buffer.length>0) {
-			// 		sqlfn = Loteria.setting.servidor+DateFormat.format(null,"_yyyymmdd_HH")+".sql";
-			// 		sql_stream.open(sql_cfolder.resolvePath(sqlfn),FileMode.APPEND);
-			// 		sql_stream.writeUTFBytes(sql_buffer);
-			// 		sql_stream.close();
-			// 		sql_buffer = "";
-			// 	}
-			// },60000);
+			setInterval(function ():void {
+				if (sql_buffer.length>0) {
+					sqlfn = Loteria.setting.servidor+DateFormat.format(null,"_yyyymmdd_HH")+".sql";
+					sql_stream.open(sql_cfolder.resolvePath(sqlfn),FileMode.APPEND);
+					sql_stream.writeUTFBytes(sql_buffer);
+					sql_stream.close();
+					sql_buffer = "";
+				}
+			},5000);
 		}
 		
 		private var rg:RegExp = /(INSERT INTO|DELETE|UPDATE|CREATE)/gm;
 		
-		public function trac (sql:String,ms,data:Object):void {			
+		public function trac (sql:String):void {
 			if (sql.search(rg)==0) {
 				time = new Date;
-				sql_buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"|"+ms+"ms"+"|"+convertir(sql,data)+File.lineEnding;
+				sql_buffer += sql+File.lineEnding;
 			}
 		}
 		

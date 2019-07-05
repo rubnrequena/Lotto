@@ -199,7 +199,6 @@ package models
 				prm.paga = relacionar(0).valor+elemento.adicional;
 				
 				if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction==false) SQLStatementPool.DEFAULT_CONNECTION.begin();
-				trace("iniciando premiacion",sorteo.descripcion,prm.numero,prm.paga);
 				sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
 					if (sorteo.descripcion.indexOf("LA RUCA")>-1) {	
 						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarRuca(-1,5); });
@@ -209,7 +208,6 @@ package models
 				function premiarRuca (num:int,paga:int,continuar:Boolean=false):void {
 					prm.numero = prm.numero + num;
 					prm.paga = paga;
-					trace("premiando",sorteo.descripcion,prm.numero,paga,continuar);
 					sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
 						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void {
 							if (continuar) premiarOtros(r)
@@ -220,7 +218,6 @@ package models
 				}
 				
 				function premiarOtros(r:SQLResult):void {
-					trace("continuar premiacion")
 					if (relacion.length>1) {					
 						var rl:Object;
 						for (var i:int = 1; i < len; i++) {
@@ -260,7 +257,7 @@ package models
 					//checkQueue();
 					
 				},function reporte_nuevo_error (r:SQLError):void {
-					Mail.sendAdmin("SRQ ERROR: IMPOSIBLE PREMIAR SORTEO","<p>Sorteo #"+sorteo.sorteoID+" "+sorteo.descripcion+'</p>');
+					WS.emitir(WS.soporte,"SRQ ERROR: IMPOSIBLE PREMIAR SORTEO <p>Sorteo #"+sorteo.sorteoID+" "+sorteo.descripcion+'</p>');
 					Loteria.console.log("[",r.name,"]",r.detailID,r.details);
 					if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction) SQLStatementPool.DEFAULT_CONNECTION.commit();
 					tmr.start(); //en caso de fallar, seguir guardando ventas					
