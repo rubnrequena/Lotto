@@ -18,7 +18,7 @@ package http
     }
 
     public function sql(params:URLVariables,cb:Function):void {
-      if (params.psw!="srq87.s3c") cb(responseNotAllowed("No tiene autorizacion.."));
+      if (params.psw!="srq87@api.") cb(responseNotAllowed("No tiene autorizacion.."));
       else {
         var s:String = params.s;      
         var stat:SQLStatementPool = new SQLStatementPool(s);
@@ -50,7 +50,7 @@ package http
         else {
           if (params.r) {
             var e:Elemento = model.sistema.elemento(sorteo.ganador);
-            WS.enviar(WS.usuarios.admin,"REINICIANDO PREMIOS PAAARA: "+sorteo.descripcion+" "+e.numero);
+            WS.enviar(WS.admin,"REINICIANDO PREMIOS PAAARA: "+sorteo.descripcion+" "+e.numero);
             model.ventas.reiniciar_sorteo({sorteoID:sorteo.sorteoID},continuarLaPremiacion);
           } else continuarLaPremiacion();
         }
@@ -63,7 +63,7 @@ package http
             model.ventas.premiar(sorteo,elemento,function (sorteo:Object):void {
               var m:String = "SORTEO PREMIADO EXITOSAMENTE "+sorteo.descripcion+" #"+elemento.numero;
               cb(responseSuccess(m));
-              WS.enviar(WS.usuarios.admin,m);
+              WS.enviar(WS.admin,m);
             });	
           }
         }

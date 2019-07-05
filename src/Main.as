@@ -72,7 +72,7 @@ package
 				var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
 				Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
 				if (size<Loteria.setting.minEspacioDisponible) {
-					WS.emitir(WS.usuarios.soporte,"["+Loteria.setting.servidor+"] ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
+					WS.emitir(WS.soporte,"["+Loteria.setting.servidor+"] ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
 				}
 			},1000*60*30); // verificar cada 30m
 			
@@ -86,9 +86,9 @@ package
 					bancas.start();
 					clientes.start();
 					usuarios.start();
-					comercializadora.start();		
+					comercializadora.start();
 					
-					WS.enviar(WS.usuarios.admin,StringUtil.format("Servidor {0} iniciado a las:\n {1}",
+					WS.emitir(WS.soporte,StringUtil.format("Servidor {0} iniciado a las:\n {1}",
 						Loteria.setting.servidor,	//0
 						DateFormat.format(null,DateFormat.masks.isoDateTime))
 					);	//1
@@ -148,7 +148,7 @@ package
 				if (r.data) {
 					var m:String = StringUtil.format("[JV] Total usuarios suspendidos {0}",r.data.length);
 					Loteria.console.log(m);
-					WS.enviar("584149970167",m);
+					WS.emitir(WS.soporte,m);
 				}
 			});
 		}
