@@ -491,11 +491,18 @@ package controls
 
 			if (ultVenta && !meta.hasOwnProperty("rw")) {
 				var mt:Number=0;
+				var mn:int=0;
 				var len:int = m.data.v.length
-				for(i = 0; i < len; i++) mt+= m.data.v[i].monto;
+				for(i = 0; i < len; i++) {
+					mt+= m.data.v[i].monto;
+					mn+= m.data.v[i].numero;
+				}
+				var unums:Array = ultVenta.vt.map(function (num:Object,i:int,a:Array):int { return num.numero });
+				var unum:int=0;
+				for each(var num:int in unums) unum += num;
 				var ahora:Number = new Date().time;
 				var tiempo:Number = ultVenta.tk.tiempo+Loteria.setting.taquilla.ticketDuplicado;
-				if (mt==ultVenta.tk.monto && len==ultVenta.vt.length && tiempo-ahora>0) {
+				if (unum==mn && mt==ultVenta.tk.monto && len==ultVenta.vt.length && tiempo-ahora>0) {
 					m.data = {code:Code.DUPLICADO,venta:m.data};
 					_cliente.sendMessage(m);
 					return;
@@ -659,8 +666,7 @@ package controls
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
 							m.data.format = "ws";
-							m.data.ws = meta.ws;
-							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);							
+							m.data.ws = meta.ws;						
 							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
 						_cliente.sendMessage(m);
