@@ -214,29 +214,33 @@ package models
 					
 					Loteria.console.log("[SYS] Iniciando conexion de ayuda");
 					SQLStatementPool.REPORTE2_CONN.openAsync(sistemaDB,"create",new Responder(function ():void {
-						SQLStatementPool.REPORTE2_CONN.attach("us",usuariosDB);
-						SQLStatementPool.REPORTE2_CONN.attach("vt",ventasDB);
-						Loteria.console.log("[SYS] Conexion de ayuda establecida");
+						SQLStatementPool.REPORTE2_CONN.attach("us",usuariosDB,new Responder(function():void {
+							SQLStatementPool.REPORTE2_CONN.attach("vt",ventasDB);
+							Loteria.console.log("[SYS] Conexion de ayuda establecida");							
+						}));
 					}));
 					
 					Loteria.console.log("[SYS] Iniciando conexion de reportes");
 					SQLStatementPool.REPORTE_CONN.openAsync(sistemaDB,"create",new Responder(function ():void {
-						SQLStatementPool.REPORTE_CONN.attach("us",usuariosDB);
-						SQLStatementPool.REPORTE_CONN.attach("vt",ventasDB);
-						Loteria.console.log("[SYS] Conexion de reportes establecida");
+						SQLStatementPool.REPORTE_CONN.attach("us",usuariosDB,new Responder(function():void {
+							SQLStatementPool.REPORTE_CONN.attach("vt",ventasDB);
+							Loteria.console.log("[SYS] Conexion de reportes establecida");
+						}));
 					}));
 					
 					Loteria.console.log("[SYS] Iniciando conexion de jugadas");
 					SQLStatementPool.JUGADAS_CONN.openAsync(sistemaDB,"create",new Responder(function ():void {
-						SQLStatementPool.JUGADAS_CONN.attach("us",usuariosDB);
-						SQLStatementPool.JUGADAS_CONN.attach("vt",ventasDB);
-						Loteria.console.log("[SYS] Conexion de jugadas establecida");
+						SQLStatementPool.JUGADAS_CONN.attach("us",usuariosDB,new Responder(function():void {
+							SQLStatementPool.JUGADAS_CONN.attach("vt",ventasDB);
+							Loteria.console.log("[SYS] Conexion de jugadas establecida");
+						}));
 					}));
 					
 					Loteria.console.log("[SYS] Iniciando conexion de admin");
 					SQLStatementPool.ADMIN_CONN.openAsync(sistemaDB,"create",new Responder(function ():void {
-						SQLStatementPool.ADMIN_CONN.attach("us",usuariosDB);
-						SQLStatementPool.ADMIN_CONN.attach("vt",ventasDB);
+						SQLStatementPool.ADMIN_CONN.attach("us",usuariosDB,new Responder(function():void {
+							SQLStatementPool.ADMIN_CONN.attach("vt",ventasDB);
+						}));
 					}));
 					
 					
@@ -283,14 +287,11 @@ package models
 										pw.dispose();
 										ventas.premiar(s,e,function (sorteo:Object):void {
 											Loteria.console.log("[JV] SORTEO PREMIADO EXITOSAMENTE ",sorteo.descripcion,"#",pleno);
-											/*if (sorteo.sorteo==1) {
-												SMS.send("04149970167","["+Loteria.setting.servidor+"]"+"[JV]"+sorteo.descripcion+" PREMIADO EXITOSAMENTE PLENO: "+pleno);
-											}*/
 										});								
 										Mail.sendAdmin("[SRQ]["+s.fecha+"] SORTEO PREMIADO",StringUtil.format(Mail.PREMIO_CONFIRMADO,s.sorteoID,s.descripcion,e.numero,"jarvis",Loteria.setting.servidor),null);
 									}
 								} else {
-									WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"] Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);
+									WS.emitir(WS.premios,"Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);
 									Loteria.console.log("[JV] Error al premiar, pleno invalido. pleno: #",pleno,s.descripcion);
 								}
 							}
