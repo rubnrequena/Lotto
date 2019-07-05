@@ -721,8 +721,7 @@ package controls
 										sorteo.sorteoID, //0
 										sorteo.descripcion, //1
 										e.numero, //2
-										usuario.usuario, //3
-										Loteria.setting.servidor //4
+										usuario.usuario //3
 									);
 									//WS.emitir(Loteria.setting.plataformas.usuarios.premios,body);
 									Mail.sendAdmin("[SRQ]["+sorteo.fecha+"] SORTEO PREMIADO",body,null);
@@ -758,11 +757,9 @@ package controls
 							sorteo.sorteoID, //0
 							sorteo.descripcion, //1
 							sorteo.fecha, //2
-							usuario.usuario, //3
-							Loteria.setting.servidor //4
+							usuario.usuario //3
 						);
-						Mail.sendAdmin("[ADM] SORTEO REINICIADO",body,null);
-						WS.enviar(Loteria.setting.plataformas.usuarios.admin,body);
+						WS.enviar(WS.admin,body);
 						m.data = r.rowsAffected;
 						_cliente.sendMessage(m);
 					} else {

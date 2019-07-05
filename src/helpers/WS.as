@@ -25,9 +25,7 @@ package helpers
 		public static var premios:Array;
 		public static var admin:String;
 		
-		public function WS()
-		{
-			
+		public function WS() {			
 		}
 		
 		public static function init ():void {
@@ -46,11 +44,9 @@ package helpers
 		}
 		
 		protected static function onError(event:IOErrorEvent):void {
-			trace("Mensaje NO enviado");
 			checkMensajes();
 		}	
 		protected static function onComplete(event:Event):void {
-			trace("Mensaje enviado");
 			checkMensajes();
 		}
 		protected static function checkMensajes ():void {

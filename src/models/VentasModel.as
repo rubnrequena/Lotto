@@ -95,7 +95,7 @@ package models
 			lockVentas=true; //prevenir ventas fantasmas
 			tmr.stop();
 			Loteria.console.log("COMMIT ERROR",r.errorID,r.message,r.details);
-			Mail.sendAdmin("CODIGO ROJO, VENTAS SUSPENDIDAS","<p>Se ha detenido las ventas para evitar una perdida de informacion</p>"+r.details,null);
+			WS.emitir(WS.soporte,"CODIGO ROJO, VENTAS SUSPENDIDAS\nSe ha detenido las ventas para evitar una perdida de informacion"+r.details);
 		}
 		private function onCommit(result:Vector.<SQLResult>):void {
 			//checkQueue();
@@ -212,8 +212,7 @@ package models
 						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void {
 							if (continuar) premiarOtros(r)
 							else premiarRuca(2,5,true);
-						});
-						
+						});						
 					});	
 				}
 				
@@ -254,10 +253,9 @@ package models
 					Loteria.console.log(getTimer()-t+"ms, REPORTE REGISTRADO CON EXITO, #"+sorteo.sorteoID,sorteo.descripcion);
 					if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction) SQLStatementPool.DEFAULT_CONNECTION.commit();
 					tmr.start();
-					//checkQueue();
 					
 				},function reporte_nuevo_error (r:SQLError):void {
-					WS.emitir(WS.soporte,"SRQ ERROR: IMPOSIBLE PREMIAR SORTEO <p>Sorteo #"+sorteo.sorteoID+" "+sorteo.descripcion+'</p>');
+					WS.emitir(WS.premios,"SRQ ERROR: IMPOSIBLE PREMIAR SORTEO <p>Sorteo #"+sorteo.sorteoID+" "+sorteo.descripcion+'</p>');
 					Loteria.console.log("[",r.name,"]",r.detailID,r.details);
 					if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction) SQLStatementPool.DEFAULT_CONNECTION.commit();
 					tmr.start(); //en caso de fallar, seguir guardando ventas					

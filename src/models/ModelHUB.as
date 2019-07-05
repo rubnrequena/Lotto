@@ -33,8 +33,7 @@ package models
 	import flash.utils.setTimeout;
 	
 	public class ModelHUB extends EventDispatcher
-	{
-		
+	{		
 		private var rootDB:File;
 		
 		public static var conexion:SQLConnection;
@@ -68,8 +67,7 @@ package models
 		
 		public var ahora:Number;
 		
-		public var _tasks:Object;
-		
+		public var _tasks:Object;		
 		
 		public function get settings ():Object {
 			return Loteria.setting;
@@ -77,8 +75,6 @@ package models
 		
 		public function ModelHUB() {
 			super();
-			
-			
 			rootDB = new File(settings.db.root);			
 			if (!rootDB.exists) {
 				Loteria.console.log("[SISTEMA]",rootDB.nativePath,"NO EXISTE, IMPOSIBLE INICIAR BASE DE DATOS");
@@ -109,7 +105,7 @@ package models
 					trace("[SQL ERROR]",e.details);
 				}
 				Loteria.console.log("[SQL ERROR]",e.detailID,e.message,e.details);
-				WS.enviar(Loteria.setting.plataformas.usuarios.admin,"["+Loteria.setting.servidor+"] *"+e.message+"* %0A"+e.details);
+				WS.enviar(WS.admin,"*"+e.message+"* %0A"+e.details);
 			}
 			//DB.DEBUG = true;
 			
@@ -149,7 +145,7 @@ package models
 			}				
 			if (a.length>0) {
 				nameSorteos(a);
-				WS.emitir(Loteria.setting.plataformas.usuarios.premios,"["+Loteria.setting.servidor+"] Revisar sorteos:\n"+a.join("\n"));
+				WS.emitir(WS.premios,"Revisar sorteos:\n"+a.join("\n"));
 				Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS "+a.join(",")+"; NOTIFICANDO AL ADMINISTRADOR");				
 			}
 			a=null; hoy=null;
@@ -178,10 +174,7 @@ package models
 		private function tasks (time:String):void {
 			if (time in _tasks) {
 				var tareas:Array = _tasks[time];
-				for each (var task:Function in tareas) {
-					execute(task); 
-				}
-				
+				for each (var task:Function in tareas) execute(task);
 			}
 		}
 		
@@ -261,11 +254,7 @@ package models
 			prepararVentas();
 			mSorteos = new SorteosManager(this);
 			bMan = new BManager(this);
-			uMan = new BManager(this);
-			
-			setTimeout(function ():void {
-				jv_midas();
-			},5000)
+			uMan = new BManager(this);			
 		}
 		
 		private function sorteo_close (e:Event,s:Sorteo):void {							
@@ -287,8 +276,7 @@ package models
 										pw.dispose();
 										ventas.premiar(s,e,function (sorteo:Object):void {
 											Loteria.console.log("[JV] SORTEO PREMIADO EXITOSAMENTE ",sorteo.descripcion,"#",pleno);
-										});								
-										Mail.sendAdmin("[SRQ]["+s.fecha+"] SORTEO PREMIADO",StringUtil.format(Mail.PREMIO_CONFIRMADO,s.sorteoID,s.descripcion,e.numero,"jarvis",Loteria.setting.servidor),null);
+										});										
 									}
 								} else {
 									WS.emitir(WS.premios,"Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);

@@ -476,7 +476,6 @@ package controls
 							var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,1);
 							if (numSol>=premiador.puntos) {
 								var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
-								Mail.sendAdmin("PREMIACION CONFIRMADA POR BANCA "+DateFormat.format(null),StringUtil.format(Mail.PREMIO_CONFIRMADO,sorteo.sorteoID,sorteo.descripcion,e.numero,usuario.nombre,Loteria.setting.servidor),null);
 								_model.ventas.premiar(sorteo,e,function (sorteo:Object):void {
 									m.data = {code:Code.OK};
 									_cliente.sendMessage(m);

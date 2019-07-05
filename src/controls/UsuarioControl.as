@@ -152,8 +152,7 @@ package controls
 							var premiador:Object = Loteria.setting.premios.premiacion[sorteo.sorteo] || Loteria.setting.premios.premiacion[0];
 							var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,2);
 							if (numSol>=premiador.puntos) {
-								var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
-								Mail.sendAdmin("PREMIACION CONFIRMADA POR USUARIO "+DateFormat.format(null),StringUtil.format(Mail.PREMIO_CONFIRMADO,sorteo.sorteoID,sorteo.descripcion,e.numero,usuario.nombre,Loteria.setting.servidor),null);
+								var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);							
 								_model.ventas.premiar(sorteo,e,function (sorteo:Object):void {
 									m.data = {code:Code.OK};
 									_cliente.sendMessage(m);

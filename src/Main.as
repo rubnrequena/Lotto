@@ -135,7 +135,6 @@ package
 		
 		//autoSuspender
 		private function validarSuspensionesPendientes():void {
-			Loteria.console.log("VALIDANDO USUARIOS POR SUSPENDER");
 			var now:Date = new Date(model.ahora);
 			model.balance.validar(now,function (r:SQLResult):void {
 				for each (var us:Object in r.data) {					
@@ -145,19 +144,11 @@ package
 					else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
 					Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
 				}
-				if (r.data) {
-					var m:String = StringUtil.format("[JV] Total usuarios suspendidos {0}",r.data.length);
-					Loteria.console.log(m);
-					WS.emitir(WS.soporte,m);
-				}
 			});
-		}
-		
+		}		
 		protected function comer_added(event:AIRServerEvent):void {
 			new ComercializadoraControl(event.client,model);
 		}
-		
-		
 		protected function usuario_added(event:AIRServerEvent):void {
 			new UsuarioControl(event.client,model);
 		}
