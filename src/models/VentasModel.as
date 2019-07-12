@@ -206,12 +206,15 @@ package models
 				});
 
 				function premiarRuca (num:int,paga:int,continuar:Boolean=false):void {
-					prm.numero = prm.numero + num;
+					if (elemento.numero=="00" && num==-1) prm.numero = elemento.elementoID + 99;
+					else if (elemento.numero=="99" && num==1) prm.numero = elemento.elementoID - 99;
+					else prm.numero = elemento.elementoID + num;
+								
 					prm.paga = paga;
 					sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
 						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void {
 							if (continuar) premiarOtros(r)
-							else premiarRuca(2,5,true);
+							else premiarRuca(1,5,true);
 						});						
 					});	
 				}
