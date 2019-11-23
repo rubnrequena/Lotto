@@ -72,7 +72,7 @@ package helpers.print
 			//ultimo grupo jugadas
 			parseItems(n,e);
 			
-			function parseItems (n,e):void {
+			function parseItems (n:Array,e:Object):void {
 				var a:int, b:int,c:int;
 				tx = zip_series(n).join(",")+"x"+e.monto;
 				var atx:Array = tx.split(",");
@@ -94,7 +94,7 @@ package helpers.print
 				}
 			}			
 		}
-		protected static function cesto_ordenMonto (a,b):int {
+		protected static function cesto_ordenMonto (a:Object,b:Object):int {
 			var s1:int = a.monto, s2:int = b.monto;
 			var n1:int = a.numero, n2:int = b.numero;
 			return s1 == s2?n1-n2:s1-s2;

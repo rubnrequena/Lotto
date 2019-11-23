@@ -152,7 +152,7 @@ package models
 			function ventaModel_venta_error (e:SQLError):void {
 				Loteria.console.log("ERROR:",e.details,'ventasModel.as:venta()');
 			}
-			function getRandomArbitrary(min, max):int {
+			function getRandomArbitrary(min:int, max:int):int {
 				return Math.random() * (max - min) + min;
 			}
 		}

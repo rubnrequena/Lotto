@@ -34,9 +34,9 @@ package http
         if (!r.data) cb(responseNotFound("No hay resultados"))
         else {
           var res:Array = r.data;
-          res = res.filter(function (item,b:int,c:Array):Boolean { return item.abierta==false; })
+          res = res.filter(function (item:*,b:int,c:Array):Boolean { return item.abierta==false; })
           if (params.filtro) {
-            res = res.filter(function (item,b:int,c:Array):Boolean {
+            res = res.filter(function (item:*,b:int,c:Array):Boolean {
               return item.descripcion.indexOf(params.filtro.toUpperCase())>-1;
             })
           }
