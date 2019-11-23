@@ -21,6 +21,7 @@ package models
 	import flash.utils.getTimer;
 	import by.blooddy.crypto.MD5;
 	import vos.Sesion;
+	import helpers.Code;
 	
 	public class TaquillasModel extends EventDispatcher
 	{			
@@ -84,6 +85,9 @@ package models
 			sql.taquilla_login.run(login,function (r:SQLResult):void {
 				if (r.data) {
 					var taq:Taquilla = r.data[0];
+					if (taq.estaActiva!=5) {
+						execute(cb,null,{code:Code.SUSPENDIDO}); return
+					}
 					if (!taq.fingerlock) {
 						for (var i:int = 0; i < taquillas.length; i++) { // prevenir sesiones multiples
 							if (login.usuario==taquillas[i].usuario) {
@@ -98,9 +102,7 @@ package models
 					clientes.push(cl);
 					cl.addEventListener(Event.CLOSE,cliente_onClose);
 					execute(cb,taq);
-				} else {
-					execute(cb,null);
-				}
+				} else execute(cb,null,{code:Code.NO_EXISTE});
 				//registar ultimo login de taquilla
 				//dispatchEventWith(ModelEvent.LOGIN,null,taq);
 			});
@@ -121,8 +123,8 @@ package models
 			return c;
 		}
 		public function buscarClienteIndex (campo:String,valor:*):int {
-			var len:int = taquillas.length-1;
-			for (var i:int = len; i >= 0; i--) {
+			var len:int = taquillas.length;
+			for (var i:int = 0 ; i < len; i++) {
 				if (valor==taquillas[i][campo]) return i;
 			}
 			return -1;
@@ -142,9 +144,10 @@ package models
 		}
 		public function desconectarCliente (index:int):void {
 			if (index>-1) {
-				clientes[index].close();
-				clientes.removeAt(index);
-				taquillas.removeAt(index);
+				var c:Client = clientes[index]
+				c.close();
+				//clientes.removeAt(index);
+				//taquillas.removeAt(index);
 			}
 		}
 		public function buscar (filtro:Object,cb:Function):void {
@@ -248,7 +251,7 @@ package models
 			});
 		}
 		public function metas (s:Object,cb:Function):void {
-			sql.metas.run(s,function (r:SQLResult):void {
+			sql.metas.run(s,function result (r:SQLResult):void {
 				var m:Object = {};
 				for each (var row:Object in r.data) m[row.campo] = row.valor;
 				execute(cb,m);
@@ -309,7 +312,13 @@ package models
 		}
 		public function fingerlock_usuario (data:Object,cb:Function):void {
 			if (data.hasOwnProperty("taquillaID")) sql.fingerlock_usr.run(data,cb);
-			else sql.fingerlock_usr_all.run(data,cb);
+			else sql.fingerlock_usr_all.run(data,cb)
+		}
+		public function fingerlock (data:Object,cb:Function):void {
+			if (data.hasOwnProperty("taquillaID")) sql.fingerlock.run(data,cb);
+		}
+		public function fingerclear (data:Object,cb:Function):void {
+			if (data.hasOwnProperty("taquillaID")) sql.fingerclear.run(data,cb);
 		}
 	
 		public function comisiones (data:Object,cb:Function):void {

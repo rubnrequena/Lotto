@@ -124,6 +124,8 @@ package controls
 			addEventListener("taquillas",taquillas);
 			addEventListener("taquilla-nueva",taquilla_nueva);
 			addEventListener("taquilla-editar",taquilla_editar);
+			addEventListener("taquilla-flock",taquilla_lock);
+			addEventListener("taquilla-fpclear",taquilla_clear);
 			
 			addEventListener("reporte-general",reporte_general);
 			addEventListener("reporte-comercial",reporte_comercial);
@@ -541,6 +543,19 @@ package controls
 			});
 		}
 		
+		private function taquilla_lock(event:Event,m:Message):void {
+			_model.taquillas.fingerlock(m.data,function (res:SQLResult):void {
+				m.data = res.rowsAffected
+				_cliente.sendMessage(m)
+			})
+		}
+		private function taquilla_clear (event:Event,m:Message):void {
+			_model.taquillas.fingerclear(m.data,function (res:SQLResult):void {
+				m.data = res.rowsAffected
+				_cliente.sendMessage(m)
+			})
+		}
+		
 		private function tope_nuevo(e:Event,m:Message):void {
 			_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
@@ -703,7 +718,7 @@ package controls
 			_model.sorteos.premio(s,function (r:SQLResult):void {				
 				if (r.data) {
 					if (r.data[0].abierta==true) {
-						m.data = {code:Code.INVALIDO};
+						m.data = {code:Code.CERRADO};
 						_cliente.sendMessage(m);
 					} else if (r.data[0].ganador>0) {
 						_model.ventas.sorteos_premiados[m.data.sorteoID]=true;
@@ -717,14 +732,6 @@ package controls
 								var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,usuario.nivel==1?100:20);
 								if (numSol>=premiador.puntos) {
 									var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
-									var body:String = StringUtil.format(Mail.PREMIO_CONFIRMADO,
-										sorteo.sorteoID, //0
-										sorteo.descripcion, //1
-										e.numero, //2
-										usuario.usuario //3
-									);
-									//WS.emitir(Loteria.setting.plataformas.usuarios.premios,body);
-									Mail.sendAdmin("[SRQ]["+sorteo.fecha+"] SORTEO PREMIADO",body,null);
 									_model.ventas.premiar(sorteo,e,function (srt:Object):void {
 										m.data = {code:Code.OK};
 										_cliente.sendMessage(m);
@@ -903,5 +910,6 @@ package controls
 			});
 		}
 		
+
 	}
 }

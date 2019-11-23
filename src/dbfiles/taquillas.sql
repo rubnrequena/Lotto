@@ -1,5 +1,6 @@
 --taquilla_login
-SELECT taquillaID, taquillas.usuario, taquillas.usuarioID, taquillas.bancaID, taquillas.nombre, taquillas.activa, taquillas.comision, fingerprint, fingerlock 
+SELECT taquillaID, taquillas.usuario, taquillas.usuarioID, taquillas.bancaID, taquillas.nombre, taquillas.comision, taquillas.activa, fingerprint, fingerlock,
+	usuarios.activo+bancas.activa+taquillas.activa estaActiva
 FROM us.taquillas 
 JOIN us.bancas ON bancas.bancaID = taquillas.bancaID 
 JOIN us.usuarios ON usuarios.usuarioID = taquillas.usuarioID 

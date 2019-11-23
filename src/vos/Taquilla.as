@@ -9,6 +9,7 @@ package vos
 		public var usuario:String;
 		public var clave:String;
 		public var activa:Boolean;
+		public var estaActiva:int;
 		public var comision:Number;
 		
 		public var fingerprint:String;
@@ -17,6 +18,7 @@ package vos
 		public var conectado:Number;
 		public var papelera:int;
 		public var creacion:String;
+		public var contacto:String;
 		
 		public function get usID():String {
 			return "t"+taquillaID;

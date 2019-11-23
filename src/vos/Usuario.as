@@ -20,6 +20,7 @@ package vos
 		public var registrado:Number;
 		public var renta:Number;
 		public var papelera:int;
+		public var contacto:String;
 		
 		public var comision:Number;
 		public var participacion:Number;

@@ -6,6 +6,8 @@ package models
 	import db.sql.BalanceSQL;
 	
 	import starling.events.EventDispatcher;
+	import flash.data.SQLResult;
+	import starling.utils.execute;
 	
 	public class BalanceModel extends EventDispatcher
 	{
@@ -23,7 +25,10 @@ package models
 		}
 		
 		public function nuevo (data:Object,cb:Function):void {
-			sql.nuevo.run(data,cb);
+			sql.nuevo.run(data,function (res:SQLResult):void {
+				execute(cb,res)
+				Notificaciones.dispatch(Notificaciones.BALANCE_NUEVO,data)
+			});
 		}
 		public function remover (data:Object,cb:Function):void {
 			sql.remover_balance.run(data,cb);
@@ -51,6 +56,9 @@ package models
 		
 		public function confirmar_pago(data:Object,cb:Function):void {
 			sql.confirmar_pago.run(data,cb);
+			sql.balance_usID.run({rID:data.rID,usID:data.usID,lm:1},function (res:SQLResult):void {
+				if (res.data) Notificaciones.dispatch(Notificaciones.CONFIRMAR_PAGO,res.data[0]);
+			})
 		}
 		
 		public function nuevo_pago(data:Object, cb:Function):void {

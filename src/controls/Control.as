@@ -12,6 +12,7 @@ package controls
 	import models.ModelHUB;
 	
 	import starling.events.EventDispatcher;
+	import be.aboutme.airserver.messages.Message;
 	
 	public class Control extends EventDispatcher
 	{
@@ -33,15 +34,19 @@ package controls
 		protected var controlName:String;
 		protected var controlNameID:String;
 		protected var _controlID:*;
-		
 
+		public static var lastMessage:Object={};
+		
 		public function set controlID(value:*):void {
 			_controlID = value;
 			controlNameID = CLASS_NAME[getQualifiedClassName(this).split("::").pop()];
 			controlName = "["+controlNameID+":"+value+"]";
 		}
 
-		
+		public function sendMessage (m:Message):void {
+			if (_cliente) _cliente.sendMessage(m);
+		}
+	
 		static public var EX_HANDLER:EventDispatcher = new EventDispatcher;
 		
 		public function Control(cliente:Client,model:ModelHUB) {
@@ -62,7 +67,10 @@ package controls
 		}		
 		
 		protected function onMessage(event:MessageReceivedEvent):void {
-			mt = getTimer();			
+			mt = getTimer();	
+			lastMessage.control = controlName		
+			lastMessage.command = event.message.command
+			lastMessage.data = event.message.data
 			//Loteria.console.log(controlName,event.message.command,JSON.stringify(event.message.data));
 			dispatchEventWith(event.message.command,false,event.message);
 		}

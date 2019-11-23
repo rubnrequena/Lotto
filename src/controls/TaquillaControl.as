@@ -226,36 +226,31 @@ package controls
 		private function login(e:Event,m:Message):void {
 			var fp:String = m.data.fp;
 			delete m.data.fp;
-			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla):void {
-				_taquilla = taquilla;
-				if (taquilla) {
-					_model.taquillas.estaActiva(taquilla.taquillaID,function (act:Boolean):void {
-						if (act) continuarLogin();
-						else {
-							m.data = {code:Code.SUSPENDIDO};
-							_cliente.sendMessage(m);
-						}
-					})
-				} else {
-					m.data = {code:Code.NO_EXISTE};
+			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla,err:Object):void {
+				if (err) {
+					m.data = err;
 					_cliente.sendMessage(m);
+				} else {
+					_taquilla = taquilla;
+					continuarLogin();
 				}
 			});
 			
 			function continuarLogin():void {
+				if (!_taquilla) return;
 				var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
 				controlID = _taquilla.taquillaID;		
 				if (_taquilla.fingerlock==true && _taquilla.fingerprint) {
 					if (fp != efp) {
 						m.data = {code:Code.INVALIDO};
-						_cliente.sendMessage(m);
+						sendMessage(m);
 						return;
-					} //else initLog();
+					}
 				} else {
 					if (fp != efp) {
 						msg.command = "fingerprint";
-						_cliente.sendMessage(msg);
-					} //else initLog();
+						sendMessage(msg);
+					}
 				}
 				_taquilla.conectado = _model.ahora;
 				m.data = {
@@ -266,21 +261,17 @@ package controls
 				
 				var hoy:String = DateFormat.format(null);
 				var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
-				_model.sorteos.sorteos(f,function (r:SQLResult):void {
+				_model.sorteos.sorteos(f,function (r:SQLResult):void {		
 					m.data.sorteos = r.data
 					m.data.elementos = _model.sistema.eleHash;
-					_cliente.sendMessage(m);
+					sendMessage(m);
 					
-					_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function (meta:Object):void {
+					_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function metaResult (meta:Object):void {
 						m.command = "metas";
 						m.data = meta;
-						_cliente.sendMessage(m);
+						sendMessage(m);
 						measure("login");
 					})
-					
-					/*_model.sistema.elementos_taq(f,function (r:SQLResult):void {
-					
-					});*/
 				});
 			}
 		}
@@ -601,7 +592,6 @@ package controls
 						m.data = {code:Code.TOPE_TAQUILLA_EXEDIDO,elementos:invalidos}
 						_cliente.sendMessage(m);
 					} else { // VENTA VALIDA
-						//Loteria.console.log('Recibiendo venta, ',JSON.stringify(m.data));												
 						realizarVenta();
 					}
 					invalidos.length = 0;
@@ -732,13 +722,13 @@ package controls
 									break;
 								}
 							} else if (venta.monto > tope.monto) { // jugada exede tope
-								venta.monto = tope.monto; //170521
+								venta.monto = tope.monto;
 								addInvalido({s:venta.sorteoID,n:venta.numero,td:tope.monto});
 								break;
 							}
 						}
 					} else if (venta.monto > tope.monto) { // jugada exede tope
-						venta.monto = tope.monto; //170521
+						venta.monto = tope.monto;
 						addInvalido({s:venta.sorteoID,n:venta.numero,td:tope.monto});
 					}
 				}

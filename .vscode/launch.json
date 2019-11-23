@@ -7,13 +7,15 @@
     {
       "type": "swf",
       "request": "launch",
-      "name": "Launch"
+      "name": "Launch",
+      "profile": "extendedDesktop"
     },
     {
       "type": "swf",
       "request": "launch",
       "name": "Save And Launch",
-      "preLaunchTask": "ActionScript: compile debug - asconfig.json"
+      "preLaunchTask": "ActionScript: compile debug - asconfig.json",
+      "profile": "extendedDesktop"
     }
   ]
 }

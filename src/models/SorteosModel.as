@@ -9,10 +9,11 @@ package models
 	import starling.utils.execute;
 	
 	import vos.PreSorteo;
-	
+		
 	public class SorteosModel extends EventDispatcher
 	{
 		private var sql:SorteosSQL;
+		static public var sorteosPendientes:Array = []
 		
 		private var _presorteos:Array; //examinar funcion
 		public function get presorteos():Array { return _presorteos; }

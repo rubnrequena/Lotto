@@ -8,6 +8,7 @@ package db
 	
 	import starling.events.EventDispatcher;
 	import starling.utils.execute;
+	import helpers.Backup;
 
 	public class SQLStatementPool extends EventDispatcher
 	{		
@@ -16,6 +17,7 @@ package db
 		public static var REPORTE2_CONN:SQLConnection;
 		public static var JUGADAS_CONN:SQLConnection;
 		public static var ADMIN_CONN:SQLConnection;
+		public static var MSG_CONN:SQLConnection;
 		
 		public static var LOG:Function;
 		
@@ -26,6 +28,9 @@ package db
 
 		protected var _conexion:SQLConnection;
 		protected var _itemClass:Class;		
+
+		static public var lastQuery:String
+		static public var lastData:*
 		
 		public function get length():uint {
 			return pool.length;
@@ -57,6 +62,7 @@ package db
 			
 			setParams(sql,params);
 			
+			
 			if (LOG) execute(LOG,_sentencia,params);
 			return sql;
 		}
@@ -66,14 +72,14 @@ package db
 			var s:SQLStatement = getStat(params);
 			
 			var rs:Responder = new Responder(function (r:SQLResult):void {
-				CONFIG::debug {
-					trace(s.text,JSON.stringify(params));
-				}
 				if (r.data && r.data.length==prefetch) s.next(prefetch,rs);
 				execute(onComplete,r);
 				toPool(s);	
 			},onError || DB.ERROR_HANDLER);
 			
+			lastQuery = s.text;
+			lastData = params;
+			trace(s.text,JSON.stringify(params));
 			s.execute(prefetch,rs);
 		}
 		internal function setParams (sql:SQLStatement,params:Object):SQLStatement {

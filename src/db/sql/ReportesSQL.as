@@ -10,6 +10,7 @@ package db.sql
 		public var banca_sorteo_taquillas:SQLStatementPool;
 		public var banca_diario:SQLStatementPool;
 		public var usuario_diario:SQLStatementPool;
+		public var comercial_diario:SQLStatementPool;
 		
 		public var taquillas:SQLStatementPool;
 		public var taquilla:SQLStatementPool;
@@ -64,6 +65,8 @@ package db.sql
 		public var comercial_general:SQLStatementPool;
 		public var comercial_banca:SQLStatementPool;
 		public var comercial_recogedor:SQLStatementPool;
+
+		public var backup_sorteo:SQLStatementPool;
 		
 		public function ReportesSQL()
 		{
@@ -86,32 +89,17 @@ package db.sql
 			fecha = new SQLStatementPool('SELECT sorteos.fecha, SUM( elementos.monto) jugado, SUM(premio) premio, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID WHERE ticket.anulado = 0 AND sorteos.fecha BETWEEN :inicio AND :fin GROUP BY fecha ORDER BY fecha',SQLStatementPool.REPORTE_CONN);
 			fecha_banca = new SQLStatementPool('SELECT sorteos.fecha, SUM( elementos.monto) jugado, SUM(premio) premio, SUM((case when pagos.tiempo > 0 then premio else 0 end)) pago FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID WHERE ticket.anulado = 0 AND sorteos.fecha BETWEEN :inicio AND :fin AND ticket.bancaID = :bancaID GROUP BY fecha ORDER BY fecha',SQLStatementPool.REPORTE_CONN);
 			
-			//reportes
-			//rp_taqs_gen = new SQLStatementPool('SELECT taquillas.nombre desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, SUM(jugada*comisionBanca) cmBanca, round(SUM(jugada*renta),0) renta, SUM(pago) pago  FROM vt.reportes JOIN us.taquillas ON taquillas.taquillaID = reportes.taquillaID WHERE fecha BETWEEN :inicio AND :fin AND reportes.bancaID = :bancaID GROUP BY reportes.taquillaID ORDER BY reportes.taquillaID',SQLStatementPool.REPORTE_CONN);
-			
-			//rp_taqs_gen_fecha = new SQLStatementPool('SELECT fecha desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, SUM(jugada*renta) renta, SUM(pago) pago  FROM vt.reportes WHERE fecha BETWEEN :inicio AND :fin AND reportes.bancaID = :bancaID GROUP BY reportes.fecha ORDER BY reportes.fecha',SQLStatementPool.REPORTE_CONN);
-			//rp_taqs_gen_sorteo = new SQLStatementPool('SELECT descripcion desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*renta)) renta, SUM(pago) pago  FROM vt.reportes JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE reportes.fecha = :dia AND reportes.bancaID = :bancaID GROUP BY reportes.sorteoID ORDER BY reportes.sorteoID',SQLStatementPool.REPORTE_CONN);
-			//rp_taqs_gen_sorteo2 = new SQLStatementPool('SELECT sorteos.descripcion desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, SUM(jugada*renta) renta, SUM(pago) pago  FROM vt.reportes JOIN us.taquillas ON taquillas.taquillaID = reportes.taquillaID JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE reportes.fecha BETWEEN :inicio AND :fin AND reportes.bancaID = :bancaID GROUP BY sorteos.sorteo ORDER BY reportes.taquillaID',SQLStatementPool.REPORTE_CONN);
-			
-			//rp_taq_gen = new SQLStatementPool('SELECT fecha descripcion, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision FROM vt.reportes WHERE fecha BETWEEN :inicio AND :fin AND reportes.taquillaID = :taquillaID GROUP BY reportes.fecha ORDER BY reportes.fecha',SQLStatementPool.REPORTE_CONN);
-			//rp_taq_gen_sorteosDia = new SQLStatementPool('SELECT descripcion, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision  FROM vt.reportes JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE reportes.fecha BETWEEN :inicio AND :fin AND reportes.taquillaID = :taquillaID GROUP BY reportes.sorteoID ORDER BY reportes.fecha',SQLStatementPool.REPORTE_CONN);
-			
-			//rp_bancas_gen = new SQLStatementPool('SELECT bancas.nombre desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*reportes.renta),2) renta  FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID WHERE fecha BETWEEN :inicio AND :fin GROUP BY reportes.bancaID ORDER BY bancas.usuarioID, bancas.bancaID',SQLStatementPool.REPORTE_CONN);
-			//rp_usuarios_gen = new SQLStatementPool('SELECT bancas.usuarioID, usuarios.nombre desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*reportes.renta),2) renta  FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID WHERE fecha BETWEEN :inicio AND :fin GROUP BY usuarios.usuarioID ORDER BY bancas.usuarioID, bancas.bancaID',SQLStatementPool.REPORTE_CONN);
 			load('comercial_general',SQLStatementPool.REPORTE_CONN);
 			load('comercial_banca',SQLStatementPool.REPORTE_CONN);
 			load('comercial_recogedor',SQLStatementPool.REPORTE_CONN);
 			//rp_fecha_gen = new SQLStatementPool('SELECT bancas.usuarioID, reportes.fecha desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, ROUND(SUM(jugada*reportes.renta),2) renta FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID WHERE fecha BETWEEN :inicio AND :fin GROUP BY reportes.fecha ORDER BY reportes.fecha',SQLStatementPool.REPORTE_CONN);
 			
-			//usuario
-			//rp_usuario_gen = new SQLStatementPool('SELECT bancas.nombre desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, round(SUM(jugada*comisionBanca),2) cmb, round(SUM(jugada*reportes.renta),2) renta  FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE reportes.fecha BETWEEN :inicio AND :fin AND bancas.usuarioID = :usuarioID GROUP BY bancas.bancaID ORDER BY bancas.nombre',SQLStatementPool.REPORTE_CONN);
-			//rp_usuario_gen_sorteo = new SQLStatementPool('SELECT sorteos.descripcion desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, round(SUM(jugada*comisionBanca),2) cmb, round(SUM(jugada*reportes.renta),2) renta FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID WHERE reportes.fecha BETWEEN :inicio AND :fin AND bancas.usuarioID = :usuarioID GROUP BY sorteos.sorteo ORDER BY sorteos.sorteoID',SQLStatementPool.REPORTE_CONN);
-			//rp_usuario_gen_fecha = new SQLStatementPool('SELECT reportes.fecha desc, SUM(jugada) jugada, SUM(premio) premio, SUM(jugada*reportes.comision*0.01) comision, round(SUM(jugada*comisionBanca),2) cmb, round(SUM(jugada*reportes.renta),2) renta FROM vt.reportes JOIN us.bancas ON bancas.bancaID = reportes.bancaID WHERE reportes.fecha BETWEEN :inicio AND :fin AND bancas.usuarioID = :usuarioID GROUP BY reportes.fecha ORDER BY reportes.fecha',SQLStatementPool.REPORTE_CONN);
-						
 			//midas
 			midas_reporte_dia = new SQLStatementPool(sentencia('midas'),SQLStatementPool.ADMIN_CONN);
 			midas_reporte_sorteo = new SQLStatementPool(sentencia('midas_sorteo'),SQLStatementPool.ADMIN_CONN);
 			
+			backup_sorteo = new SQLStatementPool(sentencia('backup_sorteo'),SQLStatementPool.DEFAULT_CONNECTION);
+
 			scan(SQLStatementPool.REPORTE_CONN);
 		}
 	}

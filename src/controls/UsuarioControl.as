@@ -395,15 +395,61 @@ package controls
 			addEventListener("venta-premios",venta_premios);
 			addEventListener("venta-anular",venta_anular);
 			
-			addEventListener("sms-nuevo",sms_nuevo);
-			addEventListener("sms-bandeja",sms_bandeja);
-			addEventListener("sms-leer",sms_leer);
-			addEventListener("sms-respuestas",sms_respuestas);
-			
 			addEventListener("balance-padre",balance_padre);
 			addEventListener("balance-pago",balance_pago);
 			
 			addEventListener("suspension-info",suspension_info);
+
+			//Mensajes
+			addEventListener('chat-leer',function (e:Event,m:Message):void {
+        _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
+					var uID:* = /\d+/.exec(m.data.origen)
+					_model.usuarios.usuarios({uid:uID[0]},function (usuario:Usuario):void {
+					  m.data = {
+							mensajes:res,
+							origen:{
+								usID:usuario.usID,
+								nombre:usuario.nombre,
+								contacto:usuario.contacto
+							}
+						};
+					  _cliente.sendMessage(m);						
+					})
+        })
+      });
+			addEventListener('chat-bandeja',function (e:Event,m:Message):void {
+        _model.sms.bandejaEntrada(usuario.usID,function (res:SQLResult):void {
+					m.data = res.data;
+					_cliente.sendMessage(m);
+        })
+      });
+			addEventListener('chat-recibidos',function chatRecibidos(e:Event,m:Message):void {
+				_model.sms.recibidos(usuario.usID,function chatRecibidos_controlResult(chats:Array):void {
+					m.data = chats;
+					_cliente.sendMessage(m);
+				})
+			})
+			addEventListener('chat-enviados',function chatEnviados(e:Event,m:Message):void {
+				_model.sms.enviados(usuario.usID,function chatEnviados_result(res:SQLResult):void {
+					m.data = res.data
+					_cliente.sendMessage(m)
+				})
+			})
+			addEventListener('chat-destinos',function (e:Event,m:Message):void {
+				_model.usuarios.destinos({uID:usuario.usuarioID},function (usuarios:SQLResult):void {
+						m.data = usuarios.data
+						_cliente.sendMessage(m)
+					})
+			});
+			addEventListener('chat-nuevo',function (e:Event,m:Message):void {
+				m.data.origen = usuario.usID
+				m.data.origenNombre = usuario.nombre
+				_model.sms.nuevo(m.data,function (res:SQLResult):void {
+					if (res.lastInsertRowID>0) m.data = {ok:res.lastInsertRowID}
+					else m.data = {error:'Mensaje no enviado'}
+					_cliente.sendMessage(m)
+				})
+			})
 		}
 		
 		private function suspension_info(e:Event,m:Message):void
@@ -663,43 +709,6 @@ package controls
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			}
-		}
-		
-		private function sms_nuevo (e:Event,m:Message):void {
-			m.data.origen = usuario.usuarioID;
-			m.data.tiempo = _model.ahora;
-			_model.sms.envBancaGrupo(m.data,function (r:Vector.<SQLResult>):void {
-				m.data = {code:Code.OK,n:r.length};
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_bandeja (e:Event,m:Message):void {
-			m.data = {bancaID:usuario.usuarioID};
-			_model.sms.bandejaBanca(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_leer (e:Event,m:Message):void {
-			_model.sms.leerBanca(m.data,function (r:SQLResult):void {
-				if (r.data) {
-					if (r.data[0].destino==usuario.usuarioID) {
-						m.data = r.data?r.data[0]:null;
-					} else m.data = {code:Code.NO_EXISTE};
-				} else {
-					m.data = {code:Code.NO_EXISTE};
-				}
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_respuestas (e:Event,m:Message):void {
-			_model.sms.respuestasBanca(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
 		}
 	}
 }

@@ -40,6 +40,9 @@ package db.sql
 		
 		public var jugadas_usuario_bnc:SQLStatementPool;
 		public var jugadas_usuario_num:SQLStatementPool;
+
+		public var jugadas_comercial_bnc:SQLStatementPool;
+		public var jugadas_comercial_num:SQLStatementPool;
 		
 		public var jugadas_srv_num:SQLStatementPool;
 		

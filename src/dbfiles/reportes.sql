@@ -48,6 +48,15 @@ JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID
 LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID 
 WHERE ticket.tiempo BETWEEN :inicio AND :final AND bancas.usuarioID = :usuarioID and ticket.anulado = 0 
 GROUP BY elementos.sorteoID ORDER BY elementos.sorteoID
+--comercial_diario
+SELECT elementos.sorteoID, usuarioID, sorteos.ganador, sorteos.descripcion desc, ROUND(SUM(elementos.monto),2) jugado, ROUND(SUM(elementos.premio),2) premios, SUM((case when pagos.tiempo > 0 then ROUND(premio,2) else 0 end)) pago FROM "vt".ticket 
+	JOIN "vt"."elementos" ON ticket.ticketID = elementos.ticketID  
+	JOIN us.bancas ON bancas.bancaID = ticket.bancaID 
+	JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID 
+	LEFT JOIN vt.pagos ON pagos.ventaID = elementos.ventaID
+	JOIN us.comer_usuario ON comer_usuario.uID = bancas.usuarioID 
+WHERE ticket.tiempo BETWEEN :inicio AND :final and cID = :comercialID and ticket.anulado = 0 
+GROUP BY elementos.sorteoID ORDER BY elementos.sorteoID
 --taq_sorteo_elem
 SELECT numero, ROUND(SUM(elementos.monto),2) monto FROM vt.ticket JOIN vt.elementos ON ticket.ticketID = elementos.ticketID WHERE ticket.anulado = 0 AND ticket.taquillaID = :taquillaID AND elementos.sorteoID = :sorteoID GROUP BY numero
 --taq_dia_ventas
@@ -217,3 +226,15 @@ SELECT reportes.bancaID gID, bancas.nombre desc, abs(bancas.comision) cm, ROUND(
   JOIN us.bancas ON bancas.bancaID = reportes.bancaID 
 WHERE fecha BETWEEN :inicio AND :fin AND bancas.usuarioID = :uid
 GROUP BY reportes.bancaID
+--backup_sorteo
+SELECT reporteID, jugada, premio, reportes.fecha, reportes.renta, reportes.comision,
+	reportes.sorteoID, sorteos.descripcion sorteo,
+	reportes.taquillaID, taquillas.nombre taquillaNombre,
+	reportes.bancaID, bancas.nombre bancaNombre,
+	taquillas.usuarioID usuarioID, usuarios.nombre usuarioNombre
+FROM reportes
+	JOIN us.taquillas ON taquillas.taquillaID = reportes.taquillaID
+	JOIN us.bancas ON bancas.bancaID = reportes.bancaID
+	JOIN us.usuarios ON usuarios.usuarioID = bancas.usuarioID
+	JOIN vt.sorteos ON sorteos.sorteoID = reportes.sorteoID
+WHERE reportes.sorteoID = :sorteoID

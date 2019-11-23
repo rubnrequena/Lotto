@@ -115,6 +115,12 @@ package models
 				delete s.fecha;
 				sql.usuario_diario.run(s,cb);
 			}
+			else if (s.hasOwnProperty("comercialID")) {
+				s.inicio = DateFormat.toDate(s.fecha).time;
+				s.final = DateFormat.toDate(s.fecha,86400000).time;
+				delete s.fecha;
+				sql.comercial_diario.run(s,cb);
+			}
 			else if (s.hasOwnProperty("taquillaID")) {
 				s.inicio = DateFormat.toDate(s.fecha).time;
 				s.final = DateFormat.toDate(s.fecha,86400000).time;
@@ -164,5 +170,10 @@ package models
 			if (s.hasOwnProperty("fecha")) sql.midas_reporte_dia.run(s,cb);
 			if (s.hasOwnProperty("sorteoID")) sql.midas_reporte_sorteo.run(s,cb);
 		}
+
+		public function respaldoBackup (sorteoID:int,cb:Function):void {
+			sql.backup_sorteo.run({sorteoID:sorteoID},cb)
+		}
+
 	}
 }

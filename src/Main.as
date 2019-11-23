@@ -34,6 +34,7 @@ package
 	import http.TaqControl;
 	import http.APIControl;
 	import flash.utils.setInterval;
+	import helpers.ObjectUtil;
 	
 	public class Main extends LayoutGroup
 	{
@@ -67,14 +68,16 @@ package
 			SMS.init();
 			
 			//validar disco duro
+			var minEspacioIntervalo:int = Loteria.setting.minEspacioIntervalo || 30
+			var minEspacioDisponible:int = Loteria.setting.minEspacioDisponible || 1
 			setInterval(function ():void {
 				f = File.createTempFile();
 				var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
 				Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
-				if (size<Loteria.setting.minEspacioDisponible) {
+				if (size<minEspacioDisponible) {
 					WS.emitir(WS.soporte,"ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
 				}
-			},Loteria.setting.minEspacioIntervalo?1000*60*Loteria.setting.minEspacioIntervalo:1000*60*30); // verificar cada 30m
+			},1000*60*minEspacioIntervalo); // verificar cada 30m
 			
 			var n:int=0;
 			model = new ModelHUB();
@@ -123,6 +126,7 @@ package
 			comercializadora = new AIRServer;
 			comercializadora.addEndPoint(new SocketEndPoint(model.settings.net.puertos.comercializadora,new WebSocketClientHandlerFactory));
 			comercializadora.addEventListener(AIRServerEvent.CLIENT_ADDED,comer_added);
+
 			/*sms = new AIRServer;
 			sms.addEndPoint(new SocketEndPoint(model.settings.net.puertos.sms,new AMFSocketClientHandlerFactory));
 			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/

@@ -31,6 +31,9 @@ package models
 	import vos.Elemento;
 	import vos.Sorteo;
 	import flash.utils.setTimeout;
+	import flash.data.SQLMode;
+	import controls.Control;
+	import helpers.Backup;
 	
 	public class ModelHUB extends EventDispatcher
 	{		
@@ -67,7 +70,9 @@ package models
 		
 		public var ahora:Number;
 		
-		public var _tasks:Object;		
+		public var _tasks:Object;
+
+		public var notificaciones:Notificaciones;
 		
 		public function get settings ():Object {
 			return Loteria.setting;
@@ -85,10 +90,10 @@ package models
 			ventasDB = rootDB.resolvePath("ventas.sqlite");
 			smsDB = rootDB.resolvePath("sms.sqlite");
 			
-			ahora = (new Date).time+(Loteria.setting.gmt);
+			ahora = (new Date).time+(60*60*1000*Loteria.setting.gmtHoras);			
 			lastTime = getTimer();
 			setInterval(actualizarHora,1000);
-			Loteria.console.log("HORA ACTUAL:",DateFormat.format(ahora,"HH:MM:ss"));
+			Loteria.console.log("HORA ACTUAL:",DateFormat.format(ahora,"HH:MM:ss A"));
 						
 			conexion = new SQLConnection();
 			conexion.openAsync(sistemaDB,"create",new Responder(initModel_sistema,DB.ERROR_HANDLER));
@@ -99,24 +104,24 @@ package models
 			SQLStatementPool.REPORTE_CONN = new SQLConnection();			
 			SQLStatementPool.ADMIN_CONN = new SQLConnection();
 			SQLStatementPool.JUGADAS_CONN = new SQLConnection();
+			SQLStatementPool.MSG_CONN = new SQLConnection();
 			
 			DB.ERROR_HANDLER = function (e:SQLError):void {
-				CONFIG::debug {
-					trace("[SQL ERROR]",e.details);
-				}
-				Loteria.console.log("[SQL ERROR]",e.detailID,e.message,e.details);
-				WS.enviar(WS.admin,"*"+e.message+"* %0A"+e.details);
+				Loteria.console.log("[SQL ERROR]",e.detailID,"Msg:",e.message,"Detalles:",e.details,"Op:",SQLStatementPool.lastQuery,"Data:\n",JSON.stringify(SQLStatementPool.lastData,null,2));
+				WS.enviar(WS.admin,"*"+e.message+"*\n\n"+e.details+'\n\n*Operacion:* '+SQLStatementPool.lastQuery+"\n\n*Data:*\n"+JSON.stringify(SQLStatementPool.lastData,null,2)+'\n*Command:*'+JSON.stringify(Control.lastMessage));
 			}
-			//DB.DEBUG = true;
+			DB.DEBUG = true
 			
 			_tasks = {};
 			for each (var time:String in Loteria.setting.jarvis.tasks.midas) {
 				_tasks[time] = [jv_midas];
 			}
-			
+
 			if (Loteria.setting.jarvis.tasks.hasOwnProperty("monitor")) {
 				_tasks[Loteria.setting.jarvis.tasks.monitor.time] = [jv_sysMonitor];
 			}
+
+			notificaciones = new Notificaciones(this)			
 		}
 		
 		private function jv_sysMonitor ():void {
@@ -141,9 +146,10 @@ package models
 				if (r.data[i].ej!=r.data[i].rj || r.data[i].ep!=r.data[i].rp) {
 					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN EL SORTEO",r.data[i].es,r.data[i].ej,r.data[i].rj,r.data[i].ep,r.data[i].rp);
 					a.push(r.data[i].es);
+					SorteosModel.sorteosPendientes.push(r.data[i].es)
 				}
 			}				
-			if (a.length>0) {
+			if (a.length>0) {				
 				nameSorteos(a);
 				WS.emitir(WS.premios,"Revisar sorteos:\n"+a.join("\n"));
 				Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS "+a.join(",")+"; NOTIFICANDO AL ADMINISTRADOR");				
@@ -182,6 +188,7 @@ package models
 		private function init_ventas(e:SQLEvent):void {
 			ventas = new VentasModel(this);
 			reportes = new ReporteModel;
+			Backup.init(this)
 			
 			function prepararVentas ():void {
 				var t:Date = new Date();
@@ -299,6 +306,7 @@ package models
 			topes = new TopesModel;
 			servidor = new ServidorModel;
 			balance = new BalanceModel;
+			sms = new SMSModel;
 			dispatchEventWith(Event.READY,null,"usuarios");
 			Loteria.console.log("MODEL USUARIOS RDY");
 			
@@ -314,9 +322,8 @@ package models
 			sorteos = new SorteosModel;
 			sistema = new SistemaModel;
 			
-			dispatchEventWith(Event.READY,null,"sistema");
-			
 			Loteria.console.log("MODEL SISTEMA RDY");
+			dispatchEventWith(Event.READY,null,"sistema");
 		}
 	}
 }

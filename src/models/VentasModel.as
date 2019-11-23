@@ -21,10 +21,14 @@ package models
 	import vos.Sorteo;
 	import vos.Taquilla;
 	import helpers.WS;
+	import flash.globalization.StringTools;
+	import starling.utils.StringUtil;
+	import helpers.Backup;
 	
 	public class VentasModel extends Model
 	{
 		private var sql:VentasSQL;
+		private var config:Object;
 		
 		private var ahora:Date;
 		private var ventasID:Array;
@@ -49,6 +53,7 @@ package models
 				
 		public function VentasModel(owner:ModelHUB)
 		{
+			config = Loteria.setting.premios || {pagaPorAproximacion:[]}
 			super(owner);
 			sql = new VentasSQL;
 			ventasID = [];
@@ -200,7 +205,7 @@ package models
 				
 				if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction==false) SQLStatementPool.DEFAULT_CONNECTION.begin();
 				sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
-					if (sorteo.descripcion.indexOf("LA RUCA")>-1) {	
+					if (config.pagaPorAproximacion.indexOf(sorteo.sorteo)>-1) {	
 						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarRuca(-1,5); });
 					} else sql.premiar_ventas_v2_all.run(prm,premiarOtros);
 				});
@@ -243,6 +248,11 @@ package models
 				guardarReportes();	
 				sorteo.ganador = elemento.elementoID;
 				execute(cb,sorteo);
+				//verificar si estaba pendiente
+				if (SorteosModel.sorteosPendientes.indexOf(sorteo.sorteoID)>-1) {
+					WS.emitir(WS.premios,StringUtil.format('*SORTEO PENDIENTE PREMIADO*\n#{0} {1}',sorteo.sorteoID,sorteo.descripcion))
+				}
+
 				dispatchEventWith(ModelEvent.PREMIO,false,sorteo);
 			}
 			function premiar_error (e:SQLError):void {
@@ -251,12 +261,12 @@ package models
 				sorteos_premiados[sorteo.sorteoID]=false;				
 			}
 			
- 			function guardarReportes():void {				
+ 			function guardarReportes():void {		
 				sql.reporte_nuevo.run({sorteoID:sorteo.sorteoID},function reporte_nuevo_complete (r:SQLResult):void {
 					Loteria.console.log(getTimer()-t+"ms, REPORTE REGISTRADO CON EXITO, #"+sorteo.sorteoID,sorteo.descripcion);
+					Backup.reporte(sorteo.sorteoID);
 					if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction) SQLStatementPool.DEFAULT_CONNECTION.commit();
-					tmr.start();
-					
+					tmr.start();					
 				},function reporte_nuevo_error (r:SQLError):void {
 					WS.emitir(WS.premios,"SRQ ERROR: IMPOSIBLE PREMIAR SORTEO <p>Sorteo #"+sorteo.sorteoID+" "+sorteo.descripcion+'</p>');
 					Loteria.console.log("[",r.name,"]",r.detailID,r.details);
@@ -338,6 +348,12 @@ package models
 						execute(cb,{t:taq.data,n:num.data});
 					});
 				});	
+			} else if (s.hasOwnProperty("comercialID")) {
+				sql.jugadas_comercial_bnc.run(s,function (taq:SQLResult):void {
+					sql.jugadas_comercial_num.run(s,function (num:SQLResult):void {
+						execute(cb,{t:taq.data,n:num.data});
+					});
+				});		
 			} else {
 				sql.jugadas_srv_banca.run(s,function (taq:SQLResult):void {
 					sql.jugadas_srv_num.run(s,function (num:SQLResult):void {

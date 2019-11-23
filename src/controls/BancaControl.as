@@ -123,12 +123,7 @@ package controls
 			addEventListener("venta-premios",venta_premios);
 			addEventListener("venta-anular",venta_anular);
 			addEventListener("conexiones",conexiones);
-			
-			addEventListener("sms-nuevo",sms_nuevo);
-			addEventListener("sms-bandeja",sms_bandeja);
-			addEventListener("sms-leer",sms_leer);
-			addEventListener("sms-respuestas",sms_respuestas);
-			
+						
 			addEventListener("balance-padre",balance_padre);
 			addEventListener("balance-add",balance_add);
 			addEventListener("balance-clientes",balance_clientes);
@@ -293,45 +288,6 @@ package controls
 		private function taquillas_act(e:Event,m:Message):void {
 			m.data.banca = usuario.bancaID;
 			_model.taquillas.buscar_activa(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_nuevo (e:Event,m:Message):void {
-			m.data.origen = usuario.bancaID;
-			m.data.tiempo = _model.ahora;
-			if (m.data.destino==null) m.data.destino = [usuario.usuarioID];
-			_model.sms.envGrupoBanca(m.data,function (r:Vector.<SQLResult>):void {
-				m.data = {code:Code.OK,n:r.length};
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_bandeja (e:Event,m:Message):void {
-			m.data = {grupoID:usuario.bancaID};
-			_model.sms.bandejaGrupo(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_leer (e:Event,m:Message):void {
-			_model.sms.leerGrupo(m.data,function (r:SQLResult):void {
-				if (r.data) {
-					if (r.data[0].destino==usuario.bancaID) {
-						m.data = r.data[0];
-						if(m.data.leido==false) _model.sms.leido({rutaGrupo:usuario.bancaID,smsID:m.data.smsID});
-					} else m.data = {code:Code.NO_EXISTE};
-				} else {
-					m.data = {code:Code.NO_EXISTE};
-				}
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_respuestas (e:Event,m:Message):void {
-			_model.sms.respuestasBanca(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			});

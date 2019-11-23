@@ -12,7 +12,9 @@ AND (SELECT activo FROM us.usuarios WHERE usuarioID = cID) = 3
 --usuario_nuevo
 INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta,comision,participacion) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta,:comision,:participacion)
 --usuario_editar
-UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta, comision = :comision, participacion = :participacion WHERE usuarioID = :usuarioID
+UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta, comision = :comision, participacion = :participacion, contacto = :contacto WHERE usuarioID = :usuarioID
+--usuario_clave
+UPDATE us.usuarios SET clave = :clave WHERE usuarioID = :usuarioID
 --usuario_activar
 UPDATE us.usuarios SET activo = :activo WHERE usuarioID = :usuarioID
 --permisos
@@ -39,3 +41,19 @@ DELETE FROM suspender WHERE sID = :sID AND resID = :resID
 select * from comer_usuario
 join us.usuarios ON usuarios.usuarioID = comer_usuario.cid
 WHERE uid = :uid;
+--mensajes_destinos
+SELECT * FROM (
+	SELECT 0 bID, "C:"||nombre nombre, "c"||cID usID FROM comer_usuario JOIN usuarios ON usuarios.usuarioID = comer_usuario.cID WHERE uID = :uID
+	UNION
+	SELECT bancaID bID, "G:"||nombre nombre, "g"||bancaID usID FROM bancas WHERE usuarioID = :uID
+	UNION
+	SELECT bancaID bID, "T:"||nombre nombre, "t"||taquillaID usID FROM taquillas WHERE usuarioID = :uID
+) ORDER BY bID
+--bancaID
+SELECT nombre, bancaID uID, "g"||bancaID usID, contacto from us.bancas WHERE bancaID = :id
+--taquillaID
+SELECT nombre, taquillaID uID, "t"||taquillaID usID, contacto from us.taquillas WHERE taquillaID = :id
+--usuarioID
+SELECT nombre, usuarioID uID, "u"||usuarioID usID, contacto from us.usuarios WHERE usuarioID = :id
+--comercialID
+SELECT nombre, usuarioID uID, "c"||usuarioID usID, contacto from us.usuarios WHERE usuarioID = :id

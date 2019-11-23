@@ -49,7 +49,10 @@ package db.sql
 		public var fingerclear_grp:SQLStatementPool;
 		public var fingerclear_grp_all:SQLStatementPool;
 		public var fingerclear_usr:SQLStatementPool;
-		public var fingerclear_usr_all:SQLStatementPool;
+		public var fingerclear_usr_all:SQLStatementPool;		
+		public var fingerlock:SQLStatementPool;
+		public var fingerclear:SQLStatementPool;
+
 		public var taquilla_usuario:SQLStatementPool;
 		public var taquilla_id_banca:SQLStatementPool;
 		public var taquilla_id_usuario:SQLStatementPool;
@@ -113,11 +116,14 @@ package db.sql
 			transferir_reportes = new SQLStatementPool('UPDATE vt.reportes SET bancaID = :hasta WHERE taquillaID = :taquillaID AND bancaID = :desde');
 			
 			fingerprint = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = :fp WHERE taquillaID = :taquillaID');
+			
+			fingerlock = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE taquillaID = :taquillaID');
 			fingerlock_grp = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE taquillaID = :taquillaID AND bancaID = :bancaID');
 			fingerlock_grp_all = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE bancaID = :bancaID');
 			fingerlock_usr = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE taquillaID = :taquillaID AND usuarioID = :usuarioID');
 			fingerlock_usr_all = new SQLStatementPool('UPDATE us.taquillas SET fingerlock = :activa WHERE usuarioID = :usuarioID');
 			
+			fingerclear = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE taquillaID = :taquillaID');
 			fingerclear_grp = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE taquillaID = :taquillaID AND bancaID = :bancaID');
 			fingerclear_grp_all = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE bancaID = :bancaID');
 			fingerclear_usr = new SQLStatementPool('UPDATE us.taquillas SET fingerprint = null WHERE taquillaID = :taquillaID AND usuarioID = :usuarioID');
@@ -132,6 +138,5 @@ package db.sql
 
 			scan();
 		}
-
 	}
 }

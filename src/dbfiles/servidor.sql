@@ -30,7 +30,7 @@ WHERE sorteos.fecha = :fecha AND sorteos.sorteo = :sorteo AND elementos.anulado 
 GROUP BY elementos.sorteoID 
 ORDER BY sorteos.cierra ASC
 --sorteos_num_ultimos
-SELECT elementoID id,fecha f from numeros JOIN (SELECT fecha,ganador from vt.sorteos  where sorteo = :srt  GROUP BY ganador ORDER BY fecha DESC) as tiempo ON tiempo.ganador = elementoID where sorteo = :srt
+SELECT elementoID id,fecha f, descripcion d from numeros JOIN (SELECT fecha,ganador from vt.sorteos  where sorteo = :srt  GROUP BY ganador ORDER BY fecha DESC) as tiempo ON tiempo.ganador = elementoID where sorteo = :srt
 --sorteos_num_historia
 SELECT descripcion d, fecha f from vt.sorteos WHERE ganador = :n ORDER BY FECHA DESC LIMIT 5
 --monitor_vnt_ticket_num

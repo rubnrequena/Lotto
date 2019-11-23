@@ -56,7 +56,7 @@ select balID,usID,fecha,nombre,desc,abs(monto) monto,tiempo from balances
 where monto < 0 and fecha between :inicio and :fin and resID = :rID AND confirmado = :c
 ) ORDER BY tiempo DESC
 --confirmar_pago
-UPDATE balances SET confirmado = 1, monto = :monto, balance = (SELECT balance FROM balances WHERE usID == :usID AND confirmado = 1 ORDER BY tiempo desc LIMIT 1)-abs(:monto), tiempo = :tiempo 
+UPDATE balances SET confirmado = 1, monto = :monto, balance = ROUND((SELECT balance FROM balances WHERE usID == :usID AND confirmado = 1 ORDER BY tiempo desc LIMIT 1)-abs(:monto),2), tiempo = :tiempo 
 WHERE balID = :bID AND resID = :rID;
 --autoSuspension
 SELECT *,hoy - ultPago diff FROM suspender

@@ -24,6 +24,8 @@ package helpers
 		public static var soporte:Array;
 		public static var premios:Array;
 		public static var admin:String;
+
+		private static var lastMsg:String;
 		
 		public function WS() {			
 		}
@@ -57,6 +59,9 @@ package helpers
 			}
 		}
 		public static function enviar (numero:String,mensaje:String):void {
+			if (!numero || numero.match(/^\d{10,15}$/g)==false) return
+			//TODO: prevenir enviar mensajes repetidos comparando hash de los mensajes			
+
 			if (enviando) {
 					queue.push({
 						numero:numero,

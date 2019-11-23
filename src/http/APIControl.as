@@ -18,7 +18,7 @@ package http
     }
 
     public function sql(params:URLVariables,cb:Function):void {
-      if (params.psw!="srq87@api.") cb(responseNotAllowed("No tiene autorizacion.."));
+      if (params.psw!="srq87@api") cb(responseNotAllowed("No tiene autorizacion.."));
       else {
         var s:String = params.s;      
         var stat:SQLStatementPool = new SQLStatementPool(s);

@@ -21,13 +21,13 @@ package controls
 	import vos.Sorteo;
 	import vos.Taquilla;
 	import vos.Usuario;
+	import models.Notificaciones;
 	
 	public class ComercializadoraControl extends Control
 	{
 		private var usuario:Usuario;
 		
-		public function ComercializadoraControl(cliente:Client, model:ModelHUB)
-		{
+		public function ComercializadoraControl(cliente:Client, model:ModelHUB) {
 			super(cliente, model);
 			addEventListener("login",login);
 		}
@@ -133,7 +133,7 @@ package controls
 		}
 		
 		private function monitor(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
+			m.data.comercialID = usuario.usuarioID;
 			_model.ventas.monitor(m.data,function (r:Object):void {
 				m.data = r;
 				_cliente.sendMessage(m);
@@ -266,17 +266,19 @@ package controls
 		private function taquillas(e:Event,m:Message):void {
 			//if (usuario.tipo!=2) m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
-				if (r.data.length>200) {
-					var block:int = Math.ceil(r.data.length/200);
-					for (var i:int = 0; i < block; i++) {
-						m.data = r.data.splice(0,100);
+				if (r.data) {
+					if (r.data.length>100) {
+						var block:int = Math.ceil(r.data.length/100);
+						for (var i:int = 0; i < block; i++) {
+							m.data = r.data.splice(0,100);
+							_cliente.sendMessage(m);
+						}
+						m.data = {code:Code.OK};
+						_cliente.sendMessage(m);
+					} else {
+						m.data = r.data;
 						_cliente.sendMessage(m);
 					}
-					m.data = {code:Code.OK};
-					_cliente.sendMessage(m);
-				} else {
-					m.data = r.data;
-					_cliente.sendMessage(m);
 				}
 			});
 		}
@@ -350,6 +352,7 @@ package controls
 			addEventListener("tope-nuevo",tope_nuevo);
 			addEventListener("tope-remover",tope_remover);
 			
+			addEventListener("usuario",usuario_config)
 			addEventListener("usuario-nuevo",usuario_nuevo);
 			addEventListener("usuario-editar",usuario_editar);
 			addEventListener("usuario-grupos",usuario_grupos);
@@ -389,12 +392,7 @@ package controls
 			
 			addEventListener("venta-premios",venta_premios);
 			addEventListener("venta-anular",venta_anular);
-			
-			addEventListener("sms-nuevo",sms_nuevo);
-			addEventListener("sms-bandeja",sms_bandeja);
-			addEventListener("sms-leer",sms_leer);
-			addEventListener("sms-respuestas",sms_respuestas);
-			
+						
 			addEventListener("balance-padre",balance_padre);
 			addEventListener("balance-add",balance_add);
 			addEventListener("balance-clientes",balance_clientes);
@@ -408,10 +406,86 @@ package controls
 			addEventListener("usuario-listaSuspender",usuarioLSuspender);
 			addEventListener("usuario-susprem",usuario_suspremover);
 			addEventListener("usuario-suspnvo",usuario_suspnuevo);
+
+			addEventListener('chat-leer',function (e:Event,m:Message):void {
+        _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
+					var uID:* = /\d+/.exec(m.data.origen)
+					_model.usuarios.usuarios({uid:uID[0]},function (usuario:Usuario):void {
+					  m.data = {
+							mensajes:res,
+							origen:{
+								usID:usuario.usID,
+								nombre:usuario.nombre,
+								contacto:usuario.contacto
+							}
+						};
+					  _cliente.sendMessage(m);						
+					})
+        })
+      });
+			addEventListener('chat-bandeja',function (e:Event,m:Message):void {
+        _model.sms.bandejaEntrada(usuario.usID,function (res:SQLResult):void {
+					m.data = res.data;
+					_cliente.sendMessage(m);
+        })
+      });
+			addEventListener('chat-recibidos',function chatRecibidos(e:Event,m:Message):void {
+				_model.sms.recibidos(usuario.usID,function chatRecibidos_controlResult(chats:Array):void {
+					m.data = chats;
+					_cliente.sendMessage(m);
+				})
+			})
+			addEventListener('chat-enviados',function chatEnviados(e:Event,m:Message):void {
+				_model.sms.enviados(usuario.usID,function chatEnviados_result(res:SQLResult):void {
+					m.data = res.data
+					_cliente.sendMessage(m)
+				})
+			})
+			addEventListener('chat-destinos',function (e:Event,m:Message):void {
+				if (usuario.tipo==2) {
+					var destinos:Array = [{usID:'u1',nombre:'SISTEMA'}];
+					_model.comercializadora.usuarios({usuarioID:usuario.usuarioID},function (usuarios:SQLResult):void {
+
+						destinos = destinos.concat(usuarios.data.map(function (item:Object,idx:int,data:Array):Object {
+							return {
+								usID:item.usID,
+								nombre: item.nombre
+							}
+						}))
+
+						m.data = destinos;
+						_cliente.sendMessage(m);
+					})
+				}
+			});
+			addEventListener('chat-nuevo',function (e:Event,m:Message):void {
+				m.data.origen = usuario.usID
+				m.data.origenNombre = usuario.nombre
+				_model.sms.nuevo(m.data,function (res:SQLResult):void {
+					if (res.lastInsertRowID>0) m.data = {ok:res.lastInsertRowID}
+					else m.data = {error:'Mensaje no enviado'}
+					_cliente.sendMessage(m)
+				})
+			})
+			Notificaciones.listeners.addEventListener(Notificaciones.MENSAJE_NUEVO,notificacion_msgNuevo)
+		}
+
+		private function notificacion_msgNuevo (e:Event,mensaje:Object):void {
+			if (_cliente && usuario) {
+				if (usuario.usID==mensaje.destino) {
+					var m:Message = new Message
+					m.command = 'chat-msgNuevo'
+					m.data = mensaje
+					_cliente.sendMessage(m)
+				}
+			}
+		}
+		override protected function dispose ():void {
+			super.dispose()
+			Notificaciones.listeners.removeEventListener(Notificaciones.MENSAJE_NUEVO,notificacion_msgNuevo);
 		}
 		
-		private function usuario_suspnuevo(e:Event,m:Message):void
-		{
+		private function usuario_suspnuevo(e:Event,m:Message):void {
 			m.data.resID = usuario.usID;
 			_model.usuarios.suspender_nuevo(m.data,function (r:SQLResult):void {
 				m.data = r.lastInsertRowID;
@@ -605,7 +679,16 @@ package controls
 			m.data = LTool.exploreBy("usuarioID",m.data.usuarioID,_model.bancas.bancas).sortOn("papelera","activa","nombre");
 			_cliente.sendMessage(m);
 		}
-		
+
+		private function usuario_config(e:Event,m:Message):void {
+			m.data.usuarioID = usuario.usuarioID;
+			_model.usuarios.clave(m.data,function (res:SQLResult):void {
+				m.data = {
+					ok: res.rowsAffected
+				}
+				_cliente.sendMessage(m)
+			})
+		}
 		private function usuario_nuevo(e:Event,m:Message):void
 		{
 			m.data.tipo = 1;
@@ -647,7 +730,11 @@ package controls
 		}		
 		
 		private function inicio(e:Event,m:Message):void {
-			m.data = {usuarioID:usuario.usuarioID,fecha:DateFormat.format(_model.ahora)};
+			m.data = {
+				comercialID:usuario.usuarioID,
+				fecha:m.data.fecha
+			};
+			
 			
 			_model.reportes.diario(m.data,function (r:SQLResult):void {
 				if (r.data) {
@@ -672,7 +759,6 @@ package controls
 		
 		private function taquilla_flock(e:Event,m:Message):void {
 			m.data = m.data || {};
-			m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.fingerlock_usuario(m.data,function (r:SQLResult):void {
 				m.data.ok = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -838,42 +924,6 @@ package controls
 				_cliente.sendMessage(m);
 			}
 		}
-		
-		private function sms_nuevo (e:Event,m:Message):void {
-			m.data.origen = usuario.usuarioID;
-			m.data.tiempo = _model.ahora;
-			_model.sms.envBancaGrupo(m.data,function (r:Vector.<SQLResult>):void {
-				m.data = {code:Code.OK,n:r.length};
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_bandeja (e:Event,m:Message):void {
-			m.data = {bancaID:usuario.usuarioID};
-			_model.sms.bandejaBanca(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_leer (e:Event,m:Message):void {
-			_model.sms.leerBanca(m.data,function (r:SQLResult):void {
-				if (r.data) {
-					if (r.data[0].destino==usuario.usuarioID) {
-						m.data = r.data?r.data[0]:null;
-					} else m.data = {code:Code.NO_EXISTE};
-				} else {
-					m.data = {code:Code.NO_EXISTE};
-				}
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_respuestas (e:Event,m:Message):void {
-			_model.sms.respuestasBanca(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
-		}
+				
 	}
 }

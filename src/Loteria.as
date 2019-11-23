@@ -12,6 +12,9 @@ package
 	import be.aboutme.airserver.messages.serialization.JSONSerializer;
 	
 	import starling.core.Starling;
+	import helpers.WS;
+	import starling.utils.StringUtil;
+	import controls.Control;
 	
 	[SWF(frameRate="5",width="800")]
 	public class Loteria extends Sprite
@@ -51,6 +54,13 @@ package
 			else if (event.error is ErrorEvent) console.log("[ERROR]",event.errorID,ErrorEvent(event.error).text);
 			else console.log("[ERROR]",event.errorID,event.text);
 			console.log(e.getStackTrace());
+			WS.enviar(WS.admin,StringUtil.format('*SRQ ERROR*\n*Error:*{0}\n*Mensaje:* {1}\n*Stack:*\n{2}\n*Message:*\n{3}',
+				e.name,
+				e.message,
+				e.getStackTrace(),
+				JSON.stringify(Control.lastMessage,null,2)
+				)
+			)
 		}
 	}
 }
