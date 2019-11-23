@@ -25,11 +25,13 @@
 		"retraso": 2,
 		"prm_solicitudes": 2,
 		"url": "http://srq.com.ve/prm/",
-		"premiacion": [{
-			"activo": true,
-			"puntos": 10,
-			"tiempo": 20
-		}],
+		"premiacion": [
+			{
+				"activo": true,
+				"puntos": 10,
+				"tiempo": 20
+			}
+		],
 		"sorteos": {
 			"predeterminado": {
 				"numCompletado": 1,
@@ -61,7 +63,6 @@
 					"url": "http://srq.com.ve/prm/"
 				}
 			}
-
 		},
 		"pagaPorAproximacion": {
 			"24": {
@@ -76,7 +77,9 @@
 	},
 	"jarvis": {
 		"tasks": {
-			"midas": ["21:00:00"],
+			"midas": [
+				"21:00:00"
+			],
 			"midas_verificar_sorteo": 25,
 			"monitor": {
 				"time": "23:00:00"
@@ -86,15 +89,21 @@
 	"plataformas": {
 		"correo": {
 			"url": "http://srq.com.ve/mailed.php",
-			"admins": ["rubnrequena@gmail.com"],
+			"admins": [
+				"rubnrequena@gmail.com"
+			],
 			"activa": 1
 		},
 		"sms": {
 			"uri": "http://srq-hermes.herokuapp.com/api/enviar/{0}",
 			"key": "5c7bf36c5831c61b9451036b",
 			"activa": 1,
-			"admins": ["04149970167"],
-			"premios": ["04149970167"]
+			"admins": [
+				"04149970167"
+			],
+			"premios": [
+				"04149970167"
+			]
 		},
 		"ws": {
 			"url": "http://104.129.171.151:3000/enviar/{0}?texto={1}",
@@ -104,8 +113,12 @@
 		},
 		"usuarios": {
 			"admin": "584149970167",
-			"soporte": ["584149970167"],
-			"premios": ["584149970167"]
+			"soporte": [
+				"584149970167"
+			],
+			"premios": [
+				"584149970167"
+			]
 		}
 	},
 	"backup": {
