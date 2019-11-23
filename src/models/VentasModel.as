@@ -24,6 +24,7 @@ package models
 	import flash.globalization.StringTools;
 	import starling.utils.StringUtil;
 	import helpers.Backup;
+	import vos.PremioAproximacion;
 	
 	public class VentasModel extends Model
 	{
@@ -203,23 +204,25 @@ package models
 				prm = ObjectUtil.copy(srt);
 				prm.paga = relacionar(0).valor+elemento.adicional;
 				
+				var premioAprox:PremioAproximacion
 				if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction==false) SQLStatementPool.DEFAULT_CONNECTION.begin();
 				sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
-					if (config.pagaPorAproximacion.indexOf(sorteo.sorteo)>-1) {	
-						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarRuca(-1,5); });
+					premioAprox = new PremioAproximacion(config.pagaPorAproximacion[sorteo.sorteo]);
+					if (premioAprox.esValido) {	
+						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarRuca(-1,premioAprox.premio); });
 					} else sql.premiar_ventas_v2_all.run(prm,premiarOtros);
 				});
 
 				function premiarRuca (num:int,paga:int,continuar:Boolean=false):void {
-					if (elemento.numero=="00" && num==-1) prm.numero = elemento.elementoID + 99;
-					else if (elemento.numero=="99" && num==1) prm.numero = elemento.elementoID - 99;
+					if (elemento.numero==premioAprox.numAbajo && num==-1) prm.numero = elemento.elementoID + 99;
+					else if (elemento.numero==premioAprox.numArriba && num==1) prm.numero = elemento.elementoID - 99;
 					else prm.numero = elemento.elementoID + num;
 								
 					prm.paga = paga;
 					sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
 						sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void {
 							if (continuar) premiarOtros(r)
-							else premiarRuca(1,5,true);
+							else premiarRuca(1,premioAprox.premio,true);
 						});						
 					});	
 				}
