@@ -20,7 +20,6 @@ package
 	import feathers.themes.MinimalDesktopTheme;
 	
 	import helpers.DateFormat;
-	import helpers.SMS;
 	import helpers.WS;
 	import helpers.pools.LoaderPool;
 	
@@ -65,7 +64,6 @@ package
 			addChild(Loteria.console);
 			
 			WS.init();
-			SMS.init();
 			
 			//validar disco duro
 			var minEspacioIntervalo:int = Loteria.setting.minEspacioIntervalo || 30
