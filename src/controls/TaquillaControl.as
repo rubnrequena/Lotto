@@ -19,7 +19,6 @@ package controls
 	import helpers.LTool;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
-	import helpers.SMS;
 	import helpers.WS;
 	import helpers.bm.EGrupo;
 	import helpers.print.ModoExtremo;
@@ -634,24 +633,6 @@ package controls
 							),function ():void {
 								//mail send
 							});
-						}
-						if (meta.hasOwnProperty("sms")) {
-							m.data.format = "sms";
-							if (!meta.hasOwnProperty("key") || meta.key==null) {
-								m.data.error = {
-									code:400,
-									msg:"campo key obligatorio"
-								};
-								_cliente.sendMessage(m);
-								return;
-							}							
-							var sms:String = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);
-							
-							SMS.send(meta.sms,sms,smsResult,meta.key);
-							/*_model.dispatchEventWith("sms_send",false,{
-								command:"sms",
-								data:{t:meta.sms,m:sms,c:_cliente}
-							});*/
 						}
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
