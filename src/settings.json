@@ -1,128 +1,116 @@
 {
-	"servidor": "local",
-	"gmtHoras": 0,
-	"minEspacioDisponible": 1,
-	"minEspacioIntervalo": 30,
-	"db": {
-		"root": "D:\\User\\My Documents\\db\\loteria",
-		"log": "D:\\User\\My Documents\\db\\logs"
-	},
-	"taquilla": {
-		"ticketDuplicado": 180000
-	},
-	"net": {
-		"puertos": {
-			"servidor": 4020,
-			"banca": 4021,
-			"taquilla": 4022,
-			"usuario": 4023,
-			"comercializadora": 4024,
-			"api": 4025
-		}
-	},
-	"premios": {
-		"activo": true,
-		"retraso": 2,
-		"prm_solicitudes": 2,
-		"url": "http://srq.com.ve/prm/",
-		"premiacion": [
-			{
-				"activo": true,
-				"puntos": 10,
-				"tiempo": 20
-			}
-		],
-		"sorteos": {
-			"predeterminado": {
-				"numCompletado": 1,
-				"webofic": {
-					"url": "http://srq.com.ve/prm/"
-				}
-			},
-			"lottoactivo": {
-				"numCompletado": 1,
-				"webofic": {
-					"url": "http://srq.com.ve/prm/"
-				}
-			},
-			"ruletanimal": {
-				"numCompletado": 1,
-				"webofic": {
-					"url": "http://srq.com.ve/prm/"
-				}
-			},
-			"ruletaoriente": {
-				"numCompletado": 1,
-				"webofic": {
-					"url": "http://srq.com.ve/prm/"
-				}
-			},
-			"lottoselva": {
-				"numCompletado": 1,
-				"webofic": {
-					"url": "http://srq.com.ve/prm/"
-				}
-			}
-		},
-		"pagaPorAproximacion": {
-			"22": {
-				"numAbajo": "00",
-				"numArriba": "99",
-				"premio": 5
-			}
-		}
-	},
-	"console": {
-		"log": false
-	},
-	"jarvis": {
-		"tasks": {
-			"midas": [
-				"21:00:00"
-			],
-			"midas_verificar_sorteo": 25,
-			"monitor": {
-				"time": "23:00:00"
-			}
-		}
-	},
-	"plataformas": {
-		"correo": {
-			"url": "http://srq.com.ve/mailed.php",
-			"admins": [
-				"rubnrequena@gmail.com"
-			],
-			"activa": 1
-		},
-		"sms": {
-			"uri": "http://srq-hermes.herokuapp.com/api/enviar/{0}",
-			"key": "5c7bf36c5831c61b9451036b",
-			"activa": 1,
-			"admins": [
-				"04149970167"
-			],
-			"premios": [
-				"04149970167"
-			]
-		},
-		"ws": {
-			"url": "http://104.129.171.151:3000/enviar/{0}?texto={1}",
-			"psw": "srq-WS",
-			"pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
-			"separador_lineas": "%0A"
-		},
-		"usuarios": {
-			"admin": "584149970167",
-			"soporte": [
-				"584149970167"
-			],
-			"premios": [
-				"584149970167"
-			]
-		}
-	},
-	"backup": {
-		"url": "http://localhost/sqlite/",
-		"psw": "srq87@backup"
-	}
+  "servidor": "local",
+  "gmtHoras": 0,
+  "minEspacioDisponible": 1,
+  "minEspacioIntervalo": 30,
+  "db": {
+    "root": "D:\\User\\My Documents\\db\\loteria",
+    "log": "D:\\User\\My Documents\\db\\logs"
+  },
+  "taquilla": {
+    "ticketDuplicado": 180000
+  },
+  "net": {
+    "puertos": {
+      "servidor": 4020,
+      "banca": 4021,
+      "taquilla": 4022,
+      "usuario": 4023,
+      "comercializadora": 4024,
+      "api": 4025
+    }
+  },
+  "premios": {
+    "activo": true,
+    "retraso": 2,
+    "prm_solicitudes": 2,
+    "url": "http://srq.com.ve/prm/",
+    "premiacion": [
+      {
+        "activo": true,
+        "puntos": 10,
+        "tiempo": 20
+      }
+    ],
+    "sorteos": {
+      "predeterminado": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://srq.com.ve/prm/"
+        }
+      },
+      "lottoactivo": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://srq.com.ve/prm/"
+        }
+      },
+      "ruletanimal": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://srq.com.ve/prm/"
+        }
+      },
+      "ruletaoriente": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://srq.com.ve/prm/"
+        }
+      },
+      "lottoselva": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://srq.com.ve/prm/"
+        }
+      }
+    },
+    "pagaPorAproximacion": {
+      "22": {
+        "numAbajo": "00",
+        "numArriba": "99",
+        "premio": 5
+      }
+    }
+  },
+  "console": {
+    "log": false
+  },
+  "jarvis": {
+    "tasks": {
+      "midas": ["21:00:00"],
+      "midas_verificar_sorteo": 25,
+      "monitor": {
+        "time": "23:00:00"
+      }
+    }
+  },
+  "plataformas": {
+    "correo": {
+      "url": "http://srq.com.ve/mailed.php",
+      "admins": ["rubnrequena@gmail.com"],
+      "activa": 1
+    },
+    "sms": {
+      "uri": "http://srq-hermes.herokuapp.com/api/enviar/{0}",
+      "key": "5c7bf36c5831c61b9451036b",
+      "activa": 1,
+      "admins": ["04149970167"],
+      "premios": ["04149970167"]
+    },
+    "ws": {
+      "url": "http://104.238.144.19:3001/send?user=570183216&text={1}",
+      "psw": "srq-WS",
+      "pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
+      "separador_lineas": "%0A"
+    },
+    "usuarios": {
+      "admin": "584149970167",
+      "soporte": ["584149970167"],
+      "premios": ["584149970167"]
+    }
+  },
+  "backup": {
+    "url": "http://localhost/sqlite/",
+    "psw": "srq87@backup"
+  }
 }

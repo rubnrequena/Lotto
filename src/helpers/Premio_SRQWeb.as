@@ -61,13 +61,17 @@ package helpers
 		private function onComplete(event:Event):void {
 			var data:String = loader.data;
 			if (data && data!="") {
-				var src:Object = JSON.parse(data);
-				if (!src.hasOwnProperty("zodiaco")) {
-					src.ganador = ObjectUtil.trailZero(src.ganador);
+				try {
+					var src:Object = JSON.parse(data);
+					if (!src.hasOwnProperty("zodiaco")) {
+						src.ganador = ObjectUtil.trailZero(src.ganador);
+					}
+					Loteria.console.log("200:",srt,"numero:",src.ganador);
+					dispatchEventWith(Event.COMPLETE,false,src.ganador);
+					isComplete();
+				} catch (err) {
+					Loteria.console.log("500: FORMATO INVALIDO",srt);
 				}
-				Loteria.console.log("200:",srt,"numero:",src.ganador);
-				dispatchEventWith(Event.COMPLETE,false,src.ganador);
-				isComplete();
 			} else retry();
 		}
 		
