@@ -1,39 +1,39 @@
 package
 {
-	import flash.data.SQLResult;
-	import flash.filesystem.File;
-	
 	import be.aboutme.airserver.AIRServer;
 	import be.aboutme.airserver.endpoints.socket.SocketEndPoint;
 	import be.aboutme.airserver.endpoints.socket.handlers.websocket.WebSocketClientHandlerFactory;
 	import be.aboutme.airserver.events.AIRServerEvent;
 	import be.aboutme.airserver.messages.Message;
-	
+
 	import controls.BancaControl;
 	import controls.ComercializadoraControl;
 	import controls.MonitorSistema;
 	import controls.ServidorControl;
 	import controls.TaquillaControl;
 	import controls.UsuarioControl;
-	
+
 	import feathers.controls.LayoutGroup;
 	import feathers.themes.MinimalDesktopTheme;
-	
+
+	import flash.data.SQLResult;
+	import flash.filesystem.File;
+	import flash.utils.setInterval;
+
 	import helpers.DateFormat;
 	import helpers.WS;
 	import helpers.pools.LoaderPool;
-	
-	import models.ModelHUB;
-	
-	import starling.events.Event;
-	import starling.utils.StringUtil;
-	
-	import vos.Usuario;
+
+	import http.APIControl;
 	import http.HttpServer;
 	import http.TaqControl;
-	import http.APIControl;
-	import flash.utils.setInterval;
-	import helpers.ObjectUtil;
+
+	import models.ModelHUB;
+
+	import starling.events.Event;
+	import starling.utils.StringUtil;
+
+	import vos.Usuario;
 	
 	public class Main extends LayoutGroup
 	{
@@ -61,7 +61,7 @@ package
 			Loteria.console.height = stage.stageHeight;
 			f = File.applicationDirectory.resolvePath("Loteria.swf");
 			Loteria.console.log("v"+DateFormat.format(f.creationDate,"yymmdd"),f.modificationDate.toLocaleTimeString());
-			addChild(Loteria.console);
+			addChild(Loteria.console);		
 			
 			WS.init();
 			
@@ -124,11 +124,7 @@ package
 			comercializadora = new AIRServer;
 			comercializadora.addEndPoint(new SocketEndPoint(model.settings.net.puertos.comercializadora,new WebSocketClientHandlerFactory));
 			comercializadora.addEventListener(AIRServerEvent.CLIENT_ADDED,comer_added);
-
-			/*sms = new AIRServer;
-			sms.addEndPoint(new SocketEndPoint(model.settings.net.puertos.sms,new AMFSocketClientHandlerFactory));
-			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/
-
+			
 			var webserv:HttpServer = new HttpServer();
 			webserv.listen(Loteria.setting.net.puertos.api);
 			webserv.registerController(new TaqControl(model));

@@ -17,9 +17,17 @@ package
 	import feathers.layout.AnchorLayoutData;
 	
 	import helpers.DateFormat;
+	import feathers.controls.Button;
+	import starling.events.Event;
+	import feathers.layout.HorizontalLayout;
 	
 	public class Console extends LayoutGroup
 	{
+    public static const SINCRONIZAR:String = 'sincronizar'
+    public static const PERMITIR_VENTAS:String = 'permitirVentas'
+    public static const COMMIT:String = 'commit'
+
+
 		private var list:List;
 		private var data:ListCollection;
 		private var buffer:String;
@@ -55,7 +63,8 @@ package
 			sql_buffer = "";
 			
 			list = new List();
-			list.layoutData = new AnchorLayoutData(0,0,0,0);
+      list.y = 20;
+			list.layoutData = new AnchorLayoutData(20,0,0,0);
 			list.dataProvider = data;
 			list.itemRendererFactory = function ():IListItemRenderer {
 				var item:DefaultListItemRenderer = new DefaultListItemRenderer;
@@ -64,6 +73,41 @@ package
 				return item;
 			};
 			addChild(list);
+
+      var btnBar:LayoutGroup = new LayoutGroup
+      btnBar.layout = new HorizontalLayout
+
+			var estaVendiendo:Boolean = true
+			var ventasButton:Button = new Button
+			ventasButton.label = "Ventas: SI"
+			ventasButton.addEventListener(Event.TRIGGERED,function ():void {
+        ventasButton.label = estaVendiendo?"Ventas: NO":"Ventas: SI";
+				estaVendiendo = !estaVendiendo;
+        log('Ventas activadas:',estaVendiendo?"SI":"NO")
+        dispatchEventWith(PERMITIR_VENTAS,false,ventasButton);
+			})
+      btnBar.addChild(ventasButton)
+			
+
+      var estaSync:Boolean = true;
+      var syncButton:Button = new Button;
+      syncButton.label = 'Sync: SI';
+      syncButton.addEventListener(Event.TRIGGERED,function ():void { 
+        syncButton.label = estaSync?'Sync: NO':'Sync: SI';
+        estaSync = !estaSync;
+        log('Sincronizador activado:',estaSync?"SI":"NO")
+        dispatchEventWith(SINCRONIZAR,false,estaSync)
+      })
+      btnBar.addChild(syncButton)
+
+      var commitForzado:Button = new Button
+      commitForzado.label = "Forzar Commit"
+      commitForzado.addEventListener(Event.TRIGGERED,function ():void {
+        dispatchEventWith(COMMIT,false)
+      })
+      btnBar.addChild(commitForzado)
+      
+      addChild(btnBar)
 			
 			log('BIENVENIDO AL SISTEMA DE LOTERIA');
 			
