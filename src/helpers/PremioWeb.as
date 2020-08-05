@@ -28,9 +28,18 @@ package helpers
 		private var numResultados:int;
 		protected var numCompletado:int=1;
 		private var st:uint;
-		
-		public function PremioWeb() {
+		private var x:XML;
+		protected var configs:Object;
+				
+		public function PremioWeb(name:String="") {
 			super();
+			
+			if (Loteria.setting.premios.sorteos.hasOwnProperty(name)) {
+				configs = Loteria.setting.premios.sorteos[name];
+			} else {
+				configs = Loteria.setting.premios.sorteos["predeterminado"]
+			}
+			url = configs.webofic.url;
 			
 			web = new URLRequest(url);
 			web.useCache = false;
@@ -49,7 +58,7 @@ package helpers
 		protected function error(event:IOErrorEvent):void {
 			Loteria.console.log("ERROR AL CONCECTAR CON SERVIDOR DE PREMIOS");
 			if (_retry++<3)
-				loader.load(web);
+				if (loader) loader.load(web);
 		}
 		
 		protected function onComplete(event:Event):void {
@@ -60,7 +69,7 @@ package helpers
 			Loteria.console.log("Esperando premiacion:",srt,"(",numBusq,")");
 			st = setTimeout(function ():void {
 				numBusq++;
-				loader.load(web);
+				if (loader) loader.load(web);
 			},_delay);
 		}
 		
@@ -71,7 +80,6 @@ package helpers
 		
 		public function isComplete():void {
 			if (++numResultados==numCompletado) {
-				//dispose();
 				dispatchEventWith("ready",false,this);
 			}
 		}
@@ -84,6 +92,34 @@ package helpers
 			
 			web=null;
 			removeEventListeners(Event.COMPLETE);
+		}
+		
+		protected function getTweets(source:String,filter:Function):String {
+			var a:int,b:int,t:String;
+			var e:Boolean=false;
+			
+			for (var i:int = 0; i < 20; i++) {
+				a = source.indexOf('<div class="js-tweet-text-container">',b);
+				b = source.indexOf('</div>',a);
+				t = source.substring(a,b+6);
+				
+				x = XML(t);
+				t = x.p[0].text();
+				if (filter.call(this,t)) {
+					return t;
+				}
+			}
+			return null;
+		}
+		
+		protected function getDlotery (src:String,sorteo:String,hora:String):String {
+			var a:int,b:int;
+			a = src.indexOf(sorteo);
+			src = src.substr(a);
+			a = src.indexOf("<table");
+			b = src.indexOf("</table>",a);
+			src = src.substring(a,b);
+			return src;
 		}
 	}
 }

@@ -19,7 +19,7 @@ package helpers.print
 		
 		
 		public static function imprimirVentas_extremo (cesto:Array,ticket:Object,taquilla:Taquilla,hub:ModelHUB):String {
-			var _lineas:Array = [taquilla.nombre,ticket.hora,"S:"+padding(ticket.ticketID,6)+" C:"+padding(ticket.codigo)+" N:"+cesto.length];
+			var _lineas:Array = [taquilla.nombre,ticket.hora,"*S:"+padding(ticket.ticketID,6)+"* C:"+padding(ticket.codigo)+" N:"+cesto.length];
 			/*if (copia) _lineas.push({type:"linea",text:"COPIA TICKET",align:"center"});
 			else _lineas.push({type:"linea",text:"TICKET",align:"center"});*/
 			
@@ -29,7 +29,7 @@ package helpers.print
 			var csorteo:Array = [];
 			for (var i:int=0;i<cesto.length;i++) {
 				if (linea.sorteoID != cesto[i].sorteoID) {
-					_lineas.push(hub.mSorteos.getSorteo(linea.sorteoID).descripcion);
+					_lineas.push("*"+hub.mSorteos.getSorteo(linea.sorteoID).descripcion+"*");
 					csorteo.sort(cesto_ordenMonto);
 					cesto_print(csorteo,_lineas);
 					csorteo = [];
@@ -37,17 +37,18 @@ package helpers.print
 				csorteo.push(cesto[i]);
 				linea = cesto[i];
 			}
-			_lineas.push(hub.mSorteos.getSorteo(linea.sorteoID).descripcion);
+			_lineas.push("*"+hub.mSorteos.getSorteo(linea.sorteoID).descripcion+"*");
 			csorteo.sort(cesto_ordenMonto);
 			cesto_print(csorteo,_lineas);
 			
 			//_lineas.push({type:"linea",text:"TOTAL: "+ticket.monto,align:"center"});
 			if(taquilla.fingerprint)
-				_lineas.push("T:"+ticket.monto+" AG"+taquilla.fingerprint);
+				_lineas.push("*T:"+Number(ticket.monto).toFixed(2)+"* AG"+taquilla.fingerprint);
 			else 
-				_lineas.push("T:"+ticket.monto);
+				_lineas.push("*T:"+Number(ticket.monto).toFixed(2)+"*");
 			
-			return _lineas.join("\\n");
+			_lineas.push(Loteria.setting.plataformas.ws.pie_sms);
+			return _lineas.join(Loteria.setting.plataformas.ws.separador_lineas);
 		}
 		
 		private static function sorteos_order (a:Object,b:Object):int {
@@ -71,7 +72,7 @@ package helpers.print
 			//ultimo grupo jugadas
 			parseItems(n,e);
 			
-			function parseItems (n,e):void {
+			function parseItems (n:Array,e:Object):void {
 				var a:int, b:int,c:int;
 				tx = zip_series(n).join(",")+"x"+e.monto;
 				var atx:Array = tx.split(",");
@@ -93,7 +94,7 @@ package helpers.print
 				}
 			}			
 		}
-		protected static function cesto_ordenMonto (a,b):int {
+		protected static function cesto_ordenMonto (a:Object,b:Object):int {
 			var s1:int = a.monto, s2:int = b.monto;
 			var n1:int = a.numero, n2:int = b.numero;
 			return s1 == s2?n1-n2:s1-s2;
@@ -104,12 +105,12 @@ package helpers.print
 			for (var i:int =1; i< a.length; i++) {
 				a1 = parseInt(a[i]); a2 = parseInt(a[i-1])+1;
 				if (a1!=a2) {
-					if (b[b.length-1]!=a[i-1]) b[b.length-1] += "/"+a[i-1];
+					if (b[b.length-1]!=a[i-1]) b[b.length-1] += "al"+a[i-1];
 					b.push(a[i]);
 				}
 			}
 			if (a1==a2) {
-				if (b[b.length-1]!=a[i-1]) b[b.length-1] += "/"+a[i-1];
+				if (b[b.length-1]!=a[i-1]) b[b.length-1] += "al"+a[i-1];
 			}
 			return b;
 		}

@@ -3,8 +3,9 @@ package db.sql
 	import db.SQLStatementPool;
 	
 	import vos.Usuario;
+	import vos.UsuarioMin;
 
-	public class UsuariosSQL
+	public class UsuariosSQL extends SQLBase
 	{
 		public var usuarios:SQLStatementPool;
 		public var usuario_login:SQLStatementPool;
@@ -13,26 +14,42 @@ package db.sql
 		public var usuario_nuevo:SQLStatementPool;
 		
 		public var permisos:SQLStatementPool;
+		public var permisos_banca:SQLStatementPool;
+		public var permiso_tipo:SQLStatementPool;
 		public var permiso_update:SQLStatementPool;
 		public var meta_nuevo:SQLStatementPool;
 		public var permiso_remove:SQLStatementPool;
+		public var usuario_clave:SQLStatementPool;
 		public var usuario_editar:SQLStatementPool;
 		public var usuario_activar:SQLStatementPool;
+		public var usuarios_comer:SQLStatementPool;
+		public var listaSuspender:SQLStatementPool;
+		public var suspender_nuevo:SQLStatementPool;
+		public var suspender_remover:SQLStatementPool;
+		public var usuario_comer:SQLStatementPool;
+		public var usuario_comercial:SQLStatementPool;
+
+		public var mensajes_destinos:SQLStatementPool;
+
+		public var bancaID:SQLStatementPool;
+		public var taquillaID:SQLStatementPool;
+		public var usuarioID:SQLStatementPool;
+		public var comercialID:SQLStatementPool;
 		
 		public function UsuariosSQL() {
+			super('usuarios.sql');
 			
-			usuarios = new SQLStatementPool('SELECT * FROM us.usuarios',null,Usuario);
-			usuario_id = new SQLStatementPool('SELECT * FROM us.usuarios WHERE usuarioID = :id',null,Usuario);
-			usuario_user = new SQLStatementPool('SELECT * FROM us.usuarios WHERE usuario = :usuario');
-			usuario_login = new SQLStatementPool('SELECT usuarioID,usuario,nombre,tipo,activo,renta FROM us.usuarios WHERE usuario = :us AND clave = :cl',null,Usuario);
-			usuario_nuevo = new SQLStatementPool('INSERT INTO us.usuarios (usuario,clave,nombre,tipo,registrado,activo,renta) VALUES (:usuario,:clave,:nombre,:tipo,:registrado,:activo,:renta)');
-			usuario_editar = new SQLStatementPool('UPDATE us.usuarios SET usuario = :usuario, nombre = :nombre, clave = :clave, renta = :renta WHERE usuarioID = :usuarioID');
-			usuario_activar = new SQLStatementPool('UPDATE us.usuarios SET activo = :activo WHERE usuarioID = :usuarioID');
+			usuarios = new SQLStatementPool(sentencia("usuarios"),null,Usuario);
+			usuario_id = new SQLStatementPool(sentencia("usuario_id"),null,Usuario);
+			usuario_login = new SQLStatementPool(sentencia("usuario_login"),null,Usuario);
 			
-			permisos = new SQLStatementPool('SELECT meta.usuarioID, bancas.nombre, metaID, campoID, CAST(meta.valor AS INTEGER) valor FROM us.meta LEFT JOIN us.bancas ON bancas.bancaID = meta.bancaID WHERE (meta.usuarioID = 0 OR meta.usuarioID = :usuarioID) GROUP BY meta.bancaID, meta.campoID ORDER BY meta.bancaID');
-			meta_nuevo = new SQLStatementPool('INSERT INTO us.meta (usuarioID,bancaID,campoID,valor) VALUES (:usuarioID, :bancaID, :campoID, :valor)');
-			permiso_update = new SQLStatementPool('UPDATE us.meta SET valor = :valor WHERE metaID = :meta AND usuarioID = :usuarioID');
-			permiso_remove = new SQLStatementPool('DELETE FROM us.meta WHERE metaID = :meta AND usuarioID = :usuarioID');
+			bancaID = new SQLStatementPool(sentencia('bancaID'),null,UsuarioMin)
+			taquillaID = new SQLStatementPool(sentencia('taquillaID'),null,UsuarioMin)
+			usuarioID = new SQLStatementPool(sentencia('usuarioID'),null,UsuarioMin)
+			comercialID = new SQLStatementPool(sentencia('comercialID'),null,UsuarioMin)
+
+			usuario_comercial = new SQLStatementPool(sentencia('usuario_comercial'),null,Usuario)
+			scan();
 		}
 	}
 }

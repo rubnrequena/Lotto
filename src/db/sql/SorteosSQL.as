@@ -4,6 +4,7 @@ package db.sql
 	
 	import vos.PreSorteo;
 	import vos.Sorteo;
+	import vos.sistema.Operadora;
 
 	public class SorteosSQL extends SQLBase
 	{
@@ -15,6 +16,7 @@ package db.sql
 		public var sorteos_dia:SQLStatementPool;
 		public var sorteos_fecha:SQLStatementPool;
 		public var sorteos_fecha_taq:SQLStatementPool;
+		/** SELECT * FROM vt.sorteos WHERE sorteoID = :sorteoID*/
 		public var sorteo:SQLStatementPool;
 		
 		public var sorteos:SQLStatementPool;
@@ -34,6 +36,18 @@ package db.sql
 		public var usuario_publico:SQLStatementPool;
 		public var fecha_usuario:SQLStatementPool;
 		public var lista_usuario:SQLStatementPool;
+		public var remover_sorteo:SQLStatementPool;
+		public var convertir_zodiaco:SQLStatementPool;
+		public var pendientes:SQLStatementPool;
+		
+		public var auto_premiar:SQLStatementPool
+		public var auto_premiar_venta:SQLStatementPool
+
+		public var bot_lista:SQLStatementPool;
+		public var bot_nuevo:SQLStatementPool;
+		public var bot_remover:SQLStatementPool;
+
+		public var operadora:SQLStatementPool
 		
 		public function SorteosSQL()
 		{			
@@ -45,6 +59,7 @@ package db.sql
 			presorteos = new SQLStatementPool("SELECT * FROM pre_sorteos ORDER BY sorteo, sorteoID",null,PreSorteo);
 			
 			sorteos = new SQLStatementPool('SELECT * FROM sorteos');
+			operadora = new SQLStatementPool('SELECT * FROM main.sorteos WHERE sorteoID = :sorteoID',null,Operadora)
 			fecha_usuario = new SQLStatementPool(sentencia('fecha_usuario'));
 			lista_usuario = new SQLStatementPool(sentencia('lista_usuario'));
 			
@@ -59,7 +74,7 @@ package db.sql
 			remover = new SQLStatementPool("DELETE FROM vt.sorteos WHERE sorteoID = :sorteoID");
 			editar = new SQLStatementPool("UPDATE vt.sorteos SET abierta = :abierta WHERE sorteoID = :sorteo");
 			
-			premio = new SQLStatementPool("SELECT sorteoID,descripcion,ganador FROM vt.sorteos WHERE sorteoID = :sorteoID");
+			premio = new SQLStatementPool("SELECT sorteoID,descripcion,ganador,abierta,sorteo FROM vt.sorteos WHERE sorteoID = :sorteoID");
 			
 			presorteo_nuevo = new SQLStatementPool("INSERT INTO pre_sorteos (descripcion,inicio,final,sorteo) VALUES (:descripcion,:inicio,:final,:sorteo)");
 			presorteo_remover = new SQLStatementPool('DELETE FROM pre_sorteos WHERE sorteoID = :sorteoID');
@@ -69,7 +84,9 @@ package db.sql
 			remover_publico = new SQLStatementPool('DELETE FROM us.taquillas_sorteo WHERE ID = :id AND banca = :bancaID');
 			editar_publico = new SQLStatementPool('UPDATE us.taquillas_sorteo SET publico = :publico WHERE ID = :id AND banca = :bancaID');
 			
-			usuario_publico = new SQLStatementPool('SELECT sorteoID, nombre FROM us.usuario_sorteos JOIN main.sorteos ON usuario_sorteos.sorteo = sorteos.sorteoID WHERE (usuarioID = :usuarioID OR usuarioID = 0)');			
+			usuario_publico = new SQLStatementPool('SELECT sorteoID, nombre FROM us.usuario_sorteos JOIN main.sorteos ON usuario_sorteos.sorteo = sorteos.sorteoID WHERE (usuarioID = :usuarioID OR usuarioID = 0)');
+			
+			scan(SQLStatementPool.DEFAULT_CONNECTION);
 		}
 	}
 }

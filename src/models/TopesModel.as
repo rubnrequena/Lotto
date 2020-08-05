@@ -25,6 +25,7 @@ package models
 			if (s) {
 				if (s.hasOwnProperty("taquillaID") && s.hasOwnProperty("bancaID")) sql.topes.run(s,cb);
 				else if (s.hasOwnProperty("bancaID")) sql.topes_banca.run(s,cb);
+				else if (s.hasOwnProperty("usuarioID")) sql.topes_usuario.run(s,cb);
 				else if (s.hasOwnProperty("taquillaID")) sql.topes_taquilla.run(s,cb);
 			} else sql.topes_all.run(s,cb);
 		}

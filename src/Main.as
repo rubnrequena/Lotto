@@ -5,23 +5,36 @@ package
 	import be.aboutme.airserver.endpoints.socket.handlers.websocket.WebSocketClientHandlerFactory;
 	import be.aboutme.airserver.events.AIRServerEvent;
 	import be.aboutme.airserver.messages.Message;
-	
+
 	import controls.BancaControl;
+	import controls.ComercializadoraControl;
 	import controls.MonitorSistema;
 	import controls.ServidorControl;
 	import controls.TaquillaControl;
 	import controls.UsuarioControl;
-	
+
 	import feathers.controls.LayoutGroup;
 	import feathers.themes.MinimalDesktopTheme;
-	
-	import helpers.SMS;
+
+	import flash.data.SQLResult;
+	import flash.filesystem.File;
+	import flash.utils.setInterval;
+
+	import helpers.DateFormat;
 	import helpers.WS;
 	import helpers.pools.LoaderPool;
-	
+
+	import http.APIControl;
+	import http.HttpServer;
+	import http.TaqControl;
+
 	import models.ModelHUB;
-	
+
 	import starling.events.Event;
+	import starling.utils.StringUtil;
+
+	import vos.Usuario;
+	import db.SQLStatementPool;
 	
 	public class Main extends LayoutGroup
 	{
@@ -29,14 +42,12 @@ package
 		private var servidor:AIRServer;
 		private var clientes:AIRServer;
 		private var usuarios:AIRServer;
+		private var comercializadora:AIRServer;
 		
 		private var model:ModelHUB;
-		public static var ws:WS;
-		//private var sms:AIRServer;
-				
+		
 		public function Main() {
 			super();
-			ws = new WS;
 			addEventListener(Event.ADDED_TO_STAGE,onAdded);
 		}
 		
@@ -44,13 +55,28 @@ package
 			new MinimalDesktopTheme();
 			
 			LoaderPool.initialize(100,100>>1);
-			SMS.init();
 			
+			var f:File;
 			Loteria.console = new Console();
 			Loteria.console.width = stage.stageWidth;
 			Loteria.console.height = stage.stageHeight;
-			Loteria.console.log("v180224");
-			addChild(Loteria.console);
+			f = File.applicationDirectory.resolvePath("Loteria.swf");
+			Loteria.console.log("v"+DateFormat.format(f.creationDate,"yymmdd"),f.modificationDate.toLocaleTimeString());
+			addChild(Loteria.console);		
+			
+			WS.init();
+			
+			//validar disco duro
+			var minEspacioIntervalo:int = Loteria.setting.minEspacioIntervalo || 30
+			var minEspacioDisponible:int = Loteria.setting.minEspacioDisponible || 1
+			setInterval(function ():void {
+				f = File.createTempFile();
+				var size:Number = Number((f.spaceAvailable/1024/1024/1024).toFixed(2));
+				Loteria.console.log('ESPACIO DISPONIBLE: ',size,"GBs");
+				if (size<minEspacioDisponible) {
+					WS.emitir(WS.soporte,"ADVERTENCIA: ESPACIO DISPONIBLE CRITICO, "+size+" GBs");
+				}
+			},1000*60*minEspacioIntervalo); // verificar cada 30m
 			
 			var n:int=0;
 			model = new ModelHUB();
@@ -62,17 +88,19 @@ package
 					bancas.start();
 					clientes.start();
 					usuarios.start();
+					comercializadora.start();
+					
+					WS.emitir(WS.soporte,StringUtil.format("Servidor {0} iniciado a las:\n {1}",
+						Loteria.setting.servidor,	//0
+						DateFormat.format(null,DateFormat.masks.isoDateTime))
+					);	//1
+					//validarBaseDatos();
+					validarSuspensionesPendientes();
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
 						var m:Message = new Message;
 						m.command = "close-mant";
 						clientes.sendMessageToAllClients(m);
-						
-						/*setTimeout(function ():void {
-							clientes.stop();
-							bancas.stop();
-							usuarios.stop();
-						},1000);*/
 					});
 				}
 			});
@@ -93,16 +121,50 @@ package
 			usuarios.addEndPoint(new SocketEndPoint(model.settings.net.puertos.usuario,new WebSocketClientHandlerFactory));
 			usuarios.addEventListener(AIRServerEvent.CLIENT_ADDED,usuario_added);
 			
-			/*sms = new AIRServer;
-			sms.addEndPoint(new SocketEndPoint(model.settings.net.puertos.sms,new AMFSocketClientHandlerFactory));
-			sms.addEventListener(AIRServerEvent.CLIENT_ADDED,sms_added);*/
+			
+			comercializadora = new AIRServer;
+			comercializadora.addEndPoint(new SocketEndPoint(model.settings.net.puertos.comercializadora,new WebSocketClientHandlerFactory));
+			comercializadora.addEventListener(AIRServerEvent.CLIENT_ADDED,comer_added);
+			
+			var webserv:HttpServer = new HttpServer();
+			webserv.listen(Loteria.setting.net.puertos.api);
+			webserv.registerController(new TaqControl(model));
+			webserv.registerController(new APIControl(model));
 		}
 		
-		protected function sms_added(event:AIRServerEvent):void
-		{
-			new SMSControl(event.client,model);
+		//autoSuspender
+		private function validarSuspensionesPendientes():void {
+			var now:Date = new Date(model.ahora);
+			model.balance.validar(now,function (r:SQLResult):void {
+				for each (var us:Object in r.data) {					
+					var indice:String = (us.sID as String).charAt(0);
+					var id:int = int((us.sID as String).slice(1));						
+					if (indice=="c" || indice=="u") model.usuarios.editar({activo:Usuario.SUSPENDIDO,usuarioID:id});
+					else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
+					Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
+				}
+			});
 		}
-		
+
+		private function validarBaseDatos ():void {
+			var ticket:SQLStatementPool = new SQLStatementPool('SELECT impuesto FROM vt.ticket LIMIT 1')
+			ticket.run(null,function verificacionImpuestoVenta(result:SQLResult):void {
+				if (result.data) {
+					if (!result.data[0].hasOwnProperty('impuesto')) {
+						Loteria.console.log("ADVERTENCIA: Falta el campo 'impuesto' en la tabla vt.ventas")
+						new SQLStatementPool('ALTER TABLE vt.ticket ADD impuesto REAL;').run(null,function alterTable_impuesto_vtTicket():void {
+							new SQLStatementPool('ALTER TABLE us.taquillas ADD impuesto REAL DEFAULT 0;').run(null,function alterTable_impuesto_usTaquillas():void {
+							Loteria.console.log('NUEVO CAMPO REGISTRADO EXITOSAMENTE')
+						})
+						})
+					}
+				}
+			})
+		}
+
+		protected function comer_added(event:AIRServerEvent):void {
+			new ComercializadoraControl(event.client,model);
+		}
 		protected function usuario_added(event:AIRServerEvent):void {
 			new UsuarioControl(event.client,model);
 		}

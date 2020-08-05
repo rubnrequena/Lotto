@@ -33,11 +33,17 @@ package helpers
 		}
 		
 		static public function trailZero (n:String):String {
-			if (int(n)==0) return n.toString();
+			if (n=="0" || n=="00") return n.toString();
 			return int(n)<10?"0"+int(n):n.toString();
 		}
 		static public function extractAndTrail (n:String):String {
-			return trailZero(extractInt(n));
+			if (n && n.length>0) return trailZero(extractInt(n));
+			else return n;
+		}
+		static public function arrayObject (data:Array):Object {
+			var m:Object = {};
+			for each (var row:Object in data) m[row.campo] = row.valor;
+			return m;
 		}
 	}
 }

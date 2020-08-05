@@ -3,51 +3,50 @@ package models
 	import flash.data.SQLResult;
 	import flash.utils.getTimer;
 	
+	import by.blooddy.crypto.MD5;
+	
 	import db.DB;
-	import db.SQLBatch;
 	import db.SQLStatementPool;
-	import db.sql.SQLBase;
 	import db.sql.SistemaSQL;
 	
 	import helpers.Code;
 	import helpers.DateFormat;
 	import helpers.IPremio;
-	import helpers.Premio_DineRuleta;
-	import helpers.Premio_FrutaActiva;
-	import helpers.Premio_GranRuleta;
-	import helpers.Premio_LaGranjita;
-	import helpers.Premio_LotoSelva;
-	import helpers.Premio_LottoActivo;
-	import helpers.Premio_LottoLeon;
-	import helpers.Premio_ReyAnzoategui;
-	import helpers.Premio_RuletAnimal;
-	import helpers.Premio_RuletaOriente;
 	
 	import starling.events.EventDispatcher;
 	import starling.utils.execute;
 	
 	import vos.Elemento;
-	import vos.sistema.Sorteo;
+	import vos.sistema.Operadora;
+	import helpers.Premio_SRQWeb;
 	
 	public class SistemaModel extends EventDispatcher
 	{
 		private var s:SistemaSQL;
-		
-		private var sorteosClaz:Object = {
-			lotto:Premio_LottoActivo,
-			granruleta:Premio_GranRuleta,
-			frutactiva:Premio_FrutaActiva,
-			ruletaoriente:Premio_RuletaOriente,
-			dineruleta:Premio_DineRuleta,
-			reyanz:Premio_ReyAnzoategui,
-			granjita:Premio_LaGranjita,
-			ruletanimal:Premio_RuletAnimal,
-			lotoselva:Premio_LotoSelva,
-			lottoleon:Premio_LottoLeon
-		}
-		
+				
+		private var _eleHash:String;
+		public function get eleHash():String { return _eleHash; }
+
+		private var _elementos_min:Array;
 		private static var _elementos:Vector.<Elemento>;
 		public function get elementos():Vector.<Elemento> { return _elementos };
+		
+		
+		public function elementos_sorteo (sorteo:int):Vector.<Elemento> {
+			return _elementos.filter(function (a:Elemento,b:Boolean,c:*):Boolean {
+				return a.sorteo==sorteo;
+			});
+		}
+		public function elementos_sorteos (sorteos:Array):Vector.<Elemento> {
+			return _elementos.filter(function (a:Elemento,b:Boolean,c:*):Boolean {
+				return sorteos.indexOf(a.sorteo)>-1;
+			});
+		}
+		public function elementos_sorteo_min (sorteo:int):Array {
+			return _elementos_min.filter(function (a:*,b:Boolean,c:*):Boolean {
+				return a.s==sorteo;
+			});
+		}		
 		
 		public function elemento (id:int):Elemento {
 			for each (var el:Elemento in _elementos) {
@@ -66,15 +65,14 @@ package models
 		private var _numeros:Array;
 		public function get numeros():Array { return _numeros; }
 		
-		private var _sorteos:Vector.<Sorteo>;
-		public function get sorteos():Vector.<Sorteo> { return _sorteos; }
+		private var _sorteos:Vector.<Operadora>;
+		public function get sorteos():Vector.<Operadora> { return _sorteos; }
 		
 		public function getPremiosClass (clase:String):IPremio {
-			if (sorteosClaz.hasOwnProperty(clase)) return new sorteosClaz[clase];
-			return null;
+			return new Premio_SRQWeb(clase);
 		}
 		public function getPremiosClassByID (id:int):IPremio {
-			for each (var s:Sorteo in _sorteos) {
+			for each (var s:Operadora in _sorteos) {
 				if (s.sorteoID==id) return getPremiosClass(s.clase);	
 			}
 			return null;
@@ -87,31 +85,46 @@ package models
 			update_sorteos();
 		}
 		
-		
-		
-		private function update_sorteos():void {
+		public function update_sorteos():void {
 			s.sorteos.run(null,sorteos_act);
 		}
 		
 		private function sorteos_act(r:SQLResult):void {
-			_sorteos = r.data?Vector.<Sorteo>(r.data):null;
+			_sorteos = r.data?Vector.<Operadora>(r.data):null;
 		}
 		
 		public function update_elementos():void {
-			s.elementos.run(null,elementos_act);
-			s.gelementos.run(null,agrupados);
-			function agrupados (r:SQLResult):void {
-				_numeros = r.data;	
-			};
-		}		
-		public function elementos_act (r:SQLResult):void {
-			_elementos = r.data?Vector.<Elemento>(r.data):null;
-		}		
-		public function elemento_nuevo (elemento:Object,cb:Function):void {
-			s.elementos_nuevo.run(elemento,function (r:SQLResult):void {
-				update_elementos();
-				execute(cb,r);
+			s.elementos_hash.run(null,function (r:SQLResult):void {
+				var hs:String="";
+				for each (var e:Object in r.data) { hs += e.hash; }
+				_eleHash = MD5.hash(hs);
+				
+				s.elementos.run(null,elementos_act);
+				s.elementos_min.run(null,min);
+				s.gelementos.run(null,agrupados);
+				
+				function agrupados (r:SQLResult):void { _numeros = r.data; };
+				function min (r:SQLResult):void { 
+					_elementos_min = r.data; 
+				};
 			});
+		}		
+		public function elementos_act (r:SQLResult):void {			
+			_elementos = r.data?Vector.<Elemento>(r.data):null;
+			
+		}		
+		public function elementos_limpiar (data:Object,cb:Function):void {
+			s.elementos_limpiar.run(data,cb);
+		}
+		public function elemento_nuevo (elemento:*,cb:Function):void {
+			if (elemento is Array) {
+				s.elementos_nuevo.batch(elemento,cb);
+			} else {
+				s.elementos_nuevo.run(elemento,function (r:SQLResult):void {
+					update_elementos();
+					execute(cb,r);
+				});
+			}
 		}
 		public function elemento_remover (elemento:Object,cb:Function):void {
 			s.elementos_remover.run(elemento,function (r:SQLResult):void {
@@ -125,6 +138,9 @@ package models
 		}
 		public function elementos_us (us:Object,cb:Function):void {
 			s.elementos_us.run(us,cb);
+		}
+		public function elementos_gtag (taq:Object,cb:Function):void {
+			s.elementos_gtaq.run(taq,cb);
 		}
 		
 		public function elemento_num (num:String,sorteo:int):Elemento {

@@ -8,6 +8,7 @@ package db
 	
 	import starling.events.EventDispatcher;
 	import starling.utils.execute;
+	import helpers.Backup;
 
 	public class SQLStatementPool extends EventDispatcher
 	{		
@@ -16,6 +17,7 @@ package db
 		public static var REPORTE2_CONN:SQLConnection;
 		public static var JUGADAS_CONN:SQLConnection;
 		public static var ADMIN_CONN:SQLConnection;
+		public static var MSG_CONN:SQLConnection;
 		
 		public static var LOG:Function;
 		
@@ -26,6 +28,9 @@ package db
 
 		protected var _conexion:SQLConnection;
 		protected var _itemClass:Class;		
+
+		static public var lastQuery:String
+		static public var lastData:*
 		
 		public function get length():uint {
 			return pool.length;
@@ -57,29 +62,24 @@ package db
 			
 			setParams(sql,params);
 			
+			
 			if (LOG) execute(LOG,_sentencia,params);
-			CONFIG::debug {
-				trace("[SQL]",_sentencia,JSON.stringify(params));
-			}
 			return sql;
 		}
 		protected var time:int;
 		public function run (params:Object=null, onComplete:Function=null, onError:Function=null, prefetch:int=-1):void {
 			time = getTimer();
 			var s:SQLStatement = getStat(params);
-			//trace("[SQL]",s.text,JSON.stringify(params));
+			
 			var rs:Responder = new Responder(function (r:SQLResult):void {
-				Loteria.console.trac(s.text,getTimer()-time,params);
-				CONFIG::debug { 
-					trace("[SQL]",getTimer()-time+"ms",s.text,JSON.stringify(params)); 
-				}
-				if (r.data && r.data.length==prefetch) {
-					s.next(prefetch,rs);
-				}
+				if (r.data && r.data.length==prefetch) s.next(prefetch,rs);
 				execute(onComplete,r);
 				toPool(s);	
 			},onError || DB.ERROR_HANDLER);
 			
+			lastQuery = s.text;
+			lastData = params;
+			trace(s.text,JSON.stringify(params));
 			s.execute(prefetch,rs);
 		}
 		internal function setParams (sql:SQLStatement,params:Object):SQLStatement {
@@ -89,6 +89,24 @@ package db
 		}
 		public function toPool (sql:SQLStatement):void {
 			pool.push(sql);
+		}
+		
+		public function multi (params:Object=null,onNext:Function=null,onComplete:Function=null,onError:Function=null,batch:Boolean=false):void {
+			var s:Array = _sentencia.split(";");
+			var len:int = s.length;
+			var resultLen:int;
+			var results:Vector.<SQLResult> = new Vector.<SQLResult>();
+			
+			if (batch) _conexion.begin();
+			for (var i:int = 0; i < len; i++) {
+				run(params, function (result:SQLResult):void {
+					results.push(result);
+					if (++resultLen==len) {
+						if (batch) _conexion.commit();
+						execute(onComplete,results);
+					} else execute(onNext,s[resultLen-1]);
+				},onError || DB.ERROR_HANDLER);
+			}
 		}
 		
 		public function batch (data:Array,onComplete:Function,onError:Function=null):void {						

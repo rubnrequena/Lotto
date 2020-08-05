@@ -2,6 +2,8 @@ package helpers
 {
 	public class Code
 	{
+		public static const SUSPENDIDO:int = 505;
+		
 		public static const NO:int = 0;
 		public static const OK:int = 1;
 		public static const NO_EXISTE:int = 2;

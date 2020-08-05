@@ -12,6 +12,7 @@ package models
 	import starling.events.EventDispatcher;
 	
 	import vos.Sorteo;
+	import helpers.WS;
 	
 	public class SorteosManager extends EventDispatcher
 	{		
@@ -41,39 +42,41 @@ package models
 		}
 				
 		public function iniciar (fecha:String=null):void {
+			Loteria.console.log("SM: Iniciando Administrador de Sorteos");
 			if (_timer) _timer.stop();
 			_sorteoIndex=0;
 			_fecha = fecha || DateFormat.format(fecha);
 			// TODO: listar solo sorteos pendientes por abrir despues de la hora actual
 			_models.sorteos.sorteos({fecha:_fecha},function (r:SQLResult):void {
 				if (r.data) {
-					Loteria.console.log(r.data.length,"sorteos en el dia "+_fecha);
-					_sorteos = Vector.<Sorteo>(r.data);		
+					Loteria.console.log("SM:",r.data.length,"sorteos en el dia");
+					var sorteosAbiertos:Array = r.data.filter(function (sorteo:Sorteo,index:int,data:*):Boolean {				
+					  return (_models.ahora<sorteo.cierra && sorteo.abierta==true) || sorteo.abierta==true;
+					})
+					Loteria.console.log("SM:",sorteosAbiertos.length,"sorteos abiertos");
+					_sorteos = Vector.<Sorteo>(sorteosAbiertos);		
 					// TODO: verificar primero sorteos pendientes por abrir o cerrar
-					validarSorteos(_sorteos[_sorteoIndex++]);					
+					if (_sorteos.length>0)validarSorteos(_sorteos[_sorteoIndex++]);
+					else {
+						var msg:String = "SM: No hay sorteos registrados"
+						Loteria.console.error(msg);
+						WS.enviar(WS.admin,msg)
+					}
 					dispatchEventWith(Event.UPDATE,false,{fecha:_fecha,sorteos:_sorteos});
 				} else dispatchEventWith(Event.CANCEL);
 				dispatchEventWith(Event.COMPLETE);
 			});
 		}
 		
-		private function validarSorteos(s:Sorteo):void {
-			Loteria.console.log("validando sorteo",s.sorteoID,s.descripcion,DateFormat.format(s.cierra));
-			
-			//if (s.abierta==false && _models.ahora>s.abre && _models.ahora<s.cierra) abrirSorteo(s); //sorteo cerrado pero en tiempo valido => abrir sorteo
-			//if (s.abierta==false && _models.ahora<s.abre) enEsperaDeApertura(s);
-			if (s.abierta==true && _models.ahora>s.cierra) cerrarSorteo(s); //sorteo abierto pero en tiempo expirado => cerrar sorteo
-			else if (s.abierta==true && _models.ahora<s.cierra) {
-				enEsperaDeCierre(s);
+		private function validarSorteos(sorteo:Sorteo):void {
+			Loteria.console.log("validando sorteo",sorteo.sorteoID,sorteo.descripcion,DateFormat.format(sorteo.cierra));
+			if (sorteo.abierta==true && _models.ahora>sorteo.cierra) cerrarSorteo(sorteo); //sorteo abierto pero en tiempo expirado => cerrar sorteo
+			else if (sorteo.abierta==true && _models.ahora<sorteo.cierra) {
+				enEsperaDeCierre(sorteo);
 			} //sorteo abierto pero aun en tiempo valido => esperar por cierre
 			else {
 				if (_sorteoIndex<_sorteos.length) validarSorteos(_sorteos[_sorteoIndex++]); // sorteo cerrado y tiempo expirado => revisar proximo sorteo
-				else {
-					var d:Date = new Date(s.cierra);
-					d.date++;
-					iniciar(DateFormat.format(d));
-					dispatchEventWith(Event.CANCEL);
-				}
+				
 			}
 		}
 		

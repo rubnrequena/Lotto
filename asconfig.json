@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"output": "bin-debug/Loteria.swf",
+		"source-path": [
+			"src",
+			"D:/Work/feathers-3/source",
+			"D:/work/starling2/starling/src",
+			"D:/work/feathers-3/themes/MinimalDesktopTheme/source"
+		],
+		"library-path": [
+			"D:/work/proyectos/AIRServer/bin/AIRServer.swc"
+		]
+	},
+	"files": [
+		"src/Loteria.as"
+	],
+	"application": "src/Loteria-app.xml",
+	"copySourcePathAssets": true,
+	"additionalOptions": "-define=CONFIG::debug,true",
+	"airOptions": {
+		"windows": {
+			"target": "native",
+			"output": "bin/Main.exe"
+		},
+		"signingOptions": {
+			"keystore": "D:/Work/FB Workspace/SistemasRequena.p12",
+			"storetype": "pkcs12"
+		}
+	},
+	"config": "air"
+}

@@ -7,7 +7,7 @@ package vos
 		public var taquillaID:int;
 		public var sorteoID:int;
 		public var elemento:int;
-		public var monto:int;
+		public var monto:Number;
 		public var compartido:int;
 		public var sorteo:int;
 		public var usuarioID:int;

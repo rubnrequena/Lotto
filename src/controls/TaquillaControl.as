@@ -2,6 +2,10 @@ package controls
 {
 	import flash.data.SQLResult;
 	import flash.errors.SQLError;
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+	import flash.utils.clearTimeout;
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	
@@ -15,7 +19,7 @@ package controls
 	import helpers.LTool;
 	import helpers.Mail;
 	import helpers.ObjectUtil;
-	import helpers.SMS;
+	import helpers.WS;
 	import helpers.bm.EGrupo;
 	import helpers.print.ModoExtremo;
 	
@@ -32,15 +36,21 @@ package controls
 	
 	public class TaquillaControl extends Control
 	{
+		private static const LOG_LOGIN:String = "{0}: LOGIN U:{1} IP:{2} FP:{3}\n";
+		
 		private var _taquilla:Taquilla;
 		private var _meta:Object;
+		private var _bancaMeta:Object;
 		private var _topes:Vector.<Tope>;
 		
 		private var msg:Message;
 		private var _valTiempo:Number;
 		private var _valCod:int;
 		private var _conectado:Number;
+		private var _init:uint;
 		
+		private var logFile:File;
+		private var logFS:FileStream;
 		
 		public function TaquillaControl(cliente:Client, model:ModelHUB) {
 			super(cliente, model);
@@ -49,14 +59,14 @@ package controls
 			addEventListener(ModelEvent.LOGIN,login);
 			
 			_conectado = (new Date).time;
-			setTimeout(TC_onInit,200);
+			_init = setTimeout(TC_onInit,500);
 			
 			function TC_onInit():void {
 				msg.command = "init";
 				msg.data = {
 					t:_conectado
 				};
-				_cliente.sendMessage(msg);
+				cliente.sendMessage(msg);
 			}
 		}
 		
@@ -78,11 +88,37 @@ package controls
 			addEventListener("reporte-ventas",reporte_ventas);
 			
 			addEventListener("ticket-anulado",ticket_anulado);
+			
+			addEventListener("elementos-init",elementos_init);
+			
+			//addEventListener("notificar",sistema_notificar);
 						
-			_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
+			//_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.addEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.addEventListener(Event.CHANGE,model_tp_topeNuevo);			
 			_model.ventas.addEventListener(ModelEvent.PREMIO,ventasModel_premio);
+		}
+		
+		private function elementos_init(e:Event,m:Message):void {
+			var tq:Object = {
+				fecha:DateFormat.format(new Date),
+				taquilla:_taquilla.taquillaID,
+				banca:_taquilla.bancaID
+			}
+			_model.sistema.elementos_gtag(tq,function (r:SQLResult):void {
+				for each (var i:Object in r.data) {
+					m.data = _model.sistema.elementos_sorteo_min(i.s);
+					_cliente.sendMessage(m);
+				}
+				m.data = {hash:_model.sistema.eleHash};
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function sistema_notificar(e:Event,m:Message):void {
+			if (m.data.code==1) {
+				WS.emitir(Loteria.setting.plataformas.usuarios.premios,StringUtil.format(WS.NTF_TQ_SORTEO_INV,m.data.sorteo.descripcion,_taquilla.taquillaID,_taquilla.usuarioID,Loteria.setting.servidor));				
+			}
 		}
 		
 		private function ticket_anulado(e:Event,m:Message):void {
@@ -102,7 +138,9 @@ package controls
 			m.data = {
 				fp:String(m.data),
 				taquillaID:_taquilla.taquillaID	
-			}
+			};
+			_taquilla.fingerprint = m.data.fp;
+			initLog();
 			_model.taquillas.fingerprint(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -149,7 +187,7 @@ package controls
 		}
 		
 		override protected function dispose():void {
-			_model.mSorteos.removeEventListener(Event.UPDATE,sorteosModel_update);
+			//_model.mSorteos.removeEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.removeEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.removeEventListener(Event.CHANGE,model_tp_topeNuevo);
 			_model.ventas.removeEventListener(ModelEvent.PREMIO,ventasModel_premio);
@@ -160,6 +198,10 @@ package controls
 			_taquilla = null;
 			_topes = null;
 			msg = null;
+			clearTimeout(_init);
+			if (logFS) logFS.close();
+			logFS=null;
+			logFile=null;
 		}
 		
 		private function model_tp_topeNuevo(e:Event,tope:Tope):void {
@@ -183,48 +225,69 @@ package controls
 		private function login(e:Event,m:Message):void {
 			var fp:String = m.data.fp;
 			delete m.data.fp;
-			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla):void {
-				_taquilla = taquilla;
-				if (taquilla) {
-					controlID = _taquilla.taquillaID;					
-					if (_taquilla.fingerlock) {
-						if (_taquilla.fingerprint) {
-							if (fp != MD5.hash(_taquilla.fingerprint+_conectado)) {
-								m.data = {code:Code.INVALIDO};
-								_cliente.sendMessage(m);
-								return;
-							}
-						} else {
-							msg.command = "fingerprint";
-							_cliente.sendMessage(msg);
-						}
-					}
-					
-					_taquilla.conectado = _model.ahora;
-					m.data = {
-						taq:taquilla,
-						numeros:_model.sistema.numeros,
-						time:(new Date).time							
-					};
-					addListeners();
-					
-					var hoy:String = DateFormat.format(null);
-					var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
-					_model.sorteos.sorteos(f,function (r:SQLResult):void {
-						m.data.sorteos = r.data						
-						_model.sistema.elementos_taq(f,function (r:SQLResult):void {
-							m.data.elementos = r.data;
-							_cliente.sendMessage(m);
-							measure(m.command);
-						});
-					});					
-				} else {
-					m.data = {code:Code.NO_EXISTE};
+			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla,err:Object):void {
+				if (err) {
+					m.data = err;
 					_cliente.sendMessage(m);
+				} else {
+					_taquilla = taquilla;
+					continuarLogin();
 				}
 			});
-		}
 			
+			function continuarLogin():void {
+				if (!_taquilla) return;
+				var efp:String = MD5.hash(_taquilla.fingerprint+_conectado);
+				controlID = _taquilla.taquillaID;		
+				if (_taquilla.fingerlock==true && _taquilla.fingerprint) {
+					if (fp != efp) {
+						m.data = {code:Code.INVALIDO};
+						sendMessage(m);
+						return;
+					}
+				} else {
+					if (fp != efp) {
+						msg.command = "fingerprint";
+						sendMessage(msg);
+					}
+				}
+				_taquilla.conectado = _model.ahora;
+				m.data = {
+					taq:_taquilla,
+					time:_taquilla.conectado							
+				};
+				addListeners();
+				
+				var hoy:String = DateFormat.format(null);
+				var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
+				_model.sorteos.sorteos(f,function (r:SQLResult):void {		
+					m.data.sorteos = r.data
+					m.data.elementos = _model.sistema.eleHash;
+					sendMessage(m);
+					
+					_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function metaResult (meta:Object):void {
+						m.command = "metas";
+						m.data = meta;
+						sendMessage(m);
+						measure("login");
+					})
+				});
+			}
+		}
+		
+		private function initLog():void {
+			logFile = File.applicationStorageDirectory.resolvePath("logUsers").resolvePath(DateFormat.format(null,"yyyymmdd")).resolvePath("TQ"+_taquilla.taquillaID+".txt");
+			logFS = new FileStream;
+			logFS.open(logFile,FileMode.APPEND);
+			Console.saveTo(
+				StringUtil.format(LOG_LOGIN,
+					DateFormat.format(_model.ahora,DateFormat.masks.mediumTime), //0.hora
+					_taquilla.usuario,//1.usuario
+					_cliente.socket().remoteAddress,//2.ip
+					_taquilla.fingerprint+":"+int(_taquilla.fingerlock)),//3.huella
+				logFile,logFS,false);
+		}
+		
 		private function ventasModel_premio(e:Event,pr:Object):void {
 			if (msg && _cliente) {
 				msg.command = e.type;
@@ -274,8 +337,7 @@ package controls
 			delete m.data.cod;
 			_model.ventas.ticket({ticketID:m.data.tk,codigo:_valCod},function (ticket:Object):void {
 				if (ticket && ticket.taquillaID==_taquilla.taquillaID && ticket.anulado==0) { //validar taquilla
-					_valTiempo = _model.ahora-ticket.tiempo;
-					//trace("ventasModel::time",time,259200000,msToString(time));
+					_valTiempo = _model.ahora-ticket.tiempo;					
 					if (_valTiempo<259200000 && ticket.codigo==_valCod) { // validar ticket (no mayor de 3 dias, codigo de seguridad)
 						_model.ventas.pagar({
 							id:m.data.id,
@@ -399,7 +461,7 @@ package controls
 			});
 		}
 		
-		
+		private var ultVenta:Object;
 		private var _ventas:Array
 		private var _sorteo:Sorteo;
 		private var _cache:Array;
@@ -409,12 +471,28 @@ package controls
 		
 		private  var invalidos:Array = [];
 		private function venta(e:Event,m:Message):void {
+			var i:int;
 			var meta:Object = m.data.m || {};
-			/*if (meta.hasOwnProperty("sms") && SMSControl._clientes.length==0) {
-				m.data = {code:Code.SMS_NODISPONIBLE};
-				_cliente.sendMessage(m);
-				return;
-			}*/
+
+			if (ultVenta && !meta.hasOwnProperty("rw")) {
+				var mt:Number=0;
+				var mn:int=0;
+				var len:int = m.data.v.length
+				for(i = 0; i < len; i++) {
+					mt+= m.data.v[i].monto;
+					mn+= m.data.v[i].numero;
+				}
+				var unums:Array = ultVenta.vt.map(function (num:Object,i:int,a:Array):int { return num.numero });
+				var unum:int=0;
+				for each(var num:int in unums) unum += num;
+				var ahora:Number = new Date().time;
+				var tiempo:Number = ultVenta.tk.tiempo+Loteria.setting.taquilla.ticketDuplicado;
+				if (unum==mn && mt==ultVenta.tk.monto && len==ultVenta.vt.length && tiempo-ahora>0) {
+					m.data = {code:Code.DUPLICADO,venta:m.data};
+					_cliente.sendMessage(m);
+					return;
+				}
+			}
 			
 			var t:int = getTimer();
 			_ventas = m.data.v as Array;
@@ -425,7 +503,7 @@ package controls
 			}		
 			//validar duplicados
 			_ventas.sortOn(["sorteoID","numero"],Array.NUMERIC);
-			var i:int, j:int;
+			var j:int;
 			for (i = _ventas.length-1; i > 0; i--) {
 				if (_ventas[i].sorteoID==_ventas[i-1].sorteoID && _ventas[i].numero==_ventas[i-1].numero) {
 					_ventas[i-1].monto += _ventas[i].monto;
@@ -508,24 +586,25 @@ package controls
 						m.data = {code:Code.TOPE_TAQUILLA_EXEDIDO,elementos:invalidos}
 						_cliente.sendMessage(m);
 					} else { // VENTA VALIDA
-						//Loteria.console.log('Recibiendo venta, ',JSON.stringify(m.data));
 						realizarVenta();
 					}
 					invalidos.length = 0;
 				}
-				function realizarVenta ():void {
+				function realizarVenta ():void {					
 					_model.ventas.venta(_ventas,_taquilla,function (ticket:Object,ventasID:Array,ids:Array):void {
 						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.i18n["default"]);
-						m.data = {
+						ultVenta = {
 							tk:ticket,
 							vt:ventasID
-						}
+						};
+						m.data = ultVenta;						
 						t=getTimer();
 						merge(_cache);
 						if (ventasBanca) merge(ventasBanca.sorteos);
 						if (ventasUsuario) merge(ventasUsuario.sorteos);
 						measure(m.command+" #"+ticket.ticketID+" | "+ids.join(","));
 						m.data.format = "print";
+						
 						if (meta.hasOwnProperty("mail")) {
 							m.data.format = "mail";
 							
@@ -550,28 +629,11 @@ package controls
 								//mail send
 							});
 						}
-						if (meta.hasOwnProperty("sms")) {
-							m.data.format = "sms";
-							var sms:String = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);
-							
-							if (SMS.send(meta.sms,sms)) {
-								MonitorSistema.monitor.ms_last_desc = "venta_sms";
-								m.data.code = Code.SMS_ENVIADO;
-							} else {
-								m.data.code = Code.SMS_NODISPONIBLE;
-							}
-							/*_model.dispatchEventWith("sms_send",false,{
-								command:"sms",
-								data:{t:meta.sms,m:sms,c:_cliente}
-							});*/
-						}
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
 							m.data.format = "ws";
-							/*m.data.ws = meta.ws;
-							m.data.wsb = ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model);*/
-							
-							Main.ws.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
+							m.data.ws = meta.ws;						
+							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
 						_cliente.sendMessage(m);
 					});
@@ -598,6 +660,17 @@ package controls
 				}
 			}
 		}
+		
+		public function smsResult (err:Object,data:Object=null):void {
+			var m:Message = new Message;
+			m.command = "sms-result";						
+			if (err) m.data = err;
+			else m.data = {
+					num:data.numero,
+					id:data._id
+			};
+			_cliente.sendMessage(m);
+		}
 		private function validarTopes (porJugar:Array,jugadas:Array,compartido:int=0):void {
 			var tope:Tope; var sorteo:Sorteo;
 			var i:int, j:int, index:int, tpl:int = _topes.length; 
@@ -614,30 +687,29 @@ package controls
 				}
 				if (tope) {
 					tope = _topes[i];
-					if (jugadas && jugadas.length>0) {
+					if (jugadas && jugadas.length>0) {						
 						for (i = 0; i < jugadas.length; i++) {
 							mj = jugadas[i];
 							if (mj.sorteoID==venta.sorteoID && mj.numero==venta.numero) {
-								var sum:int = mj.monto+venta.monto;
+								var sum:Number = mj.monto+venta.monto;
 								if (sum>tope.monto) { // sumatoria de jugada exede tope
 									sum = tope.monto-mj.monto>0?tope.monto-mj.monto:0;
 									addInvalido({s:venta.sorteoID,n:venta.numero,td:sum});
 									break;
 								}
 							} else if (venta.monto > tope.monto) { // jugada exede tope
-								venta.monto = tope.monto; //170521
+								venta.monto = tope.monto;
 								addInvalido({s:venta.sorteoID,n:venta.numero,td:tope.monto});
 								break;
 							}
 						}
 					} else if (venta.monto > tope.monto) { // jugada exede tope
-						venta.monto = tope.monto; //170521
+						venta.monto = tope.monto;
 						addInvalido({s:venta.sorteoID,n:venta.numero,td:tope.monto});
 					}
 				}
 			}
-		}
-		
+		}		
 		private function addInvalido (item:Object):void {
 			var l:int = invalidos.length;
 			for (var i:int = l-1; i > -1; i--) {

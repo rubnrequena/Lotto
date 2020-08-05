@@ -1,20 +1,16 @@
 package
 {
+	import flash.filesystem.File;
+	
 	import feathers.themes.MinimalDesktopTheme;
 	
-	import helpers.PremioWeb;
-	import helpers.Premio_GranRuleta;
-	import helpers.Premio_LaGranjita;
-	import helpers.Premio_LotoSelva;
-	import helpers.Premio_LottoActivo;
-	import helpers.Premio_LottoLeon;
-	import helpers.Premio_ReyAnzoategui;
-	import helpers.Premio_RuletAnimal;
+	import helpers.Premio_SRQWeb;
 	
 	import models.ModelHUB;
 	
 	import starling.display.Sprite;
 	import starling.events.Event;
+	import helpers.IPremio;
 	
 	public class Pruebas extends Sprite
 	{
@@ -24,6 +20,7 @@ package
 			super();
 			
 			addEventListener(Event.ADDED_TO_STAGE,onAdded);
+			
 		}
 		
 		private function onAdded():void
@@ -40,33 +37,57 @@ package
 			/*model = new ModelHUB();
 			model.addEventListener(Event.READY,onReady);*/
 			
-			sorteos = lotto_leon;
-			pr = new helpers.Premio_LottoLeon; 
+			//test_sorteos();
+			
+			var prm:Premio_SRQWeb = new Premio_SRQWeb("granjamanimal");
+			prm.buscar('granja millonaria animal 09:00am',new Date);
+			prm.addEventListener(Event.COMPLETE,function (e:Event):void {
+				trace(e.data);
+			});
+		}
+		
+		
+		private function test_sorteos():void {
+			sorteos = selva;
+			pr = new Premio_SRQWeb("lotoselva");
 			//pr.addEventListener(Event.COMPLETE,onComplete);
 			pr.addEventListener(Event.READY,onReady);
 			
-			//hoy.date -= 1;
+			hoy.date -= 1;
 			pr.buscar(sorteos[pri],hoy);
 		}
 		
-		private function onComplete(e:Event,n:String):void
-		{
-			
+		private function onComplete(e:Event,n:String):void {
+			Loteria.console.log("GANADOR:",n);
 		}
 		
-		private function onReady(e:Event,p:PremioWeb):void
+		private function onReady(e:Event,p:IPremio):void
 		{
+			Loteria.console.log("GANADOR:");
 			p.dispose();
 			if (++pri<sorteos.length) {				
-				pr = new helpers.Premio_LottoLeon; 
+				pr = new Premio_SRQWeb("lotoselva"); 
 				pr.addEventListener(Event.COMPLETE,onComplete);
 				pr.addEventListener(Event.READY,onReady);
 				pr.buscar(sorteos[pri],hoy);
 			}
 		}
-		private var pr:PremioWeb;
+		private var pr:IPremio;
 		private var pri:int;
 		private var hoy:Date = new Date;
+		
+		private var mini:Array = [
+			/*"MINI LOTTICO 10:00 AM",
+			"MINI LOTTICO 11:00 AM",
+			"MINI LOTTICO 12:00 PM",
+			"MINI LOTTICO 1:00 PM",
+			"MINI LOTTICO 3:00 PM",
+			"MINI LOTTICO 4:00 PM",
+			"MINI LOTTICO 5:00 PM",*/
+			"MINI LOTTICO 6:00 PM",
+			"MINI LOTTICO 7:00 PM",
+			"MINI LOTTICO 8:00 PM"
+		];
 		
 		private var lotto:Array = [
 			"LOTTO ACTIVO 9AM",
@@ -82,12 +103,16 @@ package
 		];
 		
 		private var oriente:Array = [
+			"RULETA ACT ORIENTE 09:00 AM",
 			"RULETA ACT ORIENTE 10:00 AM",
 			"RULETA ACT ORIENTE 11:00 AM",
 			"RULETA ACT ORIENTE 12:00 PM",
 			"RULETA ACT ORIENTE 01:00 PM",
+			"RULETA ACT ORIENTE 03:00 PM",
 			"RULETA ACT ORIENTE 04:00 PM",
-			"RULETA ACT ORIENTE 05:00 PM"
+			"RULETA ACT ORIENTE 05:00 PM",
+			"RULETA ACT ORIENTE 06:00 PM",
+			"RULETA ACT ORIENTE 07:00 PM"
 		];
 		
 		private var reyanz:Array = [
@@ -172,11 +197,27 @@ package
 			"RULETA ANIMAL 11AM",
 			"RULETA ANIMAL 12M",
 			"RULETA ANIMAL 1PM",
+			"RULETA ANIMAL 3PM",
 			"RULETA ANIMAL 4PM",
 			"RULETA ANIMAL 5PM",
 			"RULETA ANIMAL 6PM",
 			"RULETA ANIMAL 7PM",
 			"RULETA ANIMAL 8PM"
+		];
+		private var file:File;
+		private var ruletonact:Array = [
+			"RULETON ACTIVO PERU 9:00 AM",			
+			"RULETON ACTIVO PERU 10:00 AM",			
+			"RULETON ACTIVO PERU 11:00 AM",			
+			"RULETON ACTIVO PERU 12:00 PM",			
+			"RULETON ACTIVO PERU 1:00 PM",			
+			"RULETON ACTIVO PERU 3:00 PM",			
+			"RULETON ACTIVO PERU 4:00 PM",			
+			"RULETON ACTIVO PERU 5:00 PM",			
+			"RULETON ACTIVO PERU 6:00 PM",			
+			"RULETON ACTIVO PERU 7:00 PM",			
+			"RULETON ACTIVO PERU 8:00 PM",			
+			"RULETON ACTIVO PERU 9:00 PM"
 		];
 	}
 }

@@ -1,5 +1,8 @@
 package helpers
 {
+	import flash.data.SQLResult;
+	import starling.utils.execute;
+
 	public class LTool
 	{
 		private static var i:int, l:int;
@@ -32,6 +35,9 @@ package helpers
 				if (contexto[i][campo]==valor) return true;
 			}
 			return false;
+		}
+		public static function sqlResult (res:SQLResult,cb:Function):void {
+			execute(cb,res.data?res.data:[])
 		}
 	}
 }

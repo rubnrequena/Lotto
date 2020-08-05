@@ -17,11 +17,22 @@ package
 	import feathers.layout.AnchorLayoutData;
 	
 	import helpers.DateFormat;
+	import feathers.controls.Button;
+	import starling.events.Event;
+	import feathers.layout.HorizontalLayout;
 	
 	public class Console extends LayoutGroup
 	{
+    public static const SINCRONIZAR:String = 'sincronizar'
+    public static const PERMITIR_VENTAS:String = 'permitirVentas'
+    public static const COMMIT:String = 'commit'
+
+
 		private var list:List;
-		private var data:ListCollection;
+		private var errorList:List;
+		private var logData:ListCollection;
+		private var errorData:ListCollection;		
+
 		private var buffer:String;
 		private var time:Date;
 		
@@ -50,13 +61,14 @@ package
 			
 			layout = new AnchorLayout;
 			
-			data = new ListCollection;
+			logData = new ListCollection;
+			errorData = new ListCollection;
 			buffer = "";
 			sql_buffer = "";
 			
 			list = new List();
-			list.layoutData = new AnchorLayoutData(0,0,0,0);
-			list.dataProvider = data;
+			list.layoutData = new AnchorLayoutData(20,0,0,0);
+			list.dataProvider = logData;
 			list.itemRendererFactory = function ():IListItemRenderer {
 				var item:DefaultListItemRenderer = new DefaultListItemRenderer;
 				item.labelField = "text";
@@ -64,11 +76,60 @@ package
 				return item;
 			};
 			addChild(list);
+
+      var btnBar:LayoutGroup = new LayoutGroup
+      btnBar.layout = new HorizontalLayout
+
+			var estaVendiendo:Boolean = true
+			var ventasButton:Button = new Button
+			ventasButton.label = "Ventas: SI"
+			ventasButton.addEventListener(Event.TRIGGERED,function ():void {
+        ventasButton.label = estaVendiendo?"Ventas: NO":"Ventas: SI";
+				estaVendiendo = !estaVendiendo;
+        log('Ventas activadas:',estaVendiendo?"SI":"NO")
+        dispatchEventWith(PERMITIR_VENTAS,false,ventasButton);
+			})
+      btnBar.addChild(ventasButton)
+			
+
+      var estaSync:Boolean = true;
+      var syncButton:Button = new Button;
+      syncButton.label = 'Sync: SI';
+      syncButton.addEventListener(Event.TRIGGERED,function ():void { 
+        syncButton.label = estaSync?'Sync: NO':'Sync: SI';
+        estaSync = !estaSync;
+        log('Sincronizador activado:',estaSync?"SI":"NO")
+        dispatchEventWith(SINCRONIZAR,false,estaSync)
+      })
+      btnBar.addChild(syncButton)
+
+      var commitForzado:Button = new Button
+      commitForzado.label = "Forzar Commit"
+      commitForzado.addEventListener(Event.TRIGGERED,function ():void {
+        dispatchEventWith(COMMIT,false)
+      })
+      btnBar.addChild(commitForzado)
+
+      var btnLog:Button = new Button
+      btnLog.label = "Mostrar Errores"
+      btnLog.addEventListener(Event.TRIGGERED,function ():void {
+        if (btnLog.label=="Mostrar Errores") {
+          list.dataProvider = errorData
+          btnLog.label="Mostrar Informe"
+        } else {
+          list.dataProvider = logData
+          btnLog.label="Mostrar Errores"
+        }
+        
+      })
+      btnBar.addChild(btnLog)
+      
+      addChild(btnBar)
 			
 			log('BIENVENIDO AL SISTEMA DE LOTERIA');
+			log('ERROR LOG: Consola de errores inicializada')
 			
-			setTimeout(function ():void {
-				
+			setTimeout(function ():void {				
 				NativeApplication.nativeApplication.addEventListener("exiting",function (e:*):void {
 					if (exit==false) {
 						e.preventDefault();
@@ -94,15 +155,15 @@ package
 					sql_stream.close();
 					sql_buffer = "";
 				}
-			},60000);
+			},5000);
 		}
 		
 		private var rg:RegExp = /(INSERT INTO|DELETE|UPDATE|CREATE)/gm;
 		
-		public function trac (sql:String,ms,data:Object):void {			
+		public function trac (sql:String):void {
 			if (sql.search(rg)==0) {
 				time = new Date;
-				sql_buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"|"+ms+"ms"+"|"+convertir(sql,data)+File.lineEnding;
+				sql_buffer += sql+File.lineEnding;
 			}
 		}
 		
@@ -115,19 +176,39 @@ package
 			return s;
 		}
 		
-		public function log (...s):void {
+		public function log (...s):void {			
 			str = s.join(" ");
+			var data:ListCollection = str.indexOf("ERROR")>-1?errorData:logData
 			if (data.length>200) {
 				data.removeAll();
-
 				stream.writeUTFBytes(buffer);
 				buffer="";
-			}
-			
+			}			
 			time = new Date;
-			data.addItemAt({tiempo:DateFormat.format(time,DateFormat.masks.mediumTime),text:str},0);			
-						
+			data.addItemAt({tiempo:DateFormat.format(time,DateFormat.masks.mediumTime),text:str},0);									
 			buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"\t"+str+File.lineEnding;
 		}
+		public function error (...s):void {			
+			str = s.join(" ");
+			var data:ListCollection = errorData
+			if (data.length>200) {
+				data.removeAll();
+				stream.writeUTFBytes(buffer);
+				buffer="";
+			}			
+			time = new Date;
+			data.addItemAt({tiempo:DateFormat.format(time,DateFormat.masks.mediumTime),text:str},0);									
+			buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"\t"+str+File.lineEnding;
+		}
+		
+		public static function saveTo (text:String,to:File,fs:FileStream=null,close:Boolean=true):void {
+			if (fs==null) { 
+				fs = new FileStream;
+				fs.open(to,FileMode.WRITE);
+			}
+			fs.writeMultiByte(text,File.systemCharset);
+			if (close) fs.close();
+		}
+
 	}
 }

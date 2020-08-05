@@ -22,6 +22,7 @@ package controls
 	import vos.Sorteo;
 	import vos.Taquilla;
 	import vos.Usuario;
+	import helpers.ArrayUtil;
 	
 	public class UsuarioControl extends Control
 	{
@@ -152,8 +153,7 @@ package controls
 							var premiador:Object = Loteria.setting.premios.premiacion[sorteo.sorteo] || Loteria.setting.premios.premiacion[0];
 							var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,2);
 							if (numSol>=premiador.puntos) {
-								var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
-								Mail.sendAdmin("PREMIACION CONFIRMADA POR USUARIO "+DateFormat.format(null),StringUtil.format(Mail.PREMIO_CONFIRMADO,sorteo.sorteoID,sorteo.descripcion,e.numero,usuario.nombre,Loteria.setting.servidor),null);
+								var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);							
 								_model.ventas.premiar(sorteo,e,function (sorteo:Object):void {
 									m.data = {code:Code.OK};
 									_cliente.sendMessage(m);
@@ -214,6 +214,15 @@ package controls
 		private function tope_nuevo(e:Event,m:Message):void {
 			m.data.usuarioID = usuario.usuarioID;
 			if (m.data.compartido==2) m.data.bancaID = 0;
+			if (m.data.elemento=="") m.data.elemento = 0
+			else {
+				var elemento:Elemento = m.data.elemento = _model.sistema.elemento_num(m.data.elemento,m.data.sorteo)
+				if (!elemento) {
+					m.data = {error:'Numero invalido o no existe para el sorteo seleccionado'}
+					return _cliente.sendMessage(m);
+				}
+				else m.data.elemento = elemento.elementoID
+			}
 			_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
@@ -239,6 +248,16 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
+		private function taquilla(e:Event,m:Message):void {
+			m.data.usuarioID = usuario.usuarioID;
+			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
+				m.data = r.data[0];		
+				_model.taquillas.metas({taquillaID:m.data.taquillaID},function (meta:Object):void {
+					m.data.meta = meta;
+					_cliente.sendMessage(m);
+				});				
+			});
+		}
 		private function taquillas(e:Event,m:Message):void {
 			m.data.usuarioID = usuario.usuarioID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
@@ -246,29 +265,113 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
+		private function taquilla_metas(e:Event,m:Message):void {
+			var a:int=0;
+			for (var meta:String in m.data.meta) {
+				a++;
+				_model.taquillas.meta({valor:m.data.meta[meta],campo:meta,taquillaID:m.data.taq},taquillas_meta_result);
+			}
+			
+			if (a==0) {
+				m.data = m.data.meta;
+				_cliente.sendMessage(m);
+			}
+			
+			var n:int=0;
+			function taquillas_meta_result (r:SQLResult):void {
+				n++;
+				if (n==a) {
+					m.data = m.data.meta;
+					_cliente.sendMessage(m);
+				}
+			}
+		}
+		private function taquilla_comisiones(e:Event,m:Message):void {
+			//validar usuario y banca de taquilla
+			_model.taquillas.comisiones(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		private function taquilla_comision_dl(e:Event,m:Message):void
+		{
+      m.data.bancaID = usuario.usuarioID
+			_model.taquillas.comision_dl(m.data,function(r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
 		
+		private function taquilla_comision_nv(e:Event,m:Message):void
+		{
+			m.data.bancaID = usuario.usuarioID
+			_model.taquillas.buscar_taqID(m.data.taquillaID,function (err:String,taquilla:Object):void {
+				if (err) {
+          sendMessage(m,{error:err})
+        } else {
+					m.data.grupoID = taquilla.bancaID
+				  _model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
+				    m.data.comID = r.lastInsertRowID;
+            sendMessage(m);
+			    });
+				}
+			})
+		}
+    private function grupo_comision_nv (e:Event, m:Message):void {
+      m.data.bancaID = usuario.usuarioID
+      m.data.taquillaID = 0;
+      _model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
+        m.data.comID = r.lastInsertRowID;
+        sendMessage(m);
+      });
+    }
+    
+    private function banca_comision_nv (e:Event, m:Message):void {
+      m.data.bancaID = usuario.usuarioID
+      m.data.grupoID = 0
+      m.data.taquillaID = 0;
+      _model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
+        m.data.comID = r.lastInsertRowID;
+        sendMessage(m);
+      });
+    }
 		private function login(e:Event,m:Message):void {
 			_model.usuarios.login(m.data,function (u:Usuario):void {
 				if (u) {
 					usuario = u;
-					if (u.activo>Usuario.USUARIO_SUSPENDIDO) {
-						controlID = u.usuarioID;
-						
+					if (u.activo==Usuario.USUARIO_ACTIVO) {
+						controlID = u.usuarioID;						
 						_model.sorteos.sorteos({usuarioID:u.usuarioID},function (sorteos:SQLResult):void {
-							m.data = {
+              _model.usuarios.permisos_banca({usuarioID:usuario.usuarioID},function (permisos:SQLResult):void {
+                m.data = {
 								us:u,
 								bn:LTool.exploreBy("usuarioID",usuario.usuarioID,_model.bancas.bancas).sortOn("papelera","activa","nombre"),
-								st:sorteos.data
+								st:sorteos.data,
+                permisos:permisos.data
 							};
 							addListeners();
 							measure(m.command);
 							_cliente.sendMessage(m);
+							
+							_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+								m.command = "balance-padre";
+								m.data = r.data;
+								_cliente.sendMessage(m);
+							});
+              })
 						});
 						
 						initSolicitudesPremios();
 					} else {
-						m.data = {code:Code.INVALIDO};
-						_cliente.sendMessage(m);	
+						_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+							if (r.data && r.data[0].balance>0) {
+								m.data = {code:Code.SUSPENDIDO,info:r.data[0]};
+								addEventListener("balance-pago",balance_pago);
+							} else {
+								m.data = {code:Code.SUSPENDIDO};
+							}
+							_cliente.sendMessage(m);
+						});
 					}
 				} else {
 					m.data = {code:Code.NO_EXISTE};
@@ -284,11 +387,19 @@ package controls
 			addEventListener("sorteo-premiar",sorteo_premiar);
 			addEventListener("elementos",elementos);
 			
+			addEventListener("taquilla",taquilla);
 			addEventListener("taquillas",taquillas);
 			addEventListener("taquilla-editar",taquilla_editar);
 			addEventListener("taquilla-nueva",taquilla_nueva);
 			addEventListener("taquilla-panic",taquilla_panic);
 			addEventListener("taquilla-remover",taquilla_remover);
+			addEventListener("taquilla-metas",taquilla_metas);
+			addEventListener("taquilla-comisiones",taquilla_comisiones);
+			addEventListener("taquilla-comision-nv",taquilla_comision_nv);
+			addEventListener("taquilla-comision-dl",taquilla_comision_dl);
+
+      addEventListener("grupo-comision-nv",grupo_comision_nv);
+      addEventListener("banca_comision_nv",banca_comision_nv);
 			
 			addEventListener("taquilla-flock",taquilla_flock);
 			addEventListener("taquilla-fpclear",taquilla_fpclear);
@@ -300,6 +411,10 @@ package controls
 			addEventListener("banca-nueva",banca_nueva);
 			addEventListener("banca-editar",banca_editar);
 			addEventListener("banca-remover",banca_remover);
+			addEventListener("banca-relacion",banca_relacion);
+      addEventListener("banca-comisiones",banca_comisiones);
+      addEventListener("banca-comisiones-nueva",comision_nueva);
+      addEventListener("banca-comisiones-remover",comision_remover);
 			
 			addEventListener("monitor",monitor);
 			
@@ -316,6 +431,7 @@ package controls
 			addEventListener("reporte-banca",reporte_banca);
 			addEventListener("reporte-ventas",reporte_ventas);
 			addEventListener("reporte-diario",reporte_diario);
+			addEventListener("reporte-sorteo",reporte_sorteo);
 			
 			addEventListener("permiso-nuevo",permiso_nuevo);
 			addEventListener("permiso-update",permiso_update);
@@ -326,11 +442,133 @@ package controls
 			addEventListener("venta-premios",venta_premios);
 			addEventListener("venta-anular",venta_anular);
 			
-			addEventListener("sms-nuevo",sms_nuevo);
-			addEventListener("sms-bandeja",sms_bandeja);
-			addEventListener("sms-leer",sms_leer);
-			addEventListener("sms-respuestas",sms_respuestas);
+			addEventListener("balance-padre",balance_padre);
+			addEventListener("balance-pago",balance_pago);
+			
+			addEventListener("suspension-info",suspension_info);
+
+			//Mensajes
+			addEventListener('chat-leer',function (e:Event,m:Message):void {
+        _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
+					var uID:* = /\d+/.exec(m.data.origen)
+					_model.usuarios.usuarios({uid:uID[0]},function (usuario:Usuario):void {
+					  m.data = {
+							mensajes:res,
+							origen:{
+								usID:usuario.usID,
+								nombre:usuario.nombre,
+								contacto:usuario.contacto
+							}
+						};
+					  _cliente.sendMessage(m);						
+					})
+        })
+      });
+			addEventListener('chat-bandeja',function (e:Event,m:Message):void {
+        _model.sms.bandejaEntrada(usuario.usID,function (res:SQLResult):void {
+					m.data = res.data;
+					_cliente.sendMessage(m);
+        })
+      });
+			addEventListener('chat-recibidos',function chatRecibidos(e:Event,m:Message):void {
+				_model.sms.recibidos(usuario.usID,function chatRecibidos_controlResult(chats:Array):void {
+					m.data = chats;
+					_cliente.sendMessage(m);
+				})
+			})
+			addEventListener('chat-enviados',function chatEnviados(e:Event,m:Message):void {
+				_model.sms.enviados(usuario.usID,function chatEnviados_result(res:SQLResult):void {
+					m.data = res.data
+					_cliente.sendMessage(m)
+				})
+			})
+			addEventListener('chat-destinos',function (e:Event,m:Message):void {
+				_model.usuarios.destinos({uID:usuario.usuarioID},function (usuarios:SQLResult):void {
+						m.data = usuarios.data
+						_cliente.sendMessage(m)
+					})
+			});
+			addEventListener('chat-nuevo',function (e:Event,m:Message):void {
+				m.data.origen = usuario.usID
+				m.data.origenNombre = usuario.nombre
+				_model.sms.nuevo(m.data,function (res:SQLResult):void {
+					if (res.lastInsertRowID>0) m.data = {ok:res.lastInsertRowID}
+					else m.data = {error:'Mensaje no enviado'}
+					_cliente.sendMessage(m)
+				})
+			})
 		}
+		
+		private function suspension_info(e:Event,m:Message):void
+		{
+			
+		}
+		
+		private function balance_pago(e:Event,m:Message):void
+		{
+			m.data.usID = usuario.usID;
+			m.data.fecha = DateFormat.format(_model.ahora);
+			m.data.cdo = 0;
+			m.data.tiempo = _model.ahora;
+			m.data.monto = Math.abs(m.data.monto)*-1;
+			_model.balance.nuevo(m.data,function (r:SQLResult):void {
+				m.data.balID = r.lastInsertRowID;
+				if (usuario.activo==false) {
+					_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
+						if (!r.data) return;
+						if (r.data[0].d>0) { //sigue suspendido
+							m.data = {code:Code.SUSPENDIDO,msg:"Su credito es insuficiente, comuniquese con su administrador"}
+							_cliente.sendMessage(m);
+						} else {
+							_model.usuarios.editar({activo:3,usuarioID:usuario.usuarioID},function (r:SQLResult):void {
+								m.data = {code:Code.OK,msg:"Pago recibido exitosamente, el usuario será activado temporalmente mientras se confirma su pago."}
+								_cliente.sendMessage(m);
+							})
+						}
+
+					})
+				} else {
+					_cliente.sendMessage(m);
+				}
+			});
+		}
+		
+		private function balance_padre(e:Event,m:Message):void {
+			m.data = {usID:usuario.usID,lm:10};
+			_model.balance.usID(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+		
+		private function banca_relacion(e:Event,m:Message):void {
+			_model.bancas.relacion_pago(m.data,function (r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+		}
+
+    private function banca_comisiones (e:Event,m:Message):void {
+      m.data.bancaID = usuario.usuarioID
+      _model.taquillas.comisiones(m.data,function (r:SQLResult):void {
+        sendMessage(m,r.data)
+      })
+    }
+    private function comision_nueva (e:Event,m:Message):void {
+      m.data.taquillaID = 0;
+      m.data.bancaID = usuario.usuarioID
+      _model.taquillas.comision_nv(m.data,function (r:SQLResult):void {
+        m.data = r.data
+        sendMessage(m)
+      })
+    }
+    private function comision_remover (e:Event,m:Message):void {
+      m.data.bancaID = usuario.usuarioID
+			_model.taquillas.comision_dl(m.data,function(r:SQLResult):void {
+				m.data = r.rowsAffected;
+				_cliente.sendMessage(m);
+			});
+    }
 		
 		private function banca_remover(e:Event,m:Message):void {
 			_model.bancas.editar(m.data,function (r:SQLResult):void {
@@ -353,12 +591,12 @@ package controls
 			
 			_model.reportes.diario(m.data,function (r:SQLResult):void {
 				if (r.data) {
-					m.data = {
-						data:r.data,
-						time:_model.ahora
-					};
-				} else m.data = {code:Code.VACIO,time:_model.ahora};
-				_cliente.sendMessage(m);
+					var data:Array = ArrayUtil.split(r.data,50)
+					for each(var d:Array in data) {
+						sendMessage(m,d)
+					}
+					sendMessage(m,{code:"fin"})
+				} else sendMessage(m,{code:Code.VACIO,time:_model.ahora});
 				measure(m.command);
 			});
 		}
@@ -428,6 +666,7 @@ package controls
 			_model.ventas.ticket(m.data,function (ticket:Object):void {
 				if (ticket && ticket.usuarioID==usuario.usuarioID) {
 					_model.ventas.ventas_elementos(m.data,function (premios:SQLResult):void {
+						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
 						m.data = {tk:ticket,prm:premios.data}
 						_cliente.sendMessage(m);
 					});
@@ -518,7 +757,14 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
-		
+		private function reporte_sorteo(e:Event,m:Message):void {
+			m.data.usuarioID = usuario.usuarioID
+			_model.reportes.banca(m.data,function (r:SQLResult):void {
+				m.data = r.data;
+				_cliente.sendMessage(m);
+			});
+		}
+
 		private function reporteTaquilla(e:Event,m:Message):void {
 			//TODO: validar que la taquilla pertenezca a la banca
 			_model.reportes.taquilla(m.data,reporte);
@@ -539,43 +785,6 @@ package controls
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			}
-		}
-		
-		private function sms_nuevo (e:Event,m:Message):void {
-			m.data.origen = usuario.usuarioID;
-			m.data.tiempo = _model.ahora;
-			_model.sms.envBancaGrupo(m.data,function (r:Vector.<SQLResult>):void {
-				m.data = {code:Code.OK,n:r.length};
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_bandeja (e:Event,m:Message):void {
-			m.data = {bancaID:usuario.usuarioID};
-			_model.sms.bandejaBanca(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_leer (e:Event,m:Message):void {
-			_model.sms.leerBanca(m.data,function (r:SQLResult):void {
-				if (r.data) {
-					if (r.data[0].destino==usuario.usuarioID) {
-						m.data = r.data?r.data[0]:null;
-					} else m.data = {code:Code.NO_EXISTE};
-				} else {
-					m.data = {code:Code.NO_EXISTE};
-				}
-				_cliente.sendMessage(m);
-			});
-		}
-		
-		private function sms_respuestas (e:Event,m:Message):void {
-			_model.sms.respuestasBanca(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			});
 		}
 	}
 }

@@ -1,7 +1,9 @@
 package
 {
+	import flash.desktop.NativeApplication;
 	import flash.display.Sprite;
 	import flash.events.ErrorEvent;
+	import flash.events.InvokeEvent;
 	import flash.events.UncaughtErrorEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
@@ -10,8 +12,11 @@ package
 	import be.aboutme.airserver.messages.serialization.JSONSerializer;
 	
 	import starling.core.Starling;
+	import helpers.WS;
+	import starling.utils.StringUtil;
+	import controls.Control;
 	
-	[SWF(frameRate="5",width="800")]
+	[SWF(frameRate="20",width="1000",height="400")]
 	public class Loteria extends Sprite
 	{
 		private var _starling:Starling;
@@ -34,6 +39,12 @@ package
 			_starling.start();
 			
 			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR,onError);
+			
+			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE,onInvoke);
+		}
+		
+		protected function onInvoke(event:InvokeEvent):void {
+			if (event.arguments[0]=="closeapp") NativeApplication.nativeApplication.exit(0);
 		}
 		
 		protected function onError(event:UncaughtErrorEvent):void
@@ -43,6 +54,13 @@ package
 			else if (event.error is ErrorEvent) console.log("[ERROR]",event.errorID,ErrorEvent(event.error).text);
 			else console.log("[ERROR]",event.errorID,event.text);
 			console.log(e.getStackTrace());
+			WS.enviar(WS.admin,StringUtil.format('*SRQ ERROR*\n*Error:*{0}\n*Mensaje:* {1}\n*Stack:*\n{2}\n*Message:*\n{3}',
+				e.name,
+				e.message,
+				e.getStackTrace(),
+				JSON.stringify(Control.lastMessage,null,2)
+				)
+			)
 		}
 	}
 }

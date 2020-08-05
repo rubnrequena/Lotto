@@ -1,50 +1,123 @@
 {
-	"servidor":"local",
-	"db": {
-		"root":"D:\\User\\My Documents\\db\\loteria",
-		"log":"D:\\User\\My Documents\\db\\logs"
-	},
-	"net": {
-		"puertos": {
-			"servidor":4020,
-			"banca":4021,
-			"taquilla":4022,
-			"usuario":4023,
-			"sms":0
-		}
-	},
-	"premios":{
-		"activo":true,
-		"retraso":2,
-		"prm_solicitudes":2,
-		"premiacion":[
-			{
-				"activo":true,
-				"puntos":10,
-				"tiempo":20
-			}
-		]
-	},
-	"console": {
-		"log": false
-	},
-	"jarvis": {
-		"tasks": {
-			"midas":["21:00:00"],
-			"midas_verificar_sorteo":25
-		}
-	},
-	"plataformas":{
-		"correo":{
-			"activa":1
-		},
-		"sms":{
-			"activa":0,
-			"admins":[04149970167],
-			"premios":[04149970167]
-		},
-		"ws":{
-			"yowdir":"D:\\yowsup2"
-		}
-	}
+  "servidor": "local",
+  "gmtHoras": 6,
+  "minEspacioDisponible": 1,
+  "minEspacioIntervalo": 30,
+  "db": {
+    "root": "D:\\Work\\LoteriaDB",
+    "log": "D:\\Work\\LoteriaDB\\logs"
+  },
+  "taquilla": {
+    "ticketDuplicado": 180000
+  },
+  "net": {
+    "puertos": {
+      "servidor": 4020,
+      "banca": 4021,
+      "taquilla": 4022,
+      "usuario": 4023,
+      "comercializadora": 4024,
+      "api": 4025
+    }
+  },
+  "premios": {
+    "bot": {
+      "retraso": 60000,
+      "ruletonperu": {
+        "token":"fd3d0da4-11da-4c01-a01b-3334cd7b5869",
+        "juego":"42eda95d-f190-4b20-8674-2bb6377b8643" 
+      },
+      "ruletoncolombia": {
+        "token":"fd3d0da4-11da-4c01-a01b-3334cd7b5869",
+        "juego":"42eda95d-f190-4b20-8674-2bb6377b8643" 
+      } 
+    },
+    "activo": true,
+    "retraso": 2,
+    "prm_solicitudes": 2,
+    "url": "http://sistemasrq.com/prm/",
+    "premiacion": [
+      {
+        "activo": true,
+        "puntos": 10,
+        "tiempo": 20
+      }
+    ],
+    "sorteos": {
+      "predeterminado": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://sistemasrq.com/prm/"
+        }
+      },
+      "lottoactivo": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://sistemasrq.com/prm/"
+        }
+      },
+      "ruletanimal": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://sistemasrq.com/prm/"
+        }
+      },
+      "ruletaoriente": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://sistemasrq.com/prm/"
+        }
+      },
+      "lottoselva": {
+        "numCompletado": 1,
+        "webofic": {
+          "url": "http://sistemasrq.com/prm/"
+        }
+      }
+    },
+    "pagaPorAproximacion": {
+      "22": {
+        "numAbajo": "00",
+        "numArriba": "99",
+        "premio": 5
+      }
+    }
+  },
+  "console": {
+    "log": false
+  },
+  "jarvis": {
+    "tasks": {
+      "midas": ["21:00:00"],
+      "midas_verificar_sorteo": 25,
+      "monitor": {
+        "time": "23:00:00"
+      }
+    }
+  },
+  "plataformas": {
+    "correo": {
+      "url": "http://sistemasrq.com/mailed.php",
+      "admins": ["rubnrequena@gmail.com"],
+      "activa": 1
+    },
+    "telegram": {
+      "url": "http://216.128.130.103:3001/json?servidor=local&text={0}"
+    },
+    "ws": {
+      "url": "http://216.128.130.103:3001/send?servidor=local&user=aml&text={1}",
+      "psw": "srq-WS",
+      "pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
+      "separador_lineas": "%0A"
+    },
+    "usuarios": {
+      "admin": "584149970167",
+      "soporte": ["584149970167"],
+      "premios": ["584149970167"]
+    }
+  },
+  "backup": {
+    "url": "http://localhost/sqlite/",
+    "psw": "srq87@backup"
+  }
 }

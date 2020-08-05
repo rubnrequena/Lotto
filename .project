@@ -27,9 +27,14 @@
 			<location>D:/Work/feathers-3/themes/MinimalDesktopTheme/source</location>
 		</link>
 		<link>
-			<name>[source path] starling-feathers-2.2-source</name>
+			<name>[source path] feathers-3-source</name>
 			<type>2</type>
-			<location>D:/Work/starling-feathers-2.2/source</location>
+			<location>D:/Work/feathers-3/source</location>
+		</link>
+		<link>
+			<name>[source path] src</name>
+			<type>2</type>
+			<location>D:/Work/starling2/starling/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>

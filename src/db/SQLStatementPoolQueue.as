@@ -21,7 +21,7 @@ package db
 			s.sqlConnection = _conexion();
 			//trace("[SQL]",s.text,JSON.stringify(params));
 			var rs:Responder = new Responder(function (r:SQLResult):void {
-				Loteria.console.trac(s.text,getTimer()-time,params);
+				Loteria.console.trac(s.text);
 				CONFIG::debug { 
 					trace("[SQL]",getTimer()-time+"ms",s.text,JSON.stringify(params)); 
 				}

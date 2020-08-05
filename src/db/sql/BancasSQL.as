@@ -27,6 +27,12 @@ package db.sql
 		public var meta:SQLStatementPool;
 		public var comision:SQLStatementPool;
 		
+		public var relacion_pago_consulta:SQLStatementPool;
+		public var relacion_pago_nuevo:SQLStatementPool;
+		public var relacion_pago_editar:SQLStatementPool;
+		public var transferir:SQLStatementPool;
+		public var banca_activa:SQLStatementPool;
+		
 		public function BancasSQL() {
 			super("bancas.sql");
 			

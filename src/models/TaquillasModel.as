@@ -18,6 +18,10 @@ package models
 	import starling.utils.execute;
 	
 	import vos.Taquilla;
+	import flash.utils.getTimer;
+	import by.blooddy.crypto.MD5;
+	import vos.Sesion;
+	import helpers.Code;
 	
 	public class TaquillasModel extends EventDispatcher
 	{			
@@ -26,10 +30,12 @@ package models
 		private var taquillas:Vector.<Taquilla>;
 		private var clientes:Vector.<Client>;
 		private var msgDuplicado:Message;
+		private var sessions:Array;
 		
 		public function TaquillasModel() {
 			super();
 			sql = new TaquillasSQL;
+			sessions = new Array;
 			
 			taquillas = new Vector.<Taquilla>;
 			clientes = new Vector.<Client>;
@@ -47,10 +53,41 @@ package models
 				taquillas.removeAt(i);
 			}
 		}
+		public function httpSesion(session:String):Sesion {
+			var i:int;
+			for each(var s:Sesion in sessions) {
+				if (s.hash==session) {
+					if (s.esValida) return s;
+					else {
+						sessions.removeAt(i);
+						return null;
+					}
+				}
+				i++;
+			}
+			return null;
+		}
+		public function httpLogin (usuario:String,clave:String,res:Function):void {
+			sql.taquilla_login.run({"usuario":usuario,"clave":clave},function (r:SQLResult):void {
+				if (!r.data) {res({error:"usuario no existe"}); return};
+				var taq:Taquilla = r.data[0];
+				if (taq.activa==0) {res({error:"usuario inactivo"}); return};
+				//TODO: notificar inicio de sesion a otros usuarios
+				//registra sesion
+				var now:int = getTimer();
+
+				var sesion:Sesion = new Sesion(taq);
+				sessions.push(sesion);
+				res({"sesion":sesion.hash,"taq":taq});
+			});
+		}
 		public function login (login:Object,cl:Client,cb:Function):void {
 			sql.taquilla_login.run(login,function (r:SQLResult):void {
 				if (r.data) {
 					var taq:Taquilla = r.data[0];
+					if (taq.estaActiva!=5) {
+						execute(cb,null,{code:Code.SUSPENDIDO}); return
+					}
 					if (!taq.fingerlock) {
 						for (var i:int = 0; i < taquillas.length; i++) { // prevenir sesiones multiples
 							if (login.usuario==taquillas[i].usuario) {
@@ -65,9 +102,7 @@ package models
 					clientes.push(cl);
 					cl.addEventListener(Event.CLOSE,cliente_onClose);
 					execute(cb,taq);
-				} else {
-					execute(cb,null);
-				}
+				} else execute(cb,null,{code:Code.NO_EXISTE});
 				//registar ultimo login de taquilla
 				//dispatchEventWith(ModelEvent.LOGIN,null,taq);
 			});
@@ -88,8 +123,8 @@ package models
 			return c;
 		}
 		public function buscarClienteIndex (campo:String,valor:*):int {
-			var len:int = taquillas.length-1;
-			for (var i:int = len; i >= 0; i--) {
+			var len:int = taquillas.length;
+			for (var i:int = 0 ; i < len; i++) {
 				if (valor==taquillas[i][campo]) return i;
 			}
 			return -1;
@@ -109,10 +144,17 @@ package models
 		}
 		public function desconectarCliente (index:int):void {
 			if (index>-1) {
-				clientes[index].close();
-				clientes.removeAt(index);
-				taquillas.removeAt(index);
+				var c:Client = clientes[index]
+				c.close();
+				//clientes.removeAt(index);
+				//taquillas.removeAt(index);
 			}
+		}
+		public function buscar_taqID(taquillaID:int,cb:Function):void {
+			sql.taquilla_id.run({id:taquillaID},function (r:SQLResult):void {
+				if (!r.data) execute(cb,'taquilla no existe')
+        else execute(cb,null,r.data.pop())
+			});
 		}
 		public function buscar (filtro:Object,cb:Function):void {
 			if (filtro) {
@@ -122,6 +164,7 @@ package models
 					else sql.taquilla_id.run(filtro,cb);
 				}
 				else if (filtro.hasOwnProperty("usuario")) sql.taquillas_usuario.run(filtro,cb);
+				else if (filtro.hasOwnProperty("usuariol")) sql.taquillas_usuariol.run(filtro,cb);
 				else if (filtro.hasOwnProperty("banca")) sql.taquillas_banca.run(filtro,cb);
 				else if (filtro.hasOwnProperty("usuarioID")) sql.taquillas_banca_usr.run(filtro,cb);
 				else if (filtro.hasOwnProperty("usr")) sql.taquilla_usuario.run(filtro,cb);
@@ -207,9 +250,14 @@ package models
 			}
 			else sql.taquilla_editar.run(taq,cb,error);
 		}
-		
 		public function meta (s:Object,cb:Function):void {
 			sql.meta.run(s,function (r:SQLResult):void {
+				if (r.rowsAffected>0) execute(cb,r);
+				else sql.meta_nuevo.run(s,cb);
+			});
+		}
+		public function metas (s:Object,cb:Function):void {
+			sql.metas.run(s,function result (r:SQLResult):void {
 				var m:Object = {};
 				for each (var row:Object in r.data) m[row.campo] = row.valor;
 				execute(cb,m);
@@ -270,7 +318,31 @@ package models
 		}
 		public function fingerlock_usuario (data:Object,cb:Function):void {
 			if (data.hasOwnProperty("taquillaID")) sql.fingerlock_usr.run(data,cb);
-			else sql.fingerlock_usr_all.run(data,cb);
+			else sql.fingerlock_usr_all.run(data,cb)
+		}
+		public function fingerlock (data:Object,cb:Function):void {
+			if (data.hasOwnProperty("taquillaID")) sql.fingerlock.run(data,cb);
+		}
+		public function fingerclear (data:Object,cb:Function):void {
+			if (data.hasOwnProperty("taquillaID")) sql.fingerclear.run(data,cb);
+		}
+	
+		public function comisiones (data:Object,cb:Function):void {
+			if (data.hasOwnProperty("taquillaID")) sql.comisiones_taquilla.run(data,cb);
+			else if (data.hasOwnProperty("grupoID")) sql.comisiones_grupo.run(data,cb);
+			else if (data.hasOwnProperty("bancaID")) sql.comisiones_banca.run(data,cb);
+		}
+		public function comision_nv (data:Object,cb:Function):void {
+			sql.comision_nueva.run(data,cb);
+		}
+		public function comision_dl(data:Object,cb:Function):void {
+			sql.comision_remover.run(data,cb);
+		}
+		public function estaActiva (id:int,cb:Function):void {
+			sql.taquilla_activa.run({tID:id},function (res:SQLResult):void {
+				if (res.data) execute(cb,true);
+				else execute(cb,false);
+			});
 		}
 	}
 }

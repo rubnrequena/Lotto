@@ -1,7 +1,5 @@
 package models
 {
-	import com.hurlant.util.ArrayUtil;
-	
 	import flash.data.SQLResult;
 	import flash.errors.SQLError;
 	
@@ -24,6 +22,10 @@ package models
 		public function BancasModel() {
 			super();
 			sql = new BancasSQL;
+			force_update();
+		}
+		
+		public function force_update ():void {
 			sql.bancas.run(null,bancas_update);
 		}
 		
@@ -68,7 +70,7 @@ package models
 			} else sql.nombres.run(null,cb);
 		}
 		
-		public function editar(banca:Object, cb:Function):void {
+		public function editar(banca:Object, cb:Function=null):void {
 			if (banca.hasOwnProperty("clave")) sql.clave.run(banca,result);
 			else if (banca.hasOwnProperty("activa")) sql.activa.run(banca,result);
 			else if (banca.hasOwnProperty("renta")) sql.renta.run(banca,result);
@@ -83,6 +85,24 @@ package models
 				sql.bancas.run(null,bancas_update);
 				execute(cb,r);
 			}
+		}
+		
+		public function relacion_pago (data:Object,cb:Function):void {
+			sql.relacion_pago_consulta.run({bancaID:data.bancaID,sorteo:data.sorteo},function (r:SQLResult):void {
+				if (r.data) sql.relacion_pago_editar.run({relacion:r.data[0].relacionID,valor:data.valor},cb);
+				else sql.relacion_pago_nuevo.run(data,cb);
+			});
+		}
+		
+		public function transferir(data:Object, cb:Function):void {
+			sql.transferir.run(data,cb);
+		}
+		
+		public function estaActiva (id:int,cb:Function):void {
+			sql.banca_activa.run({gID:id},function (res:SQLResult):void {
+				if (res.data) execute(cb,true);
+				else execute(cb,false);
+			});
 		}
 	}
 }

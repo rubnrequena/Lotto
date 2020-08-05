@@ -2,26 +2,91 @@ package helpers
 {
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.filesystem.File;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
+	import flash.net.URLVariables;
+	import starling.utils.StringUtil;
 
 	public class WS
 	{
-		private var process:NativeProcess;
-		public function WS()
-		{
-			var nativeProcessStartupInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
-			var dir:File = new File(Loteria.setting.plataformas.ws.yowdir);
-			var file:File = new File("C:\\Windows\\System32\\cmd.exe"); 
-			nativeProcessStartupInfo.executable = file;
-			nativeProcessStartupInfo.workingDirectory = dir; 
-			process = new NativeProcess(); 
-			//process.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData); 
-			process.start(nativeProcessStartupInfo);
+		public static const NTF_TQ_SORTEO_INV:String = "[{3}] VERIFICAR RESULTADO\nSORTEO: {0}\nTAQ: {1}\nUSUARIO: {2}";
+		
+		private static var url:URLLoader;
+		private static var req:URLRequest;		
+		
+		private static var queue:Array=[];
+		private static var enviando:Boolean;
+		
+		public static var preferencias:Object;
+		public static var soporte:Array;
+		public static var premios:Array;
+		public static var admin:String;
+
+		private static var lastMsg:String;
+		
+		public function WS() {			
 		}
 		
-		public function enviar (n:String,msg:String):void {
-			var s:String = 'python yowsup-cli demos -s '+n+' "'+msg+'" -c config.conf';
-			process.standardInput.writeMultiByte(s+'\n',File.systemCharset);
+		public static function init ():void {
+			initWeb();
+			preferencias = Loteria.setting.plataformas.ws;
+			var usuarios:Object = Loteria.setting.plataformas.usuarios;
+			soporte = usuarios.soporte;
+			premios = usuarios.premios;
+			admin = usuarios.admin;
+		}
+		
+		private static function initWeb():void {
+			url = new URLLoader;
+			url.addEventListener(Event.COMPLETE,onComplete);
+			url.addEventListener(IOErrorEvent.IO_ERROR,onError);
+		}
+		
+		protected static function onError(event:IOErrorEvent):void {
+      Loteria.console.error('WS.as:',event.text)
+			checkMensajes();
+		}	
+		protected static function onComplete(event:Event):void {
+			checkMensajes();
+		}
+		protected static function checkMensajes ():void {
+			enviando=false;
+			if (queue.length>0) {
+				var msg:Object = queue.shift();
+				enviar(msg.numero,msg.mensaje);
+			}
+		}
+		public static function enviar (numero:String,mensaje:String):void {
+			if (!numero || numero.match(/^\d{10,15}$/g)==false) return
+			//TODO: prevenir enviar mensajes repetidos comparando hash de los mensajes			
+
+			if (enviando) {
+					queue.push({
+						numero:numero,
+						mensaje:mensaje
+					});
+			} else  {
+				mensaje = encodeURIComponent(mensaje);
+				mensaje = mensaje.replace("\n","%0A");
+				mensaje = "_["+Loteria.setting.servidor+"]_ "+mensaje;
+				enviando=true;
+				req = new URLRequest(StringUtil.format(Loteria.setting.plataformas.ws.url,numero,mensaje));
+				url.load(req);
+			}
+		}
+		public static function telegram (comando:String,data:Object):void {
+      data.comando = comando;
+      var mensaje:String = JSON.stringify(data)
+      mensaje = encodeURIComponent(mensaje);
+			mensaje = mensaje.replace("\n","%0A");
+			req = new URLRequest(StringUtil.format(Loteria.setting.plataformas.telegram.url,mensaje));
+			url.load(req);
+		}
+		public static function emitir (n:Array,msg:String):void {
+			for (var i:int = 0; i < n.length; i++) enviar(n[i],msg);
 		}
 	}
 }
