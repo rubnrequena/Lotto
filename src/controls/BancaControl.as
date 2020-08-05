@@ -280,6 +280,8 @@ package controls
 		
 		private function taquilla_comision_nv(e:Event,m:Message):void
 		{
+			m.data.grupoID = usuario.usuarioID;
+			m.data.bancaID = usuario.bancaID;
 			_model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
 				m.data.comID = r.lastInsertRowID;
 				_cliente.sendMessage(m);
@@ -558,8 +560,9 @@ package controls
 		
 		private function reporte_sorteo(e:Event,m:Message):void {
 			m.data.bancaID = usuario.bancaID;
+			m.data.usuarioID = usuario.usuarioID;
 			_model.reportes.banca(m.data,function (reporte:Object):void {
-				m.data = reporte;
+				m.data = reporte.data;
 				_cliente.sendMessage(m);
 				measure(m.command);
 			});
@@ -611,8 +614,10 @@ package controls
 		
 		private function reporte_banca(e:Event,m:Message):void {
 			m.data.s.bancaID = usuario.bancaID;
-			if (m.data.g==0) _model.reportes.general(m.data.s,result);
-			else if (m.data.g==1) _model.reportes.general_sorteo(m.data.s,result);
+			if (m.data.g==0) {
+				m.data.s.usuarioID = usuario.usuarioID;
+				_model.reportes.general(m.data.s,result);
+			} else if (m.data.g==1) _model.reportes.general_sorteo(m.data.s,result);
 			else  _model.reportes.fecha(m.data.s,result);
 			
 			function result (r:SQLResult):void {

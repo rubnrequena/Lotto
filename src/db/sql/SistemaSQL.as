@@ -3,7 +3,7 @@ package db.sql
 	import db.SQLStatementPool;
 	
 	import vos.Elemento;
-	import vos.sistema.Sorteo;
+	import vos.sistema.Operadora;
 
 	public class SistemaSQL
 	{
@@ -36,7 +36,7 @@ package db.sql
 			elementos_limpiar = new SQLStatementPool('DELETE FROM numeros WHERE sorteo = :sorteo');
 			elementos_sorteo = new SQLStatementPool('SELECT * FROM numeros WHERE sorteo = :sorteo');
 			
-			sorteos = new SQLStatementPool('SELECT * FROM sorteos',null,Sorteo);			
+			sorteos = new SQLStatementPool('SELECT * FROM sorteos',null,Operadora);			
 			
 			gelementos = new SQLStatementPool('SELECT numero n FROM numeros GROUP BY n');
 			

@@ -22,6 +22,7 @@ package controls
 	import vos.Taquilla;
 	import vos.Usuario;
 	import models.Notificaciones;
+	import starling.utils.execute;
 	
 	public class ComercializadoraControl extends Control
 	{
@@ -57,16 +58,13 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
-		private function taquilla_comision_dl(e:Event,m:Message):void
-		{
+		private function taquilla_comision_dl(e:Event,m:Message):void {
 			_model.taquillas.comision_dl(m.data,function(r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
-		}
-		
-		private function taquilla_comision_nv(e:Event,m:Message):void
-		{
+		}		
+		private function taquilla_comision_nv(e:Event,m:Message):void {
 			if (m.data.hasOwnProperty("taquillaID")==false) m.data.taquillaID = 0;
 			if (m.data.hasOwnProperty("grupoID")==false) m.data.grupoID = 0;
 			if (m.data.hasOwnProperty("bancaID")==false) m.data.bancaID = 0;
@@ -75,6 +73,22 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
+		private function grupo_comision_nv (e:Event, m:Message):void {
+		m.data.taquillaID = 0;
+		_model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
+			m.data.comID = r.lastInsertRowID;
+			sendMessage(m);
+		});
+		}
+		private function banca_comision_nv (e:Event, m:Message):void {
+		m.data.grupoID = 0
+		m.data.taquillaID = 0;
+		_model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
+			m.data.comID = r.lastInsertRowID;
+			sendMessage(m);
+		});
+    }
+
 		private function conexiones(e:Event,m:Message):void {
 			m.data = _model.taquillas.explorarClientes("usuarioID",usuario.usuarioID);
 			_cliente.sendMessage(m);
@@ -236,8 +250,18 @@ package controls
 		}
 		
 		private function tope_nuevo(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
 			if (m.data.compartido==2) m.data.bancaID = 0;
+			if (m.data.elemento!="") {
+				if (m.data.sorteo==0) {
+					m.data = {error:'Es obligatorio indicar el sorteo al que sera asignado el tope por numero'}
+					return _cliente.sendMessage(m);
+				}
+				var elemento:Object = _model.sistema.elemento_num(m.data.elemento,m.data.sorteo)
+				if (!elemento) {
+					m.data = {error:'Numero invalido o no existe para el sorteo seleccionado'}
+					return _cliente.sendMessage(m);
+				} else m.data.elemento = elemento.elementoID
+			} else m.data.elemento = 0
 			_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
@@ -245,11 +269,26 @@ package controls
 		}
 		
 		private function topes(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
 			_model.topes.topes(m.data,function (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-				measure(m.command);
+				if (r.data.length<100) {
+					m.data = r.data;
+				  _cliente.sendMessage(m);
+          measure(m.command);
+				} else {
+          if (m.data.force==true) {
+            var rango:int = 100
+            var len:int = Math.floor(r.data.length/rango)
+            var dd:Array 
+            for(var i:int = 0; i < len; i++) {
+              dd = r.data.slice(rango*i,rango*(i+1))
+              m.data = dd
+              _cliente.sendMessage(m)
+            }
+          } else {
+            m.data = {message:'Demasiados registros para mostrar, por favor seleccione un grupo'}
+            _cliente.sendMessage(m)
+          }
+				}				
 			});
 		}
 		
@@ -344,6 +383,8 @@ package controls
 			addEventListener("taquilla-comisiones",taquilla_comisiones);
 			addEventListener("taquilla-comision-nv",taquilla_comision_nv);
 			addEventListener("taquilla-comision-dl",taquilla_comision_dl);
+      addEventListener("grupo-comision-nv",grupo_comision_nv);
+      addEventListener("banca_comision_nv",banca_comision_nv);
 			
 			addEventListener("taquilla-flock",taquilla_flock);
 			addEventListener("taquilla-fpclear",taquilla_fpclear);
@@ -377,13 +418,15 @@ package controls
 			addEventListener("reporte-banca",reporte_banca);
 			addEventListener("reporte-recogedor",reporte_recogedor);
 			addEventListener("reporte-taquilla",reporte_taquilla);
+
 			
 			addEventListener("reporte-ventas",reporte_ventas);
 			addEventListener("reporte-diario",reporte_diario);
 			addEventListener("reporte-cobros",reporte_cobros);
 			addEventListener("reporte-subcobros",reporte_cobros);
 			
-			//addEventListener("reporte-usuario",reporteUsuario); obsoleto
+      //reporte 2.0
+      addEventListener("reporte",reporte)
 			
 			addEventListener("permiso-nuevo",permiso_nuevo);
 			addEventListener("permiso-update",permiso_update);
@@ -470,6 +513,15 @@ package controls
 			Notificaciones.listeners.addEventListener(Notificaciones.MENSAJE_NUEVO,notificacion_msgNuevo)
 		}
 
+    private function reporte (e:Event,m:Message):void {
+      m.data.comercial = usuario.usuarioID
+      var s:Object = {inicio: m.data.inicio, fin: m.data.fin, comercial: usuario.usuarioID}
+      _model.reportes.usuario(s,result)
+
+      function result(r:SQLResult):void {
+        sendMessage(m,r.data)
+      }
+    }
 		private function notificacion_msgNuevo (e:Event,mensaje:Object):void {
 			if (_cliente && usuario) {
 				if (usuario.usID==mensaje.destino) {
@@ -655,17 +707,45 @@ package controls
 		}
 		
 		private function reporte_general(e:Event,m:Message):void {
-			m.data.s.comercial = usuario.usuarioID;
-			if (m.data.g==0) _model.reportes.general(m.data.s,result);
-			else if (m.data.g==1) _model.reportes.general_fecha(m.data.s,result);
-			else if (m.data.g==2) {
-				_model.reportes.comercial(m.data.s,result);
-			}
+      var grupo:String = m.data.agrupar.split(",")[0]
+      var descripcion:String = m.data.agrupar.split(",")[1]
+      delete m.data.agrupar
+      delete m.data.s
+			m.data.comercial = usuario.usuarioID;
+      _model.reportes.usuario(m.data,function (r:SQLResult):void {
+        var reporte:Array = agrupar(r.data,grupo)
+        sendMessage(m,reporte)
+      })
+      function agrupar(reportes:Array,campo:String):Array {
+        var grupos:Object = {}
+        var grupo:Object
+        for each(var reporte:Object in reportes) {
+          grupo= grupos[reporte[campo]]
+          if (grupo) {
+            grupo.jg += reporte.jg
+            grupo.pr += reporte.pr
+            grupo.cm += reporte.cm
+            grupo.prt += reporte.prt
+          } else {
+            reporte.desc = reporte[descripcion]
+            reporte.tipo = campo;
+            grupos[reporte[campo]] = reporte
+          }
+        }
+        var resultado:Array=[]
+        for(var llave:String in grupos) {
+          resultado.push(grupos[llave])
+        }
+        return resultado
+      }
+			/* if (grupo==0) _model.reportes.comercial(m.data,result);
+			else if (grupo==1) _model.reportes.operadora(m.data,result)
+			else if (grupo==2) _model.reportes.fecha(m.data,result);
 			
 			function result (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
-			}
+			} */
 		}
 		
 		private function banca_grupo(e:Event,m:Message):void
@@ -766,11 +846,9 @@ package controls
 		}
 		
 		private function venta_anular(e:Event,m:Message):void {
-			//validar ticket
-			delete m.data.bancaID;
-			_model.ventas.ticket(m.data,function (ticket:Object):void {
-				m.data.codigo = m.data.codigo || 0;
-				if (ticket && ticket.usuarioID==usuario.usuarioID && ticket.codigo==m.data.codigo) {
+			esMiTicket(m.data,function (ticket:*):void {
+        m.data.codigo = m.data.codigo || 0;
+        if (ticket && ticket.codigo==m.data.codigo) {
 					_model.ventas.ventas_elementos({ticket:ticket.ticketID},function (tventas:SQLResult):void {
 						var sorteoCerrado:Boolean=false;
 						var cierre:Number = _model.ahora;
@@ -806,22 +884,35 @@ package controls
 					m.data.code = Code.NO_EXISTE;
 					_cliente.sendMessage(m);
 				}
-			});
+      });
 		}
 		private function venta_premios(e:Event,m:Message):void {			
-			_model.ventas.ticket(m.data,function (ticket:Object):void {
-				if (ticket && ticket.usuarioID==usuario.usuarioID) {
-					_model.ventas.ventas_elementos(m.data,function (premios:SQLResult):void {
-						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
-						m.data = {tk:ticket,prm:premios.data}
-						_cliente.sendMessage(m);
-					});
-				} else {
-					m.data = {code:Code.NO_EXISTE};
-					_cliente.sendMessage(m);
-				}
-			});
-		}
+			esMiTicket(m.data,function (ticket:*):void {
+          if (ticket) {
+            _model.ventas.ventas_elementos({ticketID:ticket.ticketID},function (premios:SQLResult):void {
+              m.data = {tk:ticket,prm:premios.data}       
+					    _cliente.sendMessage(m);
+            });
+          } else {
+            m.data = {code:Code.NO_EXISTE};  
+					  _cliente.sendMessage(m);
+          } 
+      })
+
+
+    }
+
+    private function esMiTicket (ticket:Object,cb:Function):void {
+      _model.ventas.ticket(ticket,function (ticket:Object):void {
+          if (ticket) {
+            ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
+            _model.usuarios.usuario_comercial(ticket.usuarioID,function (comercial:Usuario):void {
+              if (comercial.usuarioID==usuario.usuarioID) cb(ticket);
+              else cb(false)
+            })
+				} else cb(false)
+      });
+    }
 		
 		private function permiso_remove(e:Event,m:Message):void {
 			m.data.usuarioID = usuario.usuarioID;
@@ -832,7 +923,6 @@ package controls
 		}
 		
 		private function permiso_update(e:Event,m:Message):void {
-			m.data.usuarioID = usuario.usuarioID;
 			_model.usuarios.permiso_update(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -840,7 +930,6 @@ package controls
 		}
 		
 		private function permisos(e:Event,m:Message):void {
-			m.data = {usuarioID:usuario.usuarioID};
 			_model.usuarios.permisos(m.data,function (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
@@ -850,12 +939,16 @@ package controls
 		private function permiso_nuevo(e:Event,m:Message):void {
 			var metas:Array = [];
 			for each (var permiso:int in m.data.permisos) {
-				metas.push({
-					usuarioID:usuario.usuarioID,
-					bancaID:m.data.banca,
+        var _permiso:Object = {
+					usuarioID:m.data.usuarioID,
+					bancaID:m.data.bancaID,
 					campoID:permiso,
 					valor:m.data.valor
-				});
+				}
+        _model.usuarios.permisos_campo(permiso,_permiso.usuarioID, _permiso.bancaID,function (r:Array):void {
+          if (r) return sendMessage(m,{error:r[0].campo,errorMsg:'uno de los permisos ya se encuentra asignado'})
+        })
+				metas.push(_permiso);
 			}
 			_model.usuarios.permiso_nuevo(metas,function (r:Vector.<SQLResult>):void {
 				m.data = r.length;
@@ -864,8 +957,8 @@ package controls
 		}
 		
 		private function reporte_banca(e:Event,m:Message):void {
-			if (m.data.g==0) _model.reportes.comercial(m.data.s,result);
-			//else  _model.reportes.fecha(m.data.s,result);
+			if (m.data.g==0) _model.reportes.usuarios(m.data.s,result);
+			else _model.reportes.fecha(m.data.s,result);
 			
 			function result (r:SQLResult):void {
 				m.data = r.data;

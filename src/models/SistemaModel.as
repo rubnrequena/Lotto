@@ -17,7 +17,7 @@ package models
 	import starling.utils.execute;
 	
 	import vos.Elemento;
-	import vos.sistema.Sorteo;
+	import vos.sistema.Operadora;
 	import helpers.Premio_SRQWeb;
 	
 	public class SistemaModel extends EventDispatcher
@@ -65,14 +65,14 @@ package models
 		private var _numeros:Array;
 		public function get numeros():Array { return _numeros; }
 		
-		private var _sorteos:Vector.<Sorteo>;
-		public function get sorteos():Vector.<Sorteo> { return _sorteos; }
+		private var _sorteos:Vector.<Operadora>;
+		public function get sorteos():Vector.<Operadora> { return _sorteos; }
 		
 		public function getPremiosClass (clase:String):IPremio {
 			return new Premio_SRQWeb(clase);
 		}
 		public function getPremiosClassByID (id:int):IPremio {
-			for each (var s:Sorteo in _sorteos) {
+			for each (var s:Operadora in _sorteos) {
 				if (s.sorteoID==id) return getPremiosClass(s.clase);	
 			}
 			return null;
@@ -90,7 +90,7 @@ package models
 		}
 		
 		private function sorteos_act(r:SQLResult):void {
-			_sorteos = r.data?Vector.<Sorteo>(r.data):null;
+			_sorteos = r.data?Vector.<Operadora>(r.data):null;
 		}
 		
 		public function update_elementos():void {

@@ -18,7 +18,19 @@ UPDATE us.usuarios SET clave = :clave WHERE usuarioID = :usuarioID
 --usuario_activar
 UPDATE us.usuarios SET activo = :activo WHERE usuarioID = :usuarioID
 --permisos
-SELECT meta.usuarioID, bancas.nombre, metaID, campoID, CAST(meta.valor AS INTEGER) valor FROM us.meta LEFT JOIN us.bancas ON bancas.bancaID = meta.bancaID WHERE (meta.usuarioID = 0 OR meta.usuarioID = :usuarioID) GROUP BY meta.bancaID, meta.campoID ORDER BY meta.bancaID
+SELECT meta.usuarioID, bancas.nombre, metaID, campoID, CAST(meta.valor AS INTEGER) valor 
+FROM us.meta LEFT JOIN us.bancas ON bancas.bancaID = meta.bancaID 
+WHERE (meta.usuarioID = 0 OR meta.usuarioID = :usuarioID) 
+GROUP BY meta.bancaID, meta.campoID ORDER BY meta.bancaID
+--permisos_banca
+SELECT meta.usuarioID, metaID, campoID, CAST(meta.valor AS INTEGER) valor 
+FROM us.meta 
+WHERE meta.bancaID = 0 AND (meta.usuarioID = 0  OR meta.usuarioID = :usuarioID)
+GROUP BY meta.bancaID, meta.campoID
+--permiso_tipo
+SELECT meta.campoID, valor, campo FROM us.meta 
+JOIN us.meta_info ON meta.campoID = meta_info.metaID 
+WHERE campoID = :campo AND usuarioID = :usuarioID AND bancaID = :bancaID
 --meta_nuevo
 INSERT INTO us.meta (usuarioID,bancaID,campoID,valor) VALUES (:usuarioID, :bancaID, :campoID, :valor)
 --permiso_nuevo
@@ -57,3 +69,7 @@ SELECT nombre, taquillaID uID, "t"||taquillaID usID, contacto from us.taquillas 
 SELECT nombre, usuarioID uID, "u"||usuarioID usID, contacto from us.usuarios WHERE usuarioID = :id
 --comercialID
 SELECT nombre, usuarioID uID, "c"||usuarioID usID, contacto from us.usuarios WHERE usuarioID = :id
+--usuario_comercial
+SELECT usuarioID, usuario, nombre, activo, contacto FROM comer_usuario
+	JOIN usuarios ON usuarios.usuarioID = comer_usuario.cID 
+WHERE uID = :usuarioID

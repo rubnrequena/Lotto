@@ -93,7 +93,7 @@ package controls
 			
 			//addEventListener("notificar",sistema_notificar);
 						
-			_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
+			//_model.mSorteos.addEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.addEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.addEventListener(Event.CHANGE,model_tp_topeNuevo);			
 			_model.ventas.addEventListener(ModelEvent.PREMIO,ventasModel_premio);
@@ -187,7 +187,7 @@ package controls
 		}
 		
 		override protected function dispose():void {
-			_model.mSorteos.removeEventListener(Event.UPDATE,sorteosModel_update);
+			//_model.mSorteos.removeEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.removeEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.removeEventListener(Event.CHANGE,model_tp_topeNuevo);
 			_model.ventas.removeEventListener(ModelEvent.PREMIO,ventasModel_premio);
@@ -473,11 +473,6 @@ package controls
 		private function venta(e:Event,m:Message):void {
 			var i:int;
 			var meta:Object = m.data.m || {};
-			/*if (meta.hasOwnProperty("sms") && SMSControl._clientes.length==0) {
-				m.data = {code:Code.SMS_NODISPONIBLE};
-				_cliente.sendMessage(m);
-				return;
-			}*/
 
 			if (ultVenta && !meta.hasOwnProperty("rw")) {
 				var mt:Number=0;
@@ -595,7 +590,7 @@ package controls
 					}
 					invalidos.length = 0;
 				}
-				function realizarVenta ():void {
+				function realizarVenta ():void {					
 					_model.ventas.venta(_ventas,_taquilla,function (ticket:Object,ventasID:Array,ids:Array):void {
 						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.i18n["default"]);
 						ultVenta = {

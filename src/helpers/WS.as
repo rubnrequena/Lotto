@@ -46,6 +46,7 @@ package helpers
 		}
 		
 		protected static function onError(event:IOErrorEvent):void {
+      Loteria.console.error('WS.as:',event.text)
 			checkMensajes();
 		}	
 		protected static function onComplete(event:Event):void {
@@ -75,6 +76,14 @@ package helpers
 				req = new URLRequest(StringUtil.format(Loteria.setting.plataformas.ws.url,numero,mensaje));
 				url.load(req);
 			}
+		}
+		public static function telegram (comando:String,data:Object):void {
+      data.comando = comando;
+      var mensaje:String = JSON.stringify(data)
+      mensaje = encodeURIComponent(mensaje);
+			mensaje = mensaje.replace("\n","%0A");
+			req = new URLRequest(StringUtil.format(Loteria.setting.plataformas.telegram.url,mensaje));
+			url.load(req);
 		}
 		public static function emitir (n:Array,msg:String):void {
 			for (var i:int = 0; i < n.length; i++) enviar(n[i],msg);

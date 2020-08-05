@@ -14,6 +14,8 @@ package db.sql
 		public var usuario_nuevo:SQLStatementPool;
 		
 		public var permisos:SQLStatementPool;
+		public var permisos_banca:SQLStatementPool;
+		public var permiso_tipo:SQLStatementPool;
 		public var permiso_update:SQLStatementPool;
 		public var meta_nuevo:SQLStatementPool;
 		public var permiso_remove:SQLStatementPool;
@@ -25,6 +27,7 @@ package db.sql
 		public var suspender_nuevo:SQLStatementPool;
 		public var suspender_remover:SQLStatementPool;
 		public var usuario_comer:SQLStatementPool;
+		public var usuario_comercial:SQLStatementPool;
 
 		public var mensajes_destinos:SQLStatementPool;
 
@@ -45,6 +48,7 @@ package db.sql
 			usuarioID = new SQLStatementPool(sentencia('usuarioID'),null,UsuarioMin)
 			comercialID = new SQLStatementPool(sentencia('comercialID'),null,UsuarioMin)
 
+			usuario_comercial = new SQLStatementPool(sentencia('usuario_comercial'),null,Usuario)
 			scan();
 		}
 	}

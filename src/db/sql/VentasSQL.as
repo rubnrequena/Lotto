@@ -34,6 +34,7 @@ package db.sql
 		public var ventas_elementos_ticket:SQLStatementPool;
 		public var tickets_premiados:SQLStatementPool;
 		public var reporte_nuevo:SQLStatementPool; //HELPER_CONNECTION
+		public var verificar_jugada_premiar:SQLStatementPool
 		
 		public var jugadas_banca_taq:SQLStatementPool;
 		public var jugadas_banca_num:SQLStatementPool;
@@ -70,6 +71,7 @@ package db.sql
 		public var premiar_ventas_v2_temp:SQLStatementPool;
 		public var premiar_ventas_v2_all:SQLStatementPool; //HELPER_CONNECTION
 		public var premiar_ventas_v2_alltemp:SQLStatementPool;
+
 						
 		public function VentasSQL()
 		{

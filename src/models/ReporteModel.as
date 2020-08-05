@@ -38,8 +38,12 @@ package models
 			else if (s.hasOwnProperty("usuarioID")) sql.comercial_banca.run(s,cb);
 			else if (s.hasOwnProperty("bancaID")) sql.comercial_recogedor.run(s,cb);
 		}
+		public function operadora (s:Object,cb:Function):void {
+			if (s.hasOwnProperty("comercial")) sql.comercial_general_operadora.run(s,cb);
+		}
 		public function usuarios (s:Object,cb:Function):void {
-			sql.rp_usuarios_gen.run(s,cb);
+      if (s.hasOwnProperty("usuarioID")) sql.banca_general.run(s,cb)
+			else sql.rp_usuarios_gen.run(s,cb);
 		}
 		public function comerciales (s:Object,cb:Function):void {
 			sql.rp_comer_gen.run(s,cb);
@@ -62,21 +66,17 @@ package models
 		public function fecha (s:Object,cb:Function):void {
 			if (s.hasOwnProperty("bancaID")) sql.rp_taqs_gen_fecha.run(s,cb);
 			else if (s.hasOwnProperty("usuarioID")) sql.rp_usuario_gen_fecha.run(s,cb);
+			else if (s.hasOwnProperty("comercial")) sql.comercial_fecha.run(s,cb);
 			else sql.fecha.run(s,cb);
 		}
 		
 		public function banca (banca:Object,cb:Function):void {
-			if (banca.hasOwnProperty("bancaID")) {
-				if (banca.hasOwnProperty("sorteoID")) {
-					sql.banca_sorteo.run(banca,function (elementos:SQLResult):void {
-						if (elementos.data) {
-							sql.banca_sorteo_taquillas.run(banca,function (taqs:SQLResult):void {
-								execute(cb,{e:elementos.data,t:taqs.data});
-							});
-						} else execute(cb,null);
-					});
+			if (banca.hasOwnProperty("sorteo")) {
+				if (banca.hasOwnProperty("bancaID")) { 
+					sql.banca_sorteo_taquillas.run(banca,cb);
+				}else if (banca.hasOwnProperty("usuarioID")) {
+          sql.banca_sorteo_bancas.run(banca,cb)
 				}
-				else sql.banca.run(banca,cb);
 			}
 			else sql.bancas.run(banca,cb);
 		}
@@ -175,5 +175,11 @@ package models
 			sql.backup_sorteo.run({sorteoID:sorteoID},cb)
 		}
 
+		public function usuario (s:Object,cb:Function):void {
+			if (s.taquilla) sql.gtaquilla.run(s,cb)
+			else if (s.grupo) sql.ggrupo.run(s,cb)
+			else if (s.banca) sql.gbanca.run(s,cb)
+			else if (s.comercial) sql.gcomercial.run(s,cb)
+		}
 	}
 }

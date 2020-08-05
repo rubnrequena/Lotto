@@ -19,6 +19,8 @@ package vos
 		public var papelera:int;
 		public var creacion:String;
 		public var contacto:String;
+
+		//public var impuesto:Number = 4
 		
 		public function get usID():String {
 			return "t"+taquillaID;

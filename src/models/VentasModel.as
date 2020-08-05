@@ -110,7 +110,7 @@ package models
     private function onError (r:SQLError):void {
       lockVentas=true; //prevenir ventas fantasmas
       tmr.stop();
-      Loteria.console.log("COMMIT ERROR",r.errorID,r.message,r.details);
+      Loteria.console.error("COMMIT ERROR",r.errorID,r.message,r.details);
       WS.emitir(WS.soporte,"CODIGO ROJO, VENTAS SUSPENDIDAS\nSe ha detenido las ventas para evitar una perdida de informacion"+r.details);
     }
     private function onCommit(result:Vector.<SQLResult>):void {
@@ -195,19 +195,28 @@ package models
     }*/
     public function premiar (sorteo:Sorteo,elemento:Elemento,cb:Function):void {
       sorteos_premiados[sorteo.sorteoID]=true;			
-      var srt:Object = {numero:elemento.elementoID,sorteoID:sorteo.sorteoID};			
-      tmr.stop();
+      var srt:Object = {numero:elemento.elementoID,sorteoID:sorteo.sorteoID};	
       
       t = getTimer();
       var relacion:Array; 
-            
-      sql.premiar.run(srt,function (r:SQLResult):void {				
-        sql.relacion_pago.run({sorteo:sorteo.sorteo},premiar);	
-      });
+      sql.premiar.run(srt,function (r:SQLResult):void {		
+        sql.verificar_jugada_premiar.run({sorteoID:sorteo.sorteoID},function (r:SQLResult):void {
+          if (r.data && r.data[0].n>0) {	
+            tmr.stop();	
+            sql.relacion_pago.run({sorteo:sorteo.sorteo},premiar)
+          } else Loteria.console.log(StringUtil.format('PREMIAR: {0} no tiene jugadas',sorteo.descripcion))
+        })   
+      });      
       
       function premiar (rel:SQLResult):void {
         relacion = rel.data;
-        if (relacion==null || relacion.length==0) return;
+        if (relacion==null || relacion.length==0) {
+          var msg:String = StringUtil.format(('ADVERTENCIA: El sorteo {0} no tiene relacion de premio',sorteo.descripcion))
+          WS.enviar(WS.admin,msg)
+          Loteria.console.error(msg)
+          tmr.start()
+          return
+        }
         var len:int = rel.data.length;
         var premios:Array = []; var prm:Object;
                 
@@ -219,11 +228,11 @@ package models
         sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
           premioAprox = new PremioAproximacion(config.pagaPorAproximacion[sorteo.sorteo]);
           if (premioAprox.esValido) {	
-            sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarRuca(-1,premioAprox.premio); });
+            sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void { premiarConAproximado(-1,premioAprox.premio); });
           } else sql.premiar_ventas_v2_all.run(prm,premiarOtros);
         });
 
-        function premiarRuca (num:int,paga:int,continuar:Boolean=false):void {
+        function premiarConAproximado (num:int,paga:int,continuar:Boolean=false):void {
           if (elemento.numero==premioAprox.numAbajo && num==-1) prm.numero = elemento.elementoID + 99;
           else if (elemento.numero==premioAprox.numArriba && num==1) prm.numero = elemento.elementoID - 99;
           else prm.numero = elemento.elementoID + num;
@@ -232,7 +241,7 @@ package models
           sql.premiar_ventas_v2_alltemp.run(prm,function ():void {
             sql.premiar_ventas_v2_all.run(prm,function (r:SQLResult):void {
               if (continuar) premiarOtros(r)
-              else premiarRuca(1,premioAprox.premio,true);
+              else premiarConAproximado(1,premioAprox.premio,true);
             });						
           });	
         }
@@ -247,7 +256,6 @@ package models
               prm.paga = rl.valor+elemento.adicional;
               premios.push(prm);
             }
-            
             sql.premiar_ventas_v2_temp.batch_nocommit(premios,function ():void {
               sql.premiar_ventas_v2.batch_nocommit(premios,premiar_complete,premiar_error);
             },premiar_error);
@@ -261,10 +269,6 @@ package models
         guardarReportes();	
         sorteo.ganador = elemento.elementoID;
         execute(cb,sorteo);
-        //verificar si estaba pendiente
-        if (SorteosModel.sorteosPendientes.indexOf(sorteo.sorteoID)>-1) {
-          WS.emitir(WS.premios,StringUtil.format('*SORTEO PENDIENTE PREMIADO*\n#{0} {1}',sorteo.sorteoID,sorteo.descripcion))
-        }
 
         dispatchEventWith(ModelEvent.PREMIO,false,sorteo);
       }
@@ -274,7 +278,7 @@ package models
         sorteos_premiados[sorteo.sorteoID]=false;				
       }
       
-       function guardarReportes():void {		
+      function guardarReportes():void {		
         sql.reporte_nuevo.run({sorteoID:sorteo.sorteoID},function reporte_nuevo_complete (r:SQLResult):void {
           Loteria.console.log(getTimer()-t+"ms, REPORTE REGISTRADO CON EXITO, #"+sorteo.sorteoID,sorteo.descripcion);
           Backup.reporte(sorteo.sorteoID);
@@ -284,7 +288,7 @@ package models
           WS.emitir(WS.premios,"SRQ ERROR: IMPOSIBLE PREMIAR SORTEO <p>Sorteo #"+sorteo.sorteoID+" "+sorteo.descripcion+'</p>');
           Loteria.console.log("[",r.name,"]",r.detailID,r.details);
           if (SQLStatementPool.DEFAULT_CONNECTION.inTransaction) SQLStatementPool.DEFAULT_CONNECTION.commit();
-          tmr.start(); //en caso de fallar, seguir guardando ventas					
+          tmr.start(); //en caso de fallar, seguir guardando ventas
           sorteos_premiados[sorteo.sorteoID]=false;
         });
       }

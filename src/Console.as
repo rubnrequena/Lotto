@@ -29,7 +29,10 @@ package
 
 
 		private var list:List;
-		private var data:ListCollection;
+		private var errorList:List;
+		private var logData:ListCollection;
+		private var errorData:ListCollection;		
+
 		private var buffer:String;
 		private var time:Date;
 		
@@ -58,14 +61,14 @@ package
 			
 			layout = new AnchorLayout;
 			
-			data = new ListCollection;
+			logData = new ListCollection;
+			errorData = new ListCollection;
 			buffer = "";
 			sql_buffer = "";
 			
 			list = new List();
-      list.y = 20;
 			list.layoutData = new AnchorLayoutData(20,0,0,0);
-			list.dataProvider = data;
+			list.dataProvider = logData;
 			list.itemRendererFactory = function ():IListItemRenderer {
 				var item:DefaultListItemRenderer = new DefaultListItemRenderer;
 				item.labelField = "text";
@@ -106,10 +109,25 @@ package
         dispatchEventWith(COMMIT,false)
       })
       btnBar.addChild(commitForzado)
+
+      var btnLog:Button = new Button
+      btnLog.label = "Mostrar Errores"
+      btnLog.addEventListener(Event.TRIGGERED,function ():void {
+        if (btnLog.label=="Mostrar Errores") {
+          list.dataProvider = errorData
+          btnLog.label="Mostrar Informe"
+        } else {
+          list.dataProvider = logData
+          btnLog.label="Mostrar Errores"
+        }
+        
+      })
+      btnBar.addChild(btnLog)
       
       addChild(btnBar)
 			
 			log('BIENVENIDO AL SISTEMA DE LOTERIA');
+			log('ERROR LOG: Consola de errores inicializada')
 			
 			setTimeout(function ():void {				
 				NativeApplication.nativeApplication.addEventListener("exiting",function (e:*):void {
@@ -158,18 +176,28 @@ package
 			return s;
 		}
 		
-		public function log (...s):void {
+		public function log (...s):void {			
 			str = s.join(" ");
+			var data:ListCollection = str.indexOf("ERROR")>-1?errorData:logData
 			if (data.length>200) {
 				data.removeAll();
-
 				stream.writeUTFBytes(buffer);
 				buffer="";
-			}
-			
+			}			
 			time = new Date;
-			data.addItemAt({tiempo:DateFormat.format(time,DateFormat.masks.mediumTime),text:str},0);			
-						
+			data.addItemAt({tiempo:DateFormat.format(time,DateFormat.masks.mediumTime),text:str},0);									
+			buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"\t"+str+File.lineEnding;
+		}
+		public function error (...s):void {			
+			str = s.join(" ");
+			var data:ListCollection = errorData
+			if (data.length>200) {
+				data.removeAll();
+				stream.writeUTFBytes(buffer);
+				buffer="";
+			}			
+			time = new Date;
+			data.addItemAt({tiempo:DateFormat.format(time,DateFormat.masks.mediumTime),text:str},0);									
 			buffer += DateFormat.format(time,DateFormat.masks.isoTime)+"\t"+str+File.lineEnding;
 		}
 		
@@ -181,5 +209,6 @@ package
 			fs.writeMultiByte(text,File.systemCharset);
 			if (close) fs.close();
 		}
+
 	}
 }

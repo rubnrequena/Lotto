@@ -16,6 +16,8 @@ package vos
 		public var papelera:Boolean;
 		public var creacion:String;
 		public var contacto:String;
+		//2020-06-27
+		public var participacion:Number
 
 		public function get usID():String {
 			return "g"+bancaID;

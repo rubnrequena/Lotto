@@ -68,7 +68,19 @@ package models
 		}
 		
 		public function permisos (filtro:Object,cb:Function):void {
-			sql.permisos.run(filtro,cb);
+			      sql.permisos.run(filtro,cb);
+		}
+		public function permisos_banca (filtro:Object,cb:Function):void {
+			sql.permisos_banca.run(filtro,cb);
+		}
+		public function permisos_campo (campo:int,usuarioID:int,bancaID:int,cb:Function):void {
+			sql.permiso_tipo.run({
+				campo: campo,
+				usuarioID: usuarioID,
+				bancaID:bancaID
+			},function (r:SQLResult):void {
+			  execute(cb,r.data)
+			})
 		}
 		public function permiso_nuevo (metas:Array,cb:Function):void {
 			sql.meta_nuevo.batch_nocommit(metas,cb);
@@ -109,6 +121,12 @@ package models
 		}
 		public function usuario_comer (uID:int,cb:Function):void {
 			sql.usuario_comer.run({uid:uID},cb);
+		}
+		public function usuario_comercial(usuarioID:int,cb:Function):void {
+			sql.usuario_comercial.run({usuarioID:usuarioID},function (res:SQLResult):void {
+				if (res.data) cb(res.data[0])
+				else cb(null)
+			});
 		}
 		public function destinos (s:Object,cb:Function):void {
 			if (s.hasOwnProperty('uID')) sql.mensajes_destinos.run(s,cb)

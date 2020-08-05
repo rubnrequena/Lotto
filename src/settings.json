@@ -1,11 +1,11 @@
 {
   "servidor": "local",
-  "gmtHoras": 0,
+  "gmtHoras": 6,
   "minEspacioDisponible": 1,
   "minEspacioIntervalo": 30,
   "db": {
-    "root": "D:\\User\\My Documents\\db\\loteria",
-    "log": "D:\\User\\My Documents\\db\\logs"
+    "root": "D:\\Work\\LoteriaDB",
+    "log": "D:\\Work\\LoteriaDB\\logs"
   },
   "taquilla": {
     "ticketDuplicado": 180000
@@ -21,10 +21,21 @@
     }
   },
   "premios": {
+    "bot": {
+      "retraso": 60000,
+      "ruletonperu": {
+        "token":"fd3d0da4-11da-4c01-a01b-3334cd7b5869",
+        "juego":"42eda95d-f190-4b20-8674-2bb6377b8643" 
+      },
+      "ruletoncolombia": {
+        "token":"fd3d0da4-11da-4c01-a01b-3334cd7b5869",
+        "juego":"42eda95d-f190-4b20-8674-2bb6377b8643" 
+      } 
+    },
     "activo": true,
     "retraso": 2,
     "prm_solicitudes": 2,
-    "url": "http://srq.com.ve/prm/",
+    "url": "http://sistemasrq.com/prm/",
     "premiacion": [
       {
         "activo": true,
@@ -36,31 +47,31 @@
       "predeterminado": {
         "numCompletado": 1,
         "webofic": {
-          "url": "http://srq.com.ve/prm/"
+          "url": "http://sistemasrq.com/prm/"
         }
       },
       "lottoactivo": {
         "numCompletado": 1,
         "webofic": {
-          "url": "http://srq.com.ve/prm/"
+          "url": "http://sistemasrq.com/prm/"
         }
       },
       "ruletanimal": {
         "numCompletado": 1,
         "webofic": {
-          "url": "http://srq.com.ve/prm/"
+          "url": "http://sistemasrq.com/prm/"
         }
       },
       "ruletaoriente": {
         "numCompletado": 1,
         "webofic": {
-          "url": "http://srq.com.ve/prm/"
+          "url": "http://sistemasrq.com/prm/"
         }
       },
       "lottoselva": {
         "numCompletado": 1,
         "webofic": {
-          "url": "http://srq.com.ve/prm/"
+          "url": "http://sistemasrq.com/prm/"
         }
       }
     },
@@ -86,12 +97,15 @@
   },
   "plataformas": {
     "correo": {
-      "url": "http://srq.com.ve/mailed.php",
+      "url": "http://sistemasrq.com/mailed.php",
       "admins": ["rubnrequena@gmail.com"],
       "activa": 1
     },
+    "telegram": {
+      "url": "http://216.128.130.103:3001/json?servidor=local&text={0}"
+    },
     "ws": {
-      "url": "http://104.238.144.19:3001/send?user=570183216&text={1}",
+      "url": "http://216.128.130.103:3001/send?servidor=local&user=aml&text={1}",
       "psw": "srq-WS",
       "pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
       "separador_lineas": "%0A"

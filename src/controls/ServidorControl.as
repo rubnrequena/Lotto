@@ -21,6 +21,7 @@ package controls
 	import vos.Elemento;
 	import vos.Sorteo;
 	import vos.sistema.Admin;
+	import models.SorteosModel;
 	
 	public class ServidorControl extends Control
 	{
@@ -42,8 +43,9 @@ package controls
 						code:Code.OK,
 						usr:usr
 					};
-					if (usr.nivel==1) addListeners();
-					else addListeners2();
+					if (usr.nivel==1) addListeners_admin();
+					else addListeners_premiar();
+          addListeners();
 					_cliente.sendMessage(m);
 					
 					_model.servidor.sorteos({adminID:usuario.adminID},function (s:SQLResult):void {
@@ -59,15 +61,19 @@ package controls
 				}
 			});
 		}
-		
-		private function addListeners2():void {
+		private function addListeners():void {
+			addEventListener("premio-bot-lista",premioBot_lista);
+			addEventListener("premio-bot-nuevo",premioBot_nuevo);
+			addEventListener("premio-bot-remover",premioBot_remover);
+    }
+		private function addListeners_premiar():void {
 			addEventListener("inicio",inicio);
 			addEventListener("lsorteos",lsorteos);
 			addEventListener("sorteo",sorteo);
 			addEventListener("sorteos",sorteos);
 			addEventListener("sorteo-registrar",sorteo_registrar);
 			addEventListener("sorteo-premiar",sorteo_premiar);
-			addEventListener("sorteo-reiniciar",sorteo_reinciar);
+			addEventListener("sorteo-reiniciar",sorteo_reiniciar);
 			addEventListener("sorteo-editar",sorteo_editar);
 			addEventListener("sorteo-num-hist",sorteo_numHist);
 			addEventListener("sorteo-monitor-vnt",sorteo_monitor_vnt);
@@ -81,7 +87,7 @@ package controls
 			addEventListener("reporte-sorteo-global",reporte_sorteo_global);
 		}
 		
-		private function addListeners():void {
+		private function addListeners_admin():void {
 			addEventListener("inicio",inicio);
 			
 			addEventListener("lsorteos",lsorteos);
@@ -93,7 +99,7 @@ package controls
 			addEventListener("sorteos",sorteos);
 			addEventListener("sorteo-registrar",sorteo_registrar);
 			addEventListener("sorteo-premiar",sorteo_premiar);
-			addEventListener("sorteo-reiniciar",sorteo_reinciar);
+			addEventListener("sorteo-reiniciar",sorteo_reiniciar);
 			addEventListener("sorteo-remover",sorteo_remover);
 			addEventListener("sorteo-editar",sorteo_editar);
 			addEventListener("sorteo-num-hist",sorteo_numHist);
@@ -445,6 +451,8 @@ package controls
 		
 		private function sorteo_editar(e:Event,m:Message):void {
 			_model.sorteos.editar_abierta(m.data,function (r:SQLResult):void {
+				var estado:String = m.data.abierta?"ABRE":"CIERRA"
+				Loteria.console.log(StringUtil.format('USUARIO {0}: {1} SORTEO #{2}',usuario.usuario,estado,m.data.sorteo))
 				_model.mSorteos.iniciar();
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
@@ -595,6 +603,23 @@ package controls
 				};
 			});
 		}
+		private function premioBot_lista(e:Event,m:Message):void {
+			 _model.sorteos.bot_lista(m.data.operadora,function (r:SQLResult):void {
+					  sendMessage(m,r.data)
+					})
+		}
+		private function premioBot_nuevo(e:Event,m:Message):void {
+		  _model.sorteos.bot_nuevo(m.data.operadora,m.data.sorteo,m.data.relacion,m.data.fecha,usuario,
+        function (error:SQLError,registro:Object):void {
+          if (error) Loteria.console.log("ERROR: "+error.details)
+          else sendMessage(m,registro)
+        })
+		}
+		private function premioBot_remover(e:Event,m:Message):void {
+		  _model.sorteos.bot_remover(m.data.botID,usuario.adminID,function (r:SQLResult):void {
+        sendMessage(m,r)
+      })
+		}
 		
 		private function reporte_taquilla(e:Event,m:Message):void {
 			//TODO: validar que la taquilla pertenezca a la banca
@@ -734,7 +759,11 @@ package controls
 									var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
 									_model.ventas.premiar(sorteo,e,function (srt:Object):void {
 										m.data = {code:Code.OK};
-										_cliente.sendMessage(m);
+										_cliente.sendMessage(m);										
+									//verificar si estaba pendiente
+										WS.emitir(WS.premios,StringUtil.format('*SORTEO PENDIENTE PREMIADO*\n#{0} {1}',sorteo.sorteoID,sorteo.descripcion))
+									/* if (SorteosModel.sorteosPendientes.indexOf(sorteo.sorteoID)>-1) {
+									} */
 									});
 								} else {
 									m.data = {code:Code.NO};
@@ -752,7 +781,7 @@ package controls
 				}
 			});
 		}		
-		private function sorteo_reinciar(e:Event,m:Message):void {
+		private function sorteo_reiniciar(e:Event,m:Message):void {
 			Loteria.console.log(usuario.usuario,"REINICIA SORTEO","#"+m.data.sorteoID);
 			_model.sorteos.sorteo(m.data,function (sorteo:Sorteo):void {
 				_model.ventas.reiniciar_sorteo(m.data,function (r:SQLResult):void {
@@ -801,6 +830,9 @@ package controls
 		private function elementos(e:Event,m:Message):void {
 			if (m.data.hasOwnProperty("sorteo")) {
 				m.data = _model.sistema.elementos_sorteo(m.data.sorteo);
+				_cliente.sendMessage(m);
+			} else if (m.data.hasOwnProperty("msorteo")) {
+				m.data = _model.sistema.elementos_sorteo_min(m.data.msorteo);
 				_cliente.sendMessage(m);
 			}
 			else if (m.data.hasOwnProperty("sorteos")) {

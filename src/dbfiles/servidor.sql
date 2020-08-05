@@ -35,12 +35,12 @@ SELECT elementoID id,fecha f, descripcion d from numeros JOIN (SELECT fecha,gana
 SELECT descripcion d, fecha f from vt.sorteos WHERE ganador = :n ORDER BY FECHA DESC LIMIT 5
 --monitor_vnt_ticket_num
 SELECT elementos.taquillaID tq, taquillas.nombre tqn, elementos.bancaID bc, bancas.nombre bnc, usuarios.nombre usn, usuarios.usuarioID us, elementos.monto m, elementos.ticketID id, numero n,
-strftime('%H:%M:%S', ticket.tiempo / 1000, 'unixepoch','localtime') h
+	strftime('%H:%M:%S', ticket.tiempo / 1000, 'unixepoch','localtime') h
 FROM vt.elementos 
-JOIN taquillas ON taquillas.taquillaID = elementos.taquillaID 
-JOIN bancas ON bancas.bancaID = elementos.bancaID 
-JOIN usuarios ON usuarios.usuarioID = bancas.usuarioID 
-JOIN ticket ON elementos.ticketID = ticket.ticketID 
+  JOIN taquillas ON taquillas.taquillaID = elementos.taquillaID 
+  JOIN bancas ON bancas.bancaID = elementos.bancaID 
+  JOIN usuarios ON usuarios.usuarioID = bancas.usuarioID 
+  JOIN ticket ON elementos.ticketID = ticket.ticketID 
 WHERE sorteoID = :sorteo and numero = :numero and elementos.anulado = false
 ORDER BY elementos.ticketID DESC
 --count_ventas

@@ -34,6 +34,7 @@ package
 	import starling.utils.StringUtil;
 
 	import vos.Usuario;
+	import db.SQLStatementPool;
 	
 	public class Main extends LayoutGroup
 	{
@@ -93,7 +94,7 @@ package
 						Loteria.setting.servidor,	//0
 						DateFormat.format(null,DateFormat.masks.isoDateTime))
 					);	//1
-					
+					//validarBaseDatos();
 					validarSuspensionesPendientes();
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
@@ -143,7 +144,24 @@ package
 					Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
 				}
 			});
-		}		
+		}
+
+		private function validarBaseDatos ():void {
+			var ticket:SQLStatementPool = new SQLStatementPool('SELECT impuesto FROM vt.ticket LIMIT 1')
+			ticket.run(null,function verificacionImpuestoVenta(result:SQLResult):void {
+				if (result.data) {
+					if (!result.data[0].hasOwnProperty('impuesto')) {
+						Loteria.console.log("ADVERTENCIA: Falta el campo 'impuesto' en la tabla vt.ventas")
+						new SQLStatementPool('ALTER TABLE vt.ticket ADD impuesto REAL;').run(null,function alterTable_impuesto_vtTicket():void {
+							new SQLStatementPool('ALTER TABLE us.taquillas ADD impuesto REAL DEFAULT 0;').run(null,function alterTable_impuesto_usTaquillas():void {
+							Loteria.console.log('NUEVO CAMPO REGISTRADO EXITOSAMENTE')
+						})
+						})
+					}
+				}
+			})
+		}
+
 		protected function comer_added(event:AIRServerEvent):void {
 			new ComercializadoraControl(event.client,model);
 		}

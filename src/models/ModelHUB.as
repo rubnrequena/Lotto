@@ -1,39 +1,39 @@
 package models
 {
+	import controls.Control;
+	import controls.MonitorSistema;
+
+	import db.DB;
+	import db.SQLStatementPool;
+
 	import flash.data.SQLConnection;
 	import flash.data.SQLResult;
-	import flash.data.SQLStatement;
 	import flash.errors.SQLError;
 	import flash.events.SQLEvent;
 	import flash.filesystem.File;
 	import flash.net.Responder;
 	import flash.utils.getTimer;
 	import flash.utils.setInterval;
-	
-	import controls.MonitorSistema;
-	
-	import db.DB;
-	import db.SQLStatementPool;
-	
+
+	import helpers.Backup;
 	import helpers.DateFormat;
 	import helpers.IPremio;
-	import helpers.Mail;
-	import helpers.ObjectUtil;
+	import helpers.LTool;
 	import helpers.WS;
 	import helpers.bm.BManager;
-	
+
 	import starling.core.Starling;
 	import starling.events.Event;
 	import starling.events.EventDispatcher;
-	import starling.utils.StringUtil;
 	import starling.utils.execute;
-	
+
 	import vos.Elemento;
 	import vos.Sorteo;
-	import flash.utils.setTimeout;
-	import flash.data.SQLMode;
-	import controls.Control;
-	import helpers.Backup;
+	import starling.utils.StringUtil;
+	import flash.net.URLRequest;
+	import flash.net.URLRequestHeader;
+	import flash.net.URLVariables;
+	import flash.net.URLLoader;
 	
 	public class ModelHUB extends EventDispatcher
 	{		
@@ -90,7 +90,7 @@ package models
 			ventasDB = rootDB.resolvePath("ventas.sqlite");
 			smsDB = rootDB.resolvePath("sms.sqlite");
 			
-			ahora = (new Date).time+(60*60*1000*Loteria.setting.gmtHoras);			
+			ahora = (new Date).time+(1000*60*60*Loteria.setting.gmtHoras);			
 			lastTime = getTimer();
 			setInterval(actualizarHora,1000);
 			Loteria.console.log("HORA ACTUAL:",DateFormat.format(ahora,"HH:MM:ss A"));
@@ -110,7 +110,7 @@ package models
 				Loteria.console.log("[SQL ERROR]",e.detailID,"Msg:",e.message,"Detalles:",e.details,"Op:",SQLStatementPool.lastQuery,"Data:\n",JSON.stringify(SQLStatementPool.lastData,null,2));
 				WS.enviar(WS.admin,"*"+e.message+"*\n\n"+e.details+'\n\n*Operacion:* '+SQLStatementPool.lastQuery+"\n\n*Data:*\n"+JSON.stringify(SQLStatementPool.lastData,null,2)+'\n*Command:*'+JSON.stringify(Control.lastMessage));
 			}
-			DB.DEBUG = true
+			DB.DEBUG = false
 			
 			_tasks = {};
 			for each (var time:String in Loteria.setting.jarvis.tasks.midas) {
@@ -144,13 +144,13 @@ package models
 				t+=r.data[i].ej;
 				p+=r.data[i].ep;
 				if (r.data[i].ej!=r.data[i].rj || r.data[i].ep!=r.data[i].rp) {
-					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN EL SORTEO",r.data[i].es,r.data[i].ej,r.data[i].rj,r.data[i].ep,r.data[i].rp);
+					Loteria.console.log("ERROR: [JV][MIDAS]","INCONSISTENCIA EN EL SORTEO",r.data[i].es,r.data[i].ej,r.data[i].rj,r.data[i].ep,r.data[i].rp);
 					a.push(r.data[i].es);
 					SorteosModel.sorteosPendientes.push(r.data[i].es)
 				}
 			}				
 			if (a.length>0) {				
-				nameSorteos(a);
+				//nameSorteos(a); FIXME cambiar [sorteo.sorteoID] por [sorteo.descripcion]
 				WS.emitir(WS.premios,"Revisar sorteos:\n"+a.join("\n"));
 				Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS "+a.join(",")+"; NOTIFICANDO AL ADMINISTRADOR");				
 			}
@@ -158,8 +158,10 @@ package models
 		}
 		
 		private function nameSorteos (sorteos:Array):Array {
+			var sorteo:Sorteo
 			for (var i:int = 0; i < sorteos.length; i++) {
-				sorteos[i] = "#"+sorteos[i]+" "+mSorteos.getSorteo(sorteos[i]).descripcion;	
+				sorteo = mSorteos.getSorteo(sorteos[i])
+				sorteos[i] = "#"+sorteos[i]+" "+sorteo?sorteo.descripcion:'SORTEO #'+sorteos[i];	
 			}
 			return sorteos;
 		}
@@ -199,7 +201,7 @@ package models
 				conexion.attach("cache",null,new Responder(function(e:SQLEvent):void {
 					var s:Vector.<SQLStatementPool> = Vector.<SQLStatementPool>([
 						new SQLStatementPool('CREATE TEMP TABLE "ch_elementos" ("ventaID" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL ,"ticketID" INTEGER NOT NULL ,"sorteoID" INTEGER NOT NULL ,"numero" INTEGER NOT NULL ,"monto" REAL NOT NULL ,"premio" REAL NOT NULL  DEFAULT (0) , "anulado" BOOL NOT NULL  DEFAULT 0, "taquillaID" INTEGER NOT NULL  DEFAULT 0, "bancaID" INTEGER NOT NULL  DEFAULT 0)'),
-						new SQLStatementPool('CREATE TEMP TABLE "ch_ticket" ("ticketID" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,"taquillaID" INTEGER NOT NULL ,"bancaID" INTEGER NOT NULL ,"monto" REAL NOT NULL ,"anulado" INTEGER NOT NULL  DEFAULT (null) ,"tiempo" REAL NOT NULL, "codigo" INTEGER NOT NULL  DEFAULT 0 )'),
+						new SQLStatementPool('CREATE TEMP TABLE "ch_ticket" ("ticketID" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,"taquillaID" INTEGER NOT NULL ,"bancaID" INTEGER NOT NULL ,"monto" REAL NOT NULL ,"anulado" INTEGER NOT NULL  DEFAULT (null) ,"tiempo" REAL NOT NULL, "codigo" INTEGER NOT NULL  DEFAULT 0)'),
 						new SQLStatementPool('INSERT INTO "temp"."ch_ticket" SELECT * FROM (SELECT * FROM vt.ticket WHERE tiempo < '+t.time+' ORDER BY ticketID DESC LIMIT 10) UNION SELECT * FROM vt.ticket WHERE tiempo BETWEEN '+t.time+' AND '+m),
 						new SQLStatementPool('INSERT INTO "temp"."ch_elementos" SELECT ventaID,elementos.ticketID,elementos.sorteoID,numero,elementos.monto,premio,elementos.anulado,elementos.taquillaID,elementos.bancaID FROM vt.elementos JOIN (SELECT * FROM (SELECT * FROM vt.ticket WHERE tiempo < '+t.time+' ORDER BY ticketID DESC LIMIT 10) UNION SELECT * FROM vt.ticket WHERE tiempo BETWEEN '+t.time+' AND '+m+') as tickets ON elementos.ticketID = tickets.ticketID'),
 						new SQLStatementPool('CREATE TEMP TRIGGER "anular" AFTER INSERT ON "anulados" BEGIN UPDATE ch_ticket SET anulado = 1 WHERE ticketID = new.ticketID; UPDATE ch_elementos SET anulado = 1 WHERE ticketID = new.ticketID; END'),
@@ -264,38 +266,44 @@ package models
 			uMan = new BManager(this);			
 		}
 		
-		private function sorteo_close (e:Event,s:Sorteo):void {							
-			Loteria.console.log(s.descripcion,"CERRADO");
-			var premiador:Object = Loteria.setting.premios.premiacion[s.sorteo] || Loteria.setting.premios.premiacion[0];			
-			if (premiador.activo) {				
-				var pw:IPremio = sistema.getPremiosClassByID(s.sorteo); 
-				if (pw) {					
-					pw.addEventListener(Event.COMPLETE,function (e:Event,pleno:String):void {						
-						sorteos.premio({sorteoID:s.sorteoID},function (r:SQLResult):void {
-							if (s.sorteoID in ventas.sorteos_premiados) {												
-								Loteria.console.log("[JV] SORTEO PREVIAMENTE PREMIADO, OMITIENDO PREMIACION");
-							} else {
-								Loteria.console.log("[JV] PREMIO RECIBIDO ",s.descripcion,"PLENO:",pleno);												
-								var e:Elemento = sistema.elemento_num(pleno,s.sorteo);
-								if (e) {
-									var numSol:int = mSorteos.solicitudPremio(s,e.elementoID,13); 
-									if (numSol>=premiador.puntos) {
-										pw.dispose();
-										ventas.premiar(s,e,function (sorteo:Object):void {
-											Loteria.console.log("[JV] SORTEO PREMIADO EXITOSAMENTE ",sorteo.descripcion,"#",pleno);
-										});										
-									}
-								} else {
-									WS.emitir(WS.premios,"Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);
-									Loteria.console.log("[JV] Error al premiar, pleno invalido. pleno: #",pleno,s.descripcion);
-								}
-							}
-						});
-					});
-					pw.buscar(s.descripcion);
-					//setTimeout(function ():void { pw.buscar(s.descripcion) },300000); retrasar busqueda de jarvis
-				} else Loteria.console.log("[JV] SIN PREMIACION PROGRAMADA, SORTEO #"+s.sorteo,s.descripcion);
-			} else Loteria.console.log("[JV] SIN PREMIACION CONFIGURADA, SORTEO #"+s.sorteo,s.descripcion);
+		private function sorteo_close (e:Event,s:Sorteo):void {	
+      if (s.ganador>0) {
+        return Loteria.console.log("ERROR",s.descripcion,"premiado con",sistema.elemento(s.ganador).descripcion)
+      }
+			sorteos.autoPremiar(s,function (unBotPremia:Boolean):void {
+			  if (unBotPremia==false) {
+          var premiador:Object = Loteria.setting.premios.premiacion[s.sorteo] || Loteria.setting.premios.premiacion[0];			
+          if (premiador.activo) {				
+            var pw:IPremio = sistema.getPremiosClassByID(s.sorteo); 
+            if (pw) {					
+              pw.addEventListener(Event.COMPLETE,function (e:Event,pleno:String):void {						
+                sorteos.premio({sorteoID:s.sorteoID},function (r:SQLResult):void {
+                  if (s.sorteoID in ventas.sorteos_premiados) {												
+                    Loteria.console.log("[JV] SORTEO PREVIAMENTE PREMIADO, OMITIENDO PREMIACION");
+                  } else {
+                    Loteria.console.log("[JV] PREMIO RECIBIDO ",s.descripcion,"PLENO:",pleno);												
+                    var e:Elemento = sistema.elemento_num(pleno,s.sorteo);
+                    if (e) {
+                      var numSol:int = mSorteos.solicitudPremio(s,e.elementoID,13); 
+                      if (numSol>=premiador.puntos) {
+                        pw.dispose();
+                        ventas.premiar(s,e,function (sorteo:Object):void {
+                          Loteria.console.log("[JV] SORTEO PREMIADO EXITOSAMENTE ",sorteo.descripcion,"#",pleno);
+                        });										
+                      }
+                    } else {
+                      WS.emitir(WS.premios,"Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);
+                      Loteria.console.log("[JV] Error al premiar, pleno invalido. pleno: #",pleno,s.descripcion);
+                    }
+                  }
+                });
+              });
+              pw.buscar(s.descripcion);
+              //setTimeout(function ():void { pw.buscar(s.descripcion) },300000); retrasar busqueda de jarvis
+            } else Loteria.console.log("[JV] SIN PREMIACION PROGRAMADA, SORTEO #"+s.sorteo,s.descripcion);
+          } else Loteria.console.log("[JV] SIN PREMIACION CONFIGURADA, SORTEO #"+s.sorteo,s.descripcion);
+				}
+			})
 		}
 		
 		private function init_usuarios(e:SQLEvent):void {
@@ -315,11 +323,22 @@ package models
 			},1);
 		}
 		
-		private function initModel_sistema(e:SQLEvent):void {
+		private function 
+		initModel_sistema(e:SQLEvent):void {
 			
 			conexion.attach("us",usuariosDB,new Responder(init_usuarios));
 			
 			sorteos = new SorteosModel;
+			sorteos.addEventListener(ModelEvent.AUTO_PREMIAR_COMPLETE,function (e:Event,data:Object):void {
+			  const sorteo:Sorteo = data.sorteo
+			  const numero:Elemento = LTool.findBy("elementoID",data.ganador.numero,sistema.elementos)
+			  ventas.premiar(sorteo,numero,function (result:*):void {
+          var msg:String = StringUtil.format('PREMIO_BOT: SORTEO PREMIADO EXITOSAMENTE {0} {1}\n{2}',
+            sorteo.descripcion,numero.descripcion,JSON.stringify(data.ganador,null,2))
+				  Loteria.console.log(msg)
+          WS.enviar(WS.admin,msg)
+			  })
+			})
 			sistema = new SistemaModel;
 			
 			Loteria.console.log("MODEL SISTEMA RDY");

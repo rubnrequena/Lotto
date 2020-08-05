@@ -16,7 +16,7 @@ package
 	import starling.utils.StringUtil;
 	import controls.Control;
 	
-	[SWF(frameRate="5",width="800")]
+	[SWF(frameRate="20",width="1000",height="400")]
 	public class Loteria extends Sprite
 	{
 		private var _starling:Starling;

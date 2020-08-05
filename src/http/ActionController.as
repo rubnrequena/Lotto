@@ -93,9 +93,13 @@ package http
         * 
         * @returns a String with the successful response.
          */
-        protected static function responseSuccess(content:Object, mimeType:String = "application/json"):String
+        protected static function responseSuccess(content:*, mimeType:String = "application/text"):String
         {
-            return response(200, "OK", JSON.stringify(content,null,2), mimeType);    
+            if (typeof(content)=="object") {
+                mimeType = "application/json"
+                content = JSON.stringify(content,null)
+            }
+            return response(200, "OK", content, mimeType);    
         }
         
         /**

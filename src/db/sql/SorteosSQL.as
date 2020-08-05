@@ -4,6 +4,7 @@ package db.sql
 	
 	import vos.PreSorteo;
 	import vos.Sorteo;
+	import vos.sistema.Operadora;
 
 	public class SorteosSQL extends SQLBase
 	{
@@ -15,6 +16,7 @@ package db.sql
 		public var sorteos_dia:SQLStatementPool;
 		public var sorteos_fecha:SQLStatementPool;
 		public var sorteos_fecha_taq:SQLStatementPool;
+		/** SELECT * FROM vt.sorteos WHERE sorteoID = :sorteoID*/
 		public var sorteo:SQLStatementPool;
 		
 		public var sorteos:SQLStatementPool;
@@ -38,6 +40,15 @@ package db.sql
 		public var convertir_zodiaco:SQLStatementPool;
 		public var pendientes:SQLStatementPool;
 		
+		public var auto_premiar:SQLStatementPool
+		public var auto_premiar_venta:SQLStatementPool
+
+		public var bot_lista:SQLStatementPool;
+		public var bot_nuevo:SQLStatementPool;
+		public var bot_remover:SQLStatementPool;
+
+		public var operadora:SQLStatementPool
+		
 		public function SorteosSQL()
 		{			
 			super('sorteos.sql');
@@ -48,6 +59,7 @@ package db.sql
 			presorteos = new SQLStatementPool("SELECT * FROM pre_sorteos ORDER BY sorteo, sorteoID",null,PreSorteo);
 			
 			sorteos = new SQLStatementPool('SELECT * FROM sorteos');
+			operadora = new SQLStatementPool('SELECT * FROM main.sorteos WHERE sorteoID = :sorteoID',null,Operadora)
 			fecha_usuario = new SQLStatementPool(sentencia('fecha_usuario'));
 			lista_usuario = new SQLStatementPool(sentencia('lista_usuario'));
 			

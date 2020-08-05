@@ -8,6 +8,7 @@ package db.sql
 		public var banca:SQLStatementPool;
 		public var banca_sorteo:SQLStatementPool;
 		public var banca_sorteo_taquillas:SQLStatementPool;
+		public var banca_sorteo_bancas:SQLStatementPool;
 		public var banca_diario:SQLStatementPool;
 		public var usuario_diario:SQLStatementPool;
 		public var comercial_diario:SQLStatementPool;
@@ -65,8 +66,18 @@ package db.sql
 		public var comercial_general:SQLStatementPool;
 		public var comercial_banca:SQLStatementPool;
 		public var comercial_recogedor:SQLStatementPool;
+		public var comercial_general_operadora:SQLStatementPool;
+		public var comercial_fecha:SQLStatementPool
 
 		public var backup_sorteo:SQLStatementPool;
+
+		public var banca_general:SQLStatementPool
+
+		
+		public var gcomercial:SQLStatementPool
+		public var gbanca:SQLStatementPool
+		public var ggrupo:SQLStatementPool
+		public var gtaquilla:SQLStatementPool
 		
 		public function ReportesSQL()
 		{

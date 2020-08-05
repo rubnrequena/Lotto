@@ -1,6 +1,6 @@
 package vos.sistema
 {
-	public class Sorteo
+	public class Operadora
 	{
 		public var sorteoID:int;
 		public var nombre:String;

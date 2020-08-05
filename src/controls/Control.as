@@ -43,8 +43,11 @@ package controls
 			controlName = "["+controlNameID+":"+value+"]";
 		}
 
-		public function sendMessage (m:Message):void {
-			if (_cliente) _cliente.sendMessage(m);
+		public function sendMessage (m:Message,data:Object=null):void {
+			if (_cliente) {
+				if (data) m.data = data;
+				_cliente.sendMessage(m);
+			}
 		}
 	
 		static public var EX_HANDLER:EventDispatcher = new EventDispatcher;

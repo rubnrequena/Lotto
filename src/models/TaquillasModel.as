@@ -150,6 +150,12 @@ package models
 				//taquillas.removeAt(index);
 			}
 		}
+		public function buscar_taqID(taquillaID:int,cb:Function):void {
+			sql.taquilla_id.run({id:taquillaID},function (r:SQLResult):void {
+				if (!r.data) execute(cb,'taquilla no existe')
+        else execute(cb,null,r.data.pop())
+			});
+		}
 		public function buscar (filtro:Object,cb:Function):void {
 			if (filtro) {
 				if (filtro.hasOwnProperty("id")) {
@@ -322,15 +328,15 @@ package models
 		}
 	
 		public function comisiones (data:Object,cb:Function):void {
-			if (data.hasOwnProperty("taquillaID")) sql.comisiones.run(data,cb);
+			if (data.hasOwnProperty("taquillaID")) sql.comisiones_taquilla.run(data,cb);
 			else if (data.hasOwnProperty("grupoID")) sql.comisiones_grupo.run(data,cb);
 			else if (data.hasOwnProperty("bancaID")) sql.comisiones_banca.run(data,cb);
 		}
 		public function comision_nv (data:Object,cb:Function):void {
-			sql.comision_nv.run(data,cb);
+			sql.comision_nueva.run(data,cb);
 		}
 		public function comision_dl(data:Object,cb:Function):void {
-			sql.comision_dl.run(data,cb);
+			sql.comision_remover.run(data,cb);
 		}
 		public function estaActiva (id:int,cb:Function):void {
 			sql.taquilla_activa.run({tID:id},function (res:SQLResult):void {
