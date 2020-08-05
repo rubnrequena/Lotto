@@ -105,8 +105,9 @@ WHERE elementos.ticketID = :ticketID
 --ventas_elementos_repetir
 SELECT sorteoID, numero, monto FROM vt.elementos WHERE elementos.ticketID = :ticketID
 --reporte_nuevo
-INSERT INTO reportes (fecha,sorteoID,bancaID,taquillaID,jugada,premio,comisionBanca, partBanca, comision) 
-SELECT sorteos.fecha, sorteos.sorteoID, elementos.bancaID, elementos.taquillaID, ROUND(SUM(monto),2) jugado, ROUND(SUM(premio),2) premio, bancas.comision comisionBanca, bancas.participacion partBanca,
+SELECT sorteos.fecha, sorteos.sorteoID, elementos.taquillaID, ROUND(SUM(monto),2) jugado, ROUND(SUM(premio),2) premio,
+	elementos.bancaID, coalesce(cgrupo.valor,bancas.comision) comisionBanca, coalesce(cgrupo.valor,bancas.comision) cmGrupo, coalesce( pgrupo.valor, bancas.participacion) partGrupo,
+	coalesce(cbanca.valor,usuarios.comision) cmBanca, coalesce(pbanca.valor,usuarios.participacion) partBanca,
 COALESCE((SELECT comision FROM taquillas_comision WHERE 
   sorteo = sorteos.sorteo  AND 
 	(taquillaID = taquillas.taquillaID OR taquillaID = 0) AND 
@@ -117,7 +118,12 @@ FROM elementos
 	JOIN numeros ON elementos.numero = numeros.elementoID 
 	JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID 
 	JOIN us.taquillas ON taquillas.taquillaID = elementos.taquillaID 
-	JOIN us.bancas ON bancas.bancaID = elementos.bancaID 
+	JOIN us.bancas ON bancas.bancaID = elementos.bancaID
+	JOIN us.usuarios ON bancas.usuarioID = usuarios.usuarioID
+	LEFT JOIN us.comisiones as cgrupo ON elementos.bancaID = cgrupo.usuario AND cgrupo.rol = 2 AND sorteos.sorteo = cgrupo.operadora AND cgrupo.tipo = 0
+	LEFT JOIN us.comisiones as pgrupo ON elementos.bancaID = pgrupo.usuario AND pgrupo.rol = 2 AND sorteos.sorteo = pgrupo.operadora AND pgrupo.tipo = 1
+	LEFT JOIN us.comisiones as cbanca ON bancas.usuarioID = cbanca.usuario AND cbanca.rol = 3 AND sorteos.sorteo = cbanca.operadora AND cbanca.tipo = 0
+	LEFT JOIN us.comisiones as pbanca ON bancas.usuarioID = pbanca.usuario AND pbanca.rol = 3 AND sorteos.sorteo = pbanca.operadora AND pbanca.tipo = 1
 WHERE elementos.sorteoID = :sorteoID AND elementos.anulado = 0 
 GROUP BY elementos.taquillaID
 ORDER BY elementos.bancaID ASC, elementos.taquillaID ASC
