@@ -424,6 +424,12 @@ package controls
 			addEventListener("reporte-diario",reporte_diario);
 			addEventListener("reporte-cobros",reporte_cobros);
 			addEventListener("reporte-subcobros",reporte_cobros);
+
+			addEventListener("comision_producto_nv",comision_producto_nuevo);
+			addEventListener("comision_producto_rm",comision_producto_remover);
+
+			addEventListener("comisiones_banca",comisiones_banca);
+			addEventListener("comisiones_grupo",comisiones_grupo);
 			
       //reporte 2.0
       addEventListener("reporte",reporte)
@@ -511,6 +517,48 @@ package controls
 				})
 			})
 			Notificaciones.listeners.addEventListener(Notificaciones.MENSAJE_NUEVO,notificacion_msgNuevo)
+		}
+	private function comisiones_usuario(e:Event,m:Message):void {
+		_model.usuarios.comisiones_usuario(m.data,function (r:SQLResult):void {
+			m.data = r.data;
+			sendMessage(m)
+		})
+	}
+		private function comisiones_banca(e:Event,m:Message):void {
+			m.data.usuario = usuario.usuarioID
+				_model.usuarios.comisiones_banca(m.data,function (r:Array):void {
+					m.data = r;
+					sendMessage(m)
+				});
+		}
+
+		private function comisiones_grupo(e:Event,m:Message):void {
+			_model.usuarios.comisiones_grupo(m.data,function (r:SQLResult):void {
+					m.data = r.data;
+					sendMessage(m)
+				});
+		}
+
+		private function comision_producto_nuevo (e:Event,m:Message):void {
+			var comisionPrevia:Object = {usuario:m.data.usuario,operadora:m.data.operadora,tipo:m.data.tipo}
+			_model.usuarios.comisiones_usuario(comisionPrevia,function (comisiones:SQLResult):void {
+				if (comisiones.data) {
+					m.data = {error:'comision existe'}
+					sendMessage(m)
+				}
+				else {
+					_model.usuarios.comision_producto_nuevo(m.data,function (r:SQLResult):void {
+						m.data.comId = r.lastInsertRowID
+						sendMessage(m)
+					})
+				}
+			})
+			
+		}
+		private function comision_producto_remover (e:Event,m:Message):void {
+			_model.usuarios.comision_producto_remover(m.data,function (r:SQLResult):void {
+				sendMessage(m,{ok:r.rowsAffected})
+			})
 		}
 
     private function reporte (e:Event,m:Message):void {
@@ -738,14 +786,6 @@ package controls
         }
         return resultado
       }
-			/* if (grupo==0) _model.reportes.comercial(m.data,result);
-			else if (grupo==1) _model.reportes.operadora(m.data,result)
-			else if (grupo==2) _model.reportes.fecha(m.data,result);
-			
-			function result (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			} */
 		}
 		
 		private function banca_grupo(e:Event,m:Message):void

@@ -35,6 +35,12 @@ package db.sql
 		public var taquillaID:SQLStatementPool;
 		public var usuarioID:SQLStatementPool;
 		public var comercialID:SQLStatementPool;
+
+		public var comision_producto_nuevo:SQLStatementPool;
+		public var comision_producto_remover:SQLStatementPool;
+		public var comisiones_banca:SQLStatementPool
+		public var comisiones_grupo:SQLStatementPool
+		public var comisiones_usuario:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');
