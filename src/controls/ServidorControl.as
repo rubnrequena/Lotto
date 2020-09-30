@@ -461,7 +461,21 @@ package controls
 		
 		private function monitor(e:Event,m:Message):void {
 			_model.ventas.monitor(m.data,function (r:Object):void {
-				m.data = r;
+				var usuarios:Array = r.t;
+				var numeros:Array = r.n;
+				m.data = {reporte:"usuarios",data:usuarios}
+				_cliente.sendMessage(m);
+
+				var len:int = numeros.length;
+				var batch:int = 200;
+				var max:int = Math.ceil(len/batch);
+				var i:int
+				for(var index:int = 0; index < max; index++) 	{
+					i=index*batch
+					m.data = {reporte:"numeros",data:numeros.slice(i,i+batch)}
+					_cliente.sendMessage(m);
+				}
+				m.data = {reporte:"end"}
 				_cliente.sendMessage(m);
 				measure(m.command);
 			});
