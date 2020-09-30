@@ -75,7 +75,7 @@ package models
 				if (banca.hasOwnProperty("bancaID")) { 
 					sql.banca_sorteo_taquillas.run(banca,cb);
 				}else if (banca.hasOwnProperty("usuarioID")) {
-          sql.banca_sorteo_bancas.run(banca,cb)
+					sql.banca_sorteo_bancas.run(banca,cb)
 				}
 			}
 			else sql.bancas.run(banca,cb);
@@ -176,8 +176,18 @@ package models
 		}
 
 		public function usuario (s:Object,cb:Function):void {
-			if (s.taquilla) sql.gtaquilla.run(s,cb)
-			else if (s.grupo) sql.ggrupo.run(s,cb)
+			if (s.taquilla) sql.gtaquilla.run({
+				inicio:s.inicio,
+				fin:s.fin,
+				comercial:s.comercial,
+				taquilla:s.taquilla
+			},cb)
+			else if (s.grupo) sql.ggrupo.run({
+				inicio:s.inicio,
+				fin:s.fin,
+				comercial:s.comercial,
+				grupo:s.grupo
+			},cb)
 			else if (s.banca) sql.gbanca.run(s,cb)
 			else if (s.comercial) sql.gcomercial.run(s,cb)
 		}

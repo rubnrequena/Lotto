@@ -78,6 +78,8 @@ package db.sql
 		public var gbanca:SQLStatementPool
 		public var ggrupo:SQLStatementPool
 		public var gtaquilla:SQLStatementPool
+
+		public var banca_sorteo_sorteos:SQLStatementPool
 		
 		public function ReportesSQL()
 		{

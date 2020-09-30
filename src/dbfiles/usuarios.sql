@@ -73,3 +73,39 @@ SELECT nombre, usuarioID uID, "c"||usuarioID usID, contacto from us.usuarios WHE
 SELECT usuarioID, usuario, nombre, activo, contacto FROM comer_usuario
 	JOIN usuarios ON usuarios.usuarioID = comer_usuario.cID 
 WHERE uID = :usuarioID
+--comision_producto_nuevo
+INSERT INTO comisiones (usuario, rol, operadora, tipo, valor)
+VALUES (:usuario, :rol, :operadora, :tipo, ROUND(:valor*0.01,2) )
+--comision_producto_remover
+DELETE FROM comisiones WHERE usuario = :usuario AND operadora = :operadora
+--comisiones_banca
+SELECT usuarioID, nombre,
+	coalesce(comision.valor, comision)*100 comision,
+	coalesce(participacion.valor, participacion)*100 participacion,
+	CASE WHEN comision.valor IS NULL THEN 1 ELSE 0 END cmpred,
+	CASE WHEN participacion.valor IS NULL THEN 1 ELSE 0 END partpred
+FROM comer_usuario
+  JOIN usuarios ON comer_usuario.uID = usuarios.usuarioID
+  LEFT JOIN us.comisiones as comision 
+	ON comer_usuario.uID = comision.usuario 
+	  AND comision.operadora = :operadora AND comision.rol = 3  AND comision.tipo = 0
+  LEFT JOIN us.comisiones as participacion 
+	ON comer_usuario.uID = participacion.usuario
+	  AND participacion.operadora = :operadora AND participacion.rol = 3 AND participacion.tipo = 1
+WHERE comer_usuario.cID = :usuario
+--comisiones_grupo
+SELECT bancaID, nombre,
+	coalesce(comision.valor, comision)*100 comision,
+	coalesce(participacion.valor, participacion)*100 participacion,
+	CASE WHEN comision.valor IS NULL THEN 1 ELSE 0 END cmpred,
+	CASE WHEN participacion.valor IS NULL THEN 1 ELSE 0 END partpred
+FROM bancas
+  LEFT JOIN us.comisiones as comision 
+	ON bancas.bancaID = comision.usuario 
+	  AND comision.operadora = :operadora AND comision.rol = 2  AND comision.tipo = 0
+  LEFT JOIN us.comisiones as participacion 
+	ON bancas.bancaID = participacion.usuario
+	  AND participacion.operadora = :operadora AND participacion.rol = 2 AND participacion.tipo = 1
+WHERE bancas.usuarioID = :usuario
+--comisiones_usuario
+SELECT * FROM us.comisiones WHERE usuario = :usuario AND operadora = :operadora AND tipo = :tipo
