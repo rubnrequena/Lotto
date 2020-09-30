@@ -131,5 +131,24 @@ package models
 		public function destinos (s:Object,cb:Function):void {
 			if (s.hasOwnProperty('uID')) sql.mensajes_destinos.run(s,cb)
 		}
+
+		public function comision_producto_nuevo (s:Object,cb:Function):void {
+			sql.comision_producto_nuevo.run(s,cb)
+		}
+		public function comision_producto_remover (s:Object,cb:Function):void {
+			sql.comision_producto_remover.run(s,cb)
+		}
+
+		public function comisiones_banca(s:Object,cb:Function):void {
+			sql.comisiones_banca.run(s,function (r:SQLResult):void {
+				execute(cb,r.data)
+			});
+		}
+		public function comisiones_usuario (s:Object,cb:Function):void {
+			sql.comisiones_usuario.run(s,cb);
+		}
+		public function comisiones_grupo(s:Object,cb:Function):void {
+			sql.comisiones_grupo.run(s,cb);
+		}
 	}
 }
