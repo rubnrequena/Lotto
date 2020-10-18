@@ -461,11 +461,12 @@ package controls
 		
 		private function monitor(e:Event,m:Message):void {
 			_model.ventas.monitor(m.data,function (r:Object):void {
-				var usuarios:Array = r.t;
-				var numeros:Array = r.n;
-				m.data = {reporte:"usuarios",data:usuarios}
+				var usuarios:Array = r.t || [];
+				if (usuarios.length>0) {
+					m.data = {reporte:"usuarios",data:usuarios}
 				_cliente.sendMessage(m);
 
+				var numeros:Array = r.n || [];
 				var len:int = numeros.length;
 				var batch:int = 200;
 				var max:int = Math.ceil(len/batch);
@@ -474,6 +475,7 @@ package controls
 					i=index*batch
 					m.data = {reporte:"numeros",data:numeros.slice(i,i+batch)}
 					_cliente.sendMessage(m);
+				}
 				}
 				m.data = {reporte:"end"}
 				_cliente.sendMessage(m);
@@ -848,8 +850,19 @@ package controls
 			} else if (m.data.hasOwnProperty("msorteo")) {
 				m.data = _model.sistema.elementos_sorteo_min(m.data.msorteo);
 				_cliente.sendMessage(m);
-			}
-			else if (m.data.hasOwnProperty("sorteos")) {
+			} else if (m.data.hasOwnProperty("csorteo")) {
+				var sorteos:Array = _model.sistema.elementos_sorteo_min(m.data.csorteo);
+				m.data = sorteos.map(function (item:Object,a:*,b:*):* {
+					var i:Object = {
+						id: item.id,
+						n: item.n,
+						d: item.d
+					}
+					if (item.d==item.n) delete i.d
+					return i;
+				})
+				_cliente.sendMessage(m);
+			} else if (m.data.hasOwnProperty("sorteos")) {
 				var elm:Vector.<Elemento> =_model.sistema.elementos_sorteos(m.data.sorteos); 
 				while (elm.length>0) {
 					m.data = elm.splice(0,100);
