@@ -9,6 +9,7 @@ package db.sql
 	import db.SQLStatementPool;
 	
 	import starling.utils.StringUtil;
+	import starling.errors.AbstractMethodError;
 
 	public class SQLBase
 	{
@@ -34,6 +35,11 @@ package db.sql
 		
 		protected function load (name:String,con:SQLConnection=null):void {
 			this[name] = new SQLStatementPool(sentencia(name),con);
+		}
+
+		public function exec(name:String,con:SQLConnection=null):SQLStatementPool
+		{
+			return new SQLStatementPool(sentencia(name),con);
 		}
 		
 		protected function scan(con:SQLConnection=null):void {

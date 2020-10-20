@@ -79,12 +79,17 @@ package db
 			
 			lastQuery = s.text;
 			lastData = params;
-			trace(s.text,JSON.stringify(params));
+			//trace(s.text,JSON.stringify(params));
 			s.execute(prefetch,rs);
 		}
+		private const patron:RegExp = new RegExp(':\\w+','g')
 		internal function setParams (sql:SQLStatement,params:Object):SQLStatement {
 			sql.clearParameters();
-			for (var p:String in params) sql.parameters[":"+p] = params[p]; // para prototipo, crea allocation
+			const parametros:Array = _sentencia.match(patron)
+			for each(var p:String in parametros) {
+				var pstr:String = p.substr(1)
+				sql.parameters[p] = params[pstr]
+			}
 			return sql;
 		}
 		public function toPool (sql:SQLStatement):void {
