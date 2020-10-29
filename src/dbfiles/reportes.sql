@@ -348,7 +348,7 @@ JOIN main.sorteos ON main.sorteos.sorteoID = vt.sorteos.sorteo
 LEFT JOIN us.comisiones ON comisiones.usuario = bancas.bancaID AND comisiones.tipo = 0 AND sorteos.sorteo = comisiones.operadora and comisiones.rol = 2
 LEFT JOIN us.comisiones as participacion ON participacion.usuario = bancas.bancaID AND participacion.tipo = 1 AND sorteos.sorteo = participacion.operadora and participacion.rol = 2
 WHERE reportes.fecha BETWEEN :inicio AND :fin AND cID = :comercial AND bancas.usuarioID = :banca
-GROUP BY bancas.bancaID
+GROUP BY bancas.bancaID, sorteos.sorteo, sorteos.fecha 
 ORDER BY usuarios.nombre ASC
 --ggrupo
 SELECT 'taquilla' tipo, bancas.bancaID, usuarios.usuarioID, reportes.taquillaID id, taquillas.nombre desc,  sorteos.sorteo, sorteos.nombre operadora, 
