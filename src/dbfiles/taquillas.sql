@@ -27,11 +27,12 @@ SELECT * FROM taquillas_comision
 WHERE bancaID = :bancaID AND (grupoID = :grupoID OR grupoID = 0) AND taquillaID = 0 
 ORDER BY taquillas_comision.taquillaID
 --comisiones_banca
-SELECT comID, sorteo, taquillas_comision.comision comision, taquillas_comision.grupoID, taquillas_comision.bancaID,
-		bancas.nombre grupo
+SELECT comID, sorteo, taquillas_comision.comision comision, taquillas_comision.grupoID, bancas.nombre grupo, sorteos.nombre operadora
  FROM taquillas_comision 
 	LEFT JOIN us.bancas ON bancas.bancaID = taquillas_comision.grupoID
+JOIN main.sorteos ON sorteos.sorteoID = sorteo 
 WHERE taquillas_comision.bancaID = :bancaID and taquillas_comision.taquillaID = 0
+ORDER BY sorteo ASC, grupoid
 --comision_nueva
 INSERT INTO taquillas_comision (sorteo,comision,taquillaID,grupoID,bancaID) VALUES (:sorteo,:comision,:taquillaID,:grupoID,:bancaID)
 --comision_remover
