@@ -543,6 +543,15 @@ package controls
 		private function tope_nuevo(e:Event,m:Message):void {
 			m.data.bancaID = usuario.bancaID;
 			m.data.usuarioID = usuario.usuarioID;
+			if (m.data.elemento=="") m.data.elemento = 0
+			else {
+				var elemento:Elemento = m.data.elemento = _model.sistema.elemento_num(m.data.elemento,m.data.sorteo)
+				if (!elemento) {
+					m.data = {error:'Numero invalido o no existe para el sorteo seleccionado'}
+					return _cliente.sendMessage(m);
+				}
+				else m.data.elemento = elemento.elementoID
+			}
 			_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
