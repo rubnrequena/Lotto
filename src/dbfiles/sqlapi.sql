@@ -69,3 +69,5 @@ WHERE bancas.usuarioID = :usuario
 SELECT * FROM taquillas_comision WHERE bancaid = :padreID and grupoid = 0 and taquillaid = 0
 --lista_grupos_min
 SELECT nombre, bancaID FROM bancas WHERE usuarioID = :usuarioID
+--numero_id
+SELECT elementoID, descripcion FROM numeros WHERE numero = :numero and sorteo = :sorteo

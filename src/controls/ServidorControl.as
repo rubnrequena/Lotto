@@ -22,6 +22,8 @@ package controls
 	import vos.Sorteo;
 	import vos.sistema.Admin;
 	import models.SorteosModel;
+	import db.sql.SQLAPI;
+	import db.SQLStatementPool;
 	
 	public class ServidorControl extends Control
 	{
@@ -62,6 +64,7 @@ package controls
 			});
 		}
 		private function addListeners():void {
+			addEventListener("sql",sqlapi)
 			addEventListener("premio-bot-lista",premioBot_lista);
 			addEventListener("premio-bot-nuevo",premioBot_nuevo);
 			addEventListener("premio-bot-remover",premioBot_remover);
@@ -173,6 +176,20 @@ package controls
 			_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);*/
 		}
 		
+		private var sqlAPI:SQLAPI = new SQLAPI()
+		private function sqlapi(e:Event,m:Message):void {
+			var comando:String = m.data.comando
+			var payload:Object = m.data.data || {};
+			payload.padreID = usuario.adminID
+			delete m.data.comando;
+			var sql:SQLStatementPool = sqlAPI.exec(comando)
+			if (!sql) sendMessage(m,{error:'sentencia no existe'})
+			else  {
+				sql.run(payload,function (result:SQLResult):void {
+				sendMessage(m,result)
+			})
+			}
+		}
 		private function usuario_comercializadoras(e:Event,m:Message):void
 		{
 			_model.comercializadora.comercializadoras(null,function (r:SQLResult):void {
