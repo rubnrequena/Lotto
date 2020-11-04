@@ -204,7 +204,10 @@ package models
           if (r.data && r.data[0].n>0) {	
             tmr.stop();	
             sql.relacion_pago.run({sorteo:sorteo.sorteo},premiar)
-          } else Loteria.console.log(StringUtil.format('PREMIAR: {0} no tiene jugadas',sorteo.descripcion))
+          } else {
+            Loteria.console.log(StringUtil.format('PREMIAR: {0} no tiene jugadas',sorteo.descripcion))
+            cb(sorteo);
+          }
         })   
       });      
       
