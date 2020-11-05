@@ -23,6 +23,8 @@ package controls
 	import vos.Usuario;
 	import models.Notificaciones;
 	import starling.utils.execute;
+	import db.SQLStatementPool;
+	import db.sql.SQLAPI;
 	
 	public class ComercializadoraControl extends Control
 	{
@@ -33,6 +35,172 @@ package controls
 			addEventListener("login",login);
 		}
 		
+		private function addListeners():void {
+			addEventListener("sql",sqlapi)
+			addEventListener("inicio",inicio);			
+			addEventListener("sorteos",sorteos);
+			addEventListener("sorteo-premiar",sorteo_premiar);
+			addEventListener("elementos",elementos);
+			
+			addEventListener("taquillas",taquillas);
+			addEventListener("taquilla-editar",taquilla_editar);
+			addEventListener("taquilla-nueva",taquilla_nueva);
+			addEventListener("taquilla-panic",taquilla_panic);
+			addEventListener("taquilla-remover",taquilla_remover);
+			
+			addEventListener("taquilla-comisiones",taquilla_comisiones);
+			addEventListener("taquilla-comision-nv",taquilla_comision_nv);
+			addEventListener("taquilla-comision-dl",taquilla_comision_dl);
+      addEventListener("grupo-comision-nv",grupo_comision_nv);
+      addEventListener("banca_comision_nv",banca_comision_nv);
+			
+			addEventListener("taquilla-flock",taquilla_flock);
+			addEventListener("taquilla-fpclear",taquilla_fpclear);
+			
+			addEventListener("topes",topes);
+			addEventListener("tope-nuevo",tope_nuevo);
+			addEventListener("tope-remover",tope_remover);
+			
+			addEventListener("usuario",usuario_config)
+			addEventListener("usuario-nuevo",usuario_nuevo);
+			addEventListener("usuario-editar",usuario_editar);
+			addEventListener("usuario-grupos",usuario_grupos);
+			
+			addEventListener("banca-grupo",banca_grupo);
+			addEventListener("banca-nueva",banca_nueva);
+			addEventListener("banca-editar",banca_editar);
+			addEventListener("banca-remover",grupo_remover);
+			
+			addEventListener("monitor",monitor);
+			
+			addEventListener("sorteos-publicos",sorteos_publicos);
+			addEventListener("pb_remover",sorteos_publicos_remover);
+			addEventListener("pb_editar",sorteos_publicos_editar);
+			addEventListener("publicar",publicar);
+			
+			addEventListener("transferir",transferir);
+			addEventListener("transferir-grupo",transferir_grupo);
+			addEventListener("conexiones",conexiones);
+			
+			addEventListener("reporte-general",reporte_general);
+			addEventListener("reporte-banca",reporte_banca);
+			addEventListener("reporte-recogedor",reporte_recogedor);
+			addEventListener("reporte-taquilla",reporte_taquilla);
+
+			
+			addEventListener("reporte-ventas",reporte_ventas);
+			addEventListener("reporte-diario",reporte_diario);
+			addEventListener("reporte-cobros",reporte_cobros);
+			addEventListener("reporte-subcobros",reporte_cobros);
+
+			addEventListener("comision_producto_nv",comision_producto_nuevo);
+			addEventListener("comision_producto_rm",comision_producto_remover);
+
+			addEventListener("comisiones_banca",comisiones_banca);
+			addEventListener("comisiones_grupo",comisiones_grupo);
+			
+      //reporte 2.0
+      addEventListener("reporte",reporte)
+			
+			addEventListener("permiso-nuevo",permiso_nuevo);
+			addEventListener("permiso-update",permiso_update);
+			addEventListener("permiso-remove",permiso_remove);
+			addEventListener("permisos",permisos);			
+			
+			addEventListener("venta-premios",venta_premios);
+			addEventListener("venta-anular",venta_anular);
+						
+			addEventListener("balance-padre",balance_padre);
+			addEventListener("balance-add",balance_add);
+			addEventListener("balance-clientes",balance_clientes);
+			addEventListener("balance-us",balance_us);
+			addEventListener("balance-pagos",balance_pagos);
+			addEventListener("balance-remover",balance_remover);
+			addEventListener("balance-pago",balance_pago);
+			addEventListener("balance-ppagos",balance_ppagos);
+			addEventListener("balance-confirmacion",balance_confirmacion);
+			
+			addEventListener("usuario-listaSuspender",usuarioLSuspender);
+			addEventListener("usuario-susprem",usuario_suspremover);
+			addEventListener("usuario-suspnvo",usuario_suspnuevo);
+
+			addEventListener('chat-leer',function (e:Event,m:Message):void {
+        _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
+					var uID:* = /\d+/.exec(m.data.origen)
+					_model.usuarios.usuarios({uid:uID[0]},function (usuario:Usuario):void {
+					  m.data = {
+							mensajes:res,
+							origen:{
+								usID:usuario.usID,
+								nombre:usuario.nombre,
+								contacto:usuario.contacto
+							}
+						};
+					  _cliente.sendMessage(m);						
+					})
+        })
+      });
+			addEventListener('chat-bandeja',function (e:Event,m:Message):void {
+        _model.sms.bandejaEntrada(usuario.usID,function (res:SQLResult):void {
+					m.data = res.data;
+					_cliente.sendMessage(m);
+        })
+      });
+			addEventListener('chat-recibidos',function chatRecibidos(e:Event,m:Message):void {
+				_model.sms.recibidos(usuario.usID,function chatRecibidos_controlResult(chats:Array):void {
+					m.data = chats;
+					_cliente.sendMessage(m);
+				})
+			})
+			addEventListener('chat-enviados',function chatEnviados(e:Event,m:Message):void {
+				_model.sms.enviados(usuario.usID,function chatEnviados_result(res:SQLResult):void {
+					m.data = res.data
+					_cliente.sendMessage(m)
+				})
+			})
+			addEventListener('chat-destinos',function (e:Event,m:Message):void {
+				if (usuario.tipo==2) {
+					var destinos:Array = [{usID:'u1',nombre:'SISTEMA'}];
+					_model.comercializadora.usuarios({usuarioID:usuario.usuarioID},function (usuarios:SQLResult):void {
+
+						destinos = destinos.concat(usuarios.data.map(function (item:Object,idx:int,data:Array):Object {
+							return {
+								usID:item.usID,
+								nombre: item.nombre
+							}
+						}))
+
+						m.data = destinos;
+						_cliente.sendMessage(m);
+					})
+				}
+			});
+			addEventListener('chat-nuevo',function (e:Event,m:Message):void {
+				m.data.origen = usuario.usID
+				m.data.origenNombre = usuario.nombre
+				_model.sms.nuevo(m.data,function (res:SQLResult):void {
+					if (res.lastInsertRowID>0) m.data = {ok:res.lastInsertRowID}
+					else m.data = {error:'Mensaje no enviado'}
+					_cliente.sendMessage(m)
+				})
+			})
+			Notificaciones.listeners.addEventListener(Notificaciones.MENSAJE_NUEVO,notificacion_msgNuevo)
+		}
+
+		private var sqlAPI:SQLAPI = new SQLAPI()
+		private function sqlapi(e:Event,m:Message):void {
+			var comando:String = m.data.comando
+			var payload:Object = m.data.data || {};
+			payload.padreID = usuario.usuarioID
+			delete m.data.comando;
+			var sql:SQLStatementPool = sqlAPI.exec(comando)
+			if (!sql) sendMessage(m,{error:'sentencia no existe'})
+			else  {
+				sql.run(payload,function (result:SQLResult):void {
+				sendMessage(m,result)
+			})
+			}
+		}
 		private function taquilla_panic(e:Event,m:Message):void {
 			m.data = {usuarioID:usuario.usuarioID};
 			_model.taquillas.panic(m.data,function (numTaq:int):void {
@@ -334,9 +502,11 @@ package controls
 						});
 					} else if (u.activo==Usuario.ACTIVO) {
 						controlID = u.usuarioID;
-						
+						var usuarioID:int = usuario.usuarioID
+						if (usuario.tipo==3) usuarioID = parseInt(usuario.contacto)
 						_model.sorteos.sorteos({usuarioID:u.usuarioID},function (sorteos:SQLResult):void {
-							_model.comercializadora.usuarios({usuarioID:u.usuarioID},function (bancas:SQLResult):void {
+							//TODO: remover y efecutar una consulta aparte
+							_model.comercializadora.usuarios({usuarioID:usuarioID},function (bancas:SQLResult):void {
 								m.data = {
 									us:u,
 									bn:bancas.data,
@@ -367,150 +537,47 @@ package controls
 			});
 		}
 		
-		private function addListeners():void {
-			
-			addEventListener("inicio",inicio);			
-			addEventListener("sorteos",sorteos);
-			addEventListener("sorteo-premiar",sorteo_premiar);
-			addEventListener("elementos",elementos);
-			
-			addEventListener("taquillas",taquillas);
-			addEventListener("taquilla-editar",taquilla_editar);
-			addEventListener("taquilla-nueva",taquilla_nueva);
-			addEventListener("taquilla-panic",taquilla_panic);
-			addEventListener("taquilla-remover",taquilla_remover);
-			
-			addEventListener("taquilla-comisiones",taquilla_comisiones);
-			addEventListener("taquilla-comision-nv",taquilla_comision_nv);
-			addEventListener("taquilla-comision-dl",taquilla_comision_dl);
-      addEventListener("grupo-comision-nv",grupo_comision_nv);
-      addEventListener("banca_comision_nv",banca_comision_nv);
-			
-			addEventListener("taquilla-flock",taquilla_flock);
-			addEventListener("taquilla-fpclear",taquilla_fpclear);
-			
-			addEventListener("topes",topes);
-			addEventListener("tope-nuevo",tope_nuevo);
-			addEventListener("tope-remover",tope_remover);
-			
-			addEventListener("usuario",usuario_config)
-			addEventListener("usuario-nuevo",usuario_nuevo);
-			addEventListener("usuario-editar",usuario_editar);
-			addEventListener("usuario-grupos",usuario_grupos);
-			
-			addEventListener("banca-grupo",banca_grupo);
-			addEventListener("banca-nueva",banca_nueva);
-			addEventListener("banca-editar",banca_editar);
-			addEventListener("banca-remover",grupo_remover);
-			
-			addEventListener("monitor",monitor);
-			
-			addEventListener("sorteos-publicos",sorteos_publicos);
-			addEventListener("pb_remover",sorteos_publicos_remover);
-			addEventListener("pb_editar",sorteos_publicos_editar);
-			addEventListener("publicar",publicar);
-			
-			addEventListener("transferir",transferir);
-			addEventListener("transferir-grupo",transferir_grupo);
-			addEventListener("conexiones",conexiones);
-			
-			addEventListener("reporte-general",reporte_general);
-			addEventListener("reporte-banca",reporte_banca);
-			addEventListener("reporte-recogedor",reporte_recogedor);
-			addEventListener("reporte-taquilla",reporte_taquilla);
+	private function comisiones_usuario(e:Event,m:Message):void {
+		_model.usuarios.comisiones_usuario(m.data,function (r:SQLResult):void {
+			m.data = r.data;
+			sendMessage(m)
+		})
+	}
+		private function comisiones_banca(e:Event,m:Message):void {
+			m.data.usuario = usuario.usuarioID
+				_model.usuarios.comisiones_banca(m.data,function (r:Array):void {
+					m.data = r;
+					sendMessage(m)
+				});
+		}
 
-			
-			addEventListener("reporte-ventas",reporte_ventas);
-			addEventListener("reporte-diario",reporte_diario);
-			addEventListener("reporte-cobros",reporte_cobros);
-			addEventListener("reporte-subcobros",reporte_cobros);
-			
-      //reporte 2.0
-      addEventListener("reporte",reporte)
-			
-			addEventListener("permiso-nuevo",permiso_nuevo);
-			addEventListener("permiso-update",permiso_update);
-			addEventListener("permiso-remove",permiso_remove);
-			addEventListener("permisos",permisos);			
-			
-			addEventListener("venta-premios",venta_premios);
-			addEventListener("venta-anular",venta_anular);
-						
-			addEventListener("balance-padre",balance_padre);
-			addEventListener("balance-add",balance_add);
-			addEventListener("balance-clientes",balance_clientes);
-			addEventListener("balance-us",balance_us);
-			addEventListener("balance-pagos",balance_pagos);
-			addEventListener("balance-remover",balance_remover);
-			addEventListener("balance-pago",balance_pago);
-			addEventListener("balance-ppagos",balance_ppagos);
-			addEventListener("balance-confirmacion",balance_confirmacion);
-			
-			addEventListener("usuario-listaSuspender",usuarioLSuspender);
-			addEventListener("usuario-susprem",usuario_suspremover);
-			addEventListener("usuario-suspnvo",usuario_suspnuevo);
+		private function comisiones_grupo(e:Event,m:Message):void {
+			_model.usuarios.comisiones_grupo(m.data,function (r:SQLResult):void {
+					m.data = r.data;
+					sendMessage(m)
+				});
+		}
 
-			addEventListener('chat-leer',function (e:Event,m:Message):void {
-        _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
-					var uID:* = /\d+/.exec(m.data.origen)
-					_model.usuarios.usuarios({uid:uID[0]},function (usuario:Usuario):void {
-					  m.data = {
-							mensajes:res,
-							origen:{
-								usID:usuario.usID,
-								nombre:usuario.nombre,
-								contacto:usuario.contacto
-							}
-						};
-					  _cliente.sendMessage(m);						
-					})
-        })
-      });
-			addEventListener('chat-bandeja',function (e:Event,m:Message):void {
-        _model.sms.bandejaEntrada(usuario.usID,function (res:SQLResult):void {
-					m.data = res.data;
-					_cliente.sendMessage(m);
-        })
-      });
-			addEventListener('chat-recibidos',function chatRecibidos(e:Event,m:Message):void {
-				_model.sms.recibidos(usuario.usID,function chatRecibidos_controlResult(chats:Array):void {
-					m.data = chats;
-					_cliente.sendMessage(m);
-				})
-			})
-			addEventListener('chat-enviados',function chatEnviados(e:Event,m:Message):void {
-				_model.sms.enviados(usuario.usID,function chatEnviados_result(res:SQLResult):void {
-					m.data = res.data
-					_cliente.sendMessage(m)
-				})
-			})
-			addEventListener('chat-destinos',function (e:Event,m:Message):void {
-				if (usuario.tipo==2) {
-					var destinos:Array = [{usID:'u1',nombre:'SISTEMA'}];
-					_model.comercializadora.usuarios({usuarioID:usuario.usuarioID},function (usuarios:SQLResult):void {
-
-						destinos = destinos.concat(usuarios.data.map(function (item:Object,idx:int,data:Array):Object {
-							return {
-								usID:item.usID,
-								nombre: item.nombre
-							}
-						}))
-
-						m.data = destinos;
-						_cliente.sendMessage(m);
+		private function comision_producto_nuevo (e:Event,m:Message):void {
+			var comisionPrevia:Object = {usuario:m.data.usuario,operadora:m.data.operadora,tipo:m.data.tipo}
+			_model.usuarios.comisiones_usuario(comisionPrevia,function (comisiones:SQLResult):void {
+				if (comisiones.data) {
+					m.data = {error:'comision existe'}
+					sendMessage(m)
+				}
+				else {
+					_model.usuarios.comision_producto_nuevo(m.data,function (r:SQLResult):void {
+						m.data.comId = r.lastInsertRowID
+						sendMessage(m)
 					})
 				}
-			});
-			addEventListener('chat-nuevo',function (e:Event,m:Message):void {
-				m.data.origen = usuario.usID
-				m.data.origenNombre = usuario.nombre
-				_model.sms.nuevo(m.data,function (res:SQLResult):void {
-					if (res.lastInsertRowID>0) m.data = {ok:res.lastInsertRowID}
-					else m.data = {error:'Mensaje no enviado'}
-					_cliente.sendMessage(m)
-				})
 			})
-			Notificaciones.listeners.addEventListener(Notificaciones.MENSAJE_NUEVO,notificacion_msgNuevo)
+			
+		}
+		private function comision_producto_remover (e:Event,m:Message):void {
+			_model.usuarios.comision_producto_remover(m.data,function (r:SQLResult):void {
+				sendMessage(m,{ok:r.rowsAffected})
+			})
 		}
 
     private function reporte (e:Event,m:Message):void {
@@ -711,7 +778,11 @@ package controls
       var descripcion:String = m.data.agrupar.split(",")[1]
       delete m.data.agrupar
       delete m.data.s
-			m.data.comercial = usuario.usuarioID;
+			if (usuario.tipo==3) {
+				m.data.comercial = parseInt(usuario.contacto);
+				trace("data",JSON.stringify(m.data))
+			}
+			else m.data.comercial = usuario.usuarioID;
       _model.reportes.usuario(m.data,function (r:SQLResult):void {
         var reporte:Array = agrupar(r.data,grupo)
         sendMessage(m,reporte)
@@ -738,14 +809,6 @@ package controls
         }
         return resultado
       }
-			/* if (grupo==0) _model.reportes.comercial(m.data,result);
-			else if (grupo==1) _model.reportes.operadora(m.data,result)
-			else if (grupo==2) _model.reportes.fecha(m.data,result);
-			
-			function result (r:SQLResult):void {
-				m.data = r.data;
-				_cliente.sendMessage(m);
-			} */
 		}
 		
 		private function banca_grupo(e:Event,m:Message):void

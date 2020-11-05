@@ -22,6 +22,8 @@ package controls
 	import vos.Sorteo;
 	import vos.sistema.Admin;
 	import models.SorteosModel;
+	import db.sql.SQLAPI;
+	import db.SQLStatementPool;
 	
 	public class ServidorControl extends Control
 	{
@@ -62,6 +64,7 @@ package controls
 			});
 		}
 		private function addListeners():void {
+			addEventListener("sql",sqlapi)
 			addEventListener("premio-bot-lista",premioBot_lista);
 			addEventListener("premio-bot-nuevo",premioBot_nuevo);
 			addEventListener("premio-bot-remover",premioBot_remover);
@@ -173,6 +176,20 @@ package controls
 			_model.mSorteos.addEventListener(Event.CLOSE,sorteo_cerrado);*/
 		}
 		
+		private var sqlAPI:SQLAPI = new SQLAPI()
+		private function sqlapi(e:Event,m:Message):void {
+			var comando:String = m.data.comando
+			var payload:Object = m.data.data || {};
+			payload.padreID = usuario.adminID
+			delete m.data.comando;
+			var sql:SQLStatementPool = sqlAPI.exec(comando)
+			if (!sql) sendMessage(m,{error:'sentencia no existe'})
+			else  {
+				sql.run(payload,function (result:SQLResult):void {
+				sendMessage(m,result)
+			})
+			}
+		}
 		private function usuario_comercializadoras(e:Event,m:Message):void
 		{
 			_model.comercializadora.comercializadoras(null,function (r:SQLResult):void {
@@ -461,7 +478,23 @@ package controls
 		
 		private function monitor(e:Event,m:Message):void {
 			_model.ventas.monitor(m.data,function (r:Object):void {
-				m.data = r;
+				var usuarios:Array = r.t || [];
+				if (usuarios.length>0) {
+					m.data = {reporte:"usuarios",data:usuarios}
+				_cliente.sendMessage(m);
+
+				var numeros:Array = r.n || [];
+				var len:int = numeros.length;
+				var batch:int = 200;
+				var max:int = Math.ceil(len/batch);
+				var i:int
+				for(var index:int = 0; index < max; index++) 	{
+					i=index*batch
+					m.data = {reporte:"numeros",data:numeros.slice(i,i+batch)}
+					_cliente.sendMessage(m);
+				}
+				}
+				m.data = {reporte:"end"}
 				_cliente.sendMessage(m);
 				measure(m.command);
 			});
@@ -834,8 +867,19 @@ package controls
 			} else if (m.data.hasOwnProperty("msorteo")) {
 				m.data = _model.sistema.elementos_sorteo_min(m.data.msorteo);
 				_cliente.sendMessage(m);
-			}
-			else if (m.data.hasOwnProperty("sorteos")) {
+			} else if (m.data.hasOwnProperty("csorteo")) {
+				var sorteos:Array = _model.sistema.elementos_sorteo_min(m.data.csorteo);
+				m.data = sorteos.map(function (item:Object,a:*,b:*):* {
+					var i:Object = {
+						id: item.id,
+						n: item.n,
+						d: item.d
+					}
+					if (item.d==item.n) delete i.d
+					return i;
+				})
+				_cliente.sendMessage(m);
+			} else if (m.data.hasOwnProperty("sorteos")) {
 				var elm:Vector.<Elemento> =_model.sistema.elementos_sorteos(m.data.sorteos); 
 				while (elm.length>0) {
 					m.data = elm.splice(0,100);

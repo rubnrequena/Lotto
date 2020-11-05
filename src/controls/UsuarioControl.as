@@ -417,6 +417,7 @@ package controls
       addEventListener("banca-comisiones-remover",comision_remover);
 			
 			addEventListener("monitor",monitor);
+			addEventListener("reporte-general",reporte_general);
 			
 			addEventListener("sorteos-publicos",sorteos_publicos);
 			addEventListener("pb_remover",sorteos_publicos_remover);
@@ -785,6 +786,46 @@ package controls
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			}
+		}
+
+		
+		
+		private function reporte_general(e:Event,m:Message):void {
+      var grupo:String = m.data.agrupar.split(",")[0]
+      var descripcion:String = m.data.agrupar.split(",")[1]
+      delete m.data.agrupar
+      delete m.data.s
+			_model.usuarios.usuario_comercial(usuario.usuarioID,function (comercial:Usuario):void {
+				m.data.comercial = comercial.usuarioID
+				m.data.banca = usuario.usuarioID;
+				_model.reportes.usuario(m.data,function (r:SQLResult):void {
+					var reporte:Array = agrupar(r.data,grupo)
+					sendMessage(m,reporte)
+				})
+			})
+			
+      function agrupar(reportes:Array,campo:String):Array {
+        var grupos:Object = {}
+        var grupo:Object
+        for each(var reporte:Object in reportes) {
+          grupo= grupos[reporte[campo]]
+          if (grupo) {
+            grupo.jg += reporte.jg
+            grupo.pr += reporte.pr
+            grupo.cm += reporte.cm
+            grupo.prt += reporte.prt
+          } else {
+            reporte.desc = reporte[descripcion]
+            reporte.tipo = campo;
+            grupos[reporte[campo]] = reporte
+          }
+        }
+        var resultado:Array=[]
+        for(var llave:String in grupos) {
+          resultado.push(grupos[llave])
+        }
+        return resultado
+      }
 		}
 	}
 }

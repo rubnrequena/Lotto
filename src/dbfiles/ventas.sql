@@ -105,9 +105,10 @@ WHERE elementos.ticketID = :ticketID
 --ventas_elementos_repetir
 SELECT sorteoID, numero, monto FROM vt.elementos WHERE elementos.ticketID = :ticketID
 --reporte_nuevo
-INSERT INTO reportes (fecha,sorteoID,bancaID,taquillaID,jugada,premio,comisionBanca, partBanca, comision) 
+INSERT INTO reportes (fecha,sorteoID, taquillaID ,jugada, premio,bancaID,comisionBanca,cmGrupo,partGrupo,cmBanca,partBanca,comision) 
 SELECT sorteos.fecha, sorteos.sorteoID, elementos.taquillaID, ROUND(SUM(monto),2) jugado, ROUND(SUM(premio),2) premio,
-	elementos.bancaID, coalesce(cgrupo.valor,bancas.comision) comisionBanca, coalesce(cgrupo.valor,bancas.comision) cmGrupo, coalesce( pgrupo.valor, bancas.participacion) partGrupo,
+	elementos.bancaID, coalesce(cgrupo.valor,bancas.comision) comisionBanca, 
+	coalesce(cgrupo.valor,bancas.comision) cmGrupo, coalesce( pgrupo.valor, bancas.participacion) partGrupo,
 	coalesce(cbanca.valor,usuarios.comision) cmBanca, coalesce(pbanca.valor,usuarios.participacion) partBanca,
 COALESCE((SELECT comision FROM taquillas_comision WHERE 
   sorteo = sorteos.sorteo  AND 

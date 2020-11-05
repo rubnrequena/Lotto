@@ -1,6 +1,6 @@
 {
   "servidor": "local",
-  "gmtHoras": 6,
+  "gmtHoras": -6,
   "minEspacioDisponible": 1,
   "minEspacioIntervalo": 30,
   "db": {
@@ -11,6 +11,7 @@
     "ticketDuplicado": 180000
   },
   "net": {
+    "debug":true,
     "puertos": {
       "servidor": 4020,
       "banca": 4021,
@@ -105,7 +106,7 @@
       "url": "http://216.128.130.103:3001/json?servidor=local&text={0}"
     },
     "ws": {
-      "url": "http://216.128.130.103:3001/send?servidor=local&user=aml&text={1}",
+      "url": "http://216.128.130.103:3001/json?servidor=local&user=aml&text={1}",
       "psw": "srq-WS",
       "pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
       "separador_lineas": "%0A"

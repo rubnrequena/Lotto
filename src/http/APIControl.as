@@ -14,6 +14,10 @@ package http
   import db.sql.APISQL;
   import by.blooddy.crypto.MD5;
   import flash.errors.SQLError;
+  import com.projectcocoon.p2p.util.ClassRegistry;
+  import flash.filesystem.File;
+  import flash.filesystem.FileStream;
+  import flash.filesystem.FileMode;
 
   public class APIControl extends ActionController {
     public var model:ModelHUB;
@@ -143,6 +147,16 @@ package http
           } else cb(responseSuccess({error:'error de autenticacion'}))
         }
       })
+    }
+    public function log(params:URLVariables,cb:Function):void {
+      var f:File = File.applicationStorageDirectory.resolvePath('net.log')
+      var fs:FileStream = new FileStream();
+      fs.open(f,FileMode.APPEND)
+      fs.writeUTF('---------'+new Date().toString()+File.lineEnding)
+      fs.writeUTF(params.log+File.lineEnding)
+      fs.writeUTF('---------'+File.lineEnding)
+      fs.close()
+      cb(responseSuccess({ok:1}))
     }
   }
 }
