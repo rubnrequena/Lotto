@@ -178,7 +178,7 @@ package http
          */
         protected static function header(code:int, message:String = "", mimeType:String = "text/html"):String
         {
-            return "HTTP/1.1 " + code.toString() + " " + message + "\n" + "Content-Type: " + mimeType + "\n\n";             
+            return "HTTP/1.1 " + code.toString() + " " + message + "\n" +"Access-Control-Allow-Origin: * "+ "\n" + "Content-Type: " + mimeType + "\n\n";             
         }
     }
 }
