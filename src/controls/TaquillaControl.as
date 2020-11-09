@@ -35,6 +35,7 @@ package controls
 	import vos.Tope;
 	import db.sql.SQLAPI;
 	import db.SQLStatementPool;
+	import starling.core.Starling;
 	
 	public class TaquillaControl extends Control
 	{
@@ -53,6 +54,7 @@ package controls
 		
 		private var logFile:File;
 		private var logFS:FileStream;
+		private var sesionHash:String;
 		
 		public function TaquillaControl(cliente:Client, model:ModelHUB) {
 			super(cliente, model);
@@ -206,6 +208,8 @@ package controls
 		}
 		
 		override protected function dispose():void {
+			
+			Starling.current.removeEventListener(sesionHash,venderHandler);
 			//_model.mSorteos.removeEventListener(Event.UPDATE,sorteosModel_update);
 			_model.sorteos.removeEventListener(ModelEvent.ESTATUS_CHANGE,model_srt_changeEstatus);			
 			_model.topes.removeEventListener(Event.CHANGE,model_tp_topeNuevo);
@@ -282,11 +286,17 @@ package controls
 				_model.sorteos.sorteos(f,function (r:SQLResult):void {		
 					m.data.sorteos = r.data
 					m.data.elementos = _model.sistema.eleHash;
+					//registrar api
+					sesionHash = MD5.hash(_taquilla.taquillaID+new Date().getTime().toString())
+					trace("sesion",sesionHash)
+					Starling.current.addEventListener(sesionHash,venderHandler);
+					m.data.sesion = sesionHash
 					sendMessage(m);
 					
 					_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function metaResult (meta:Object):void {
 						m.command = "metas";
 						m.data = meta;
+						
 						sendMessage(m);
 						measure("login");
 					})
@@ -489,17 +499,26 @@ package controls
 		private var ventasUsuario:EGrupo;
 		
 		private  var invalidos:Array = [];
-		private function venta(e:Event,m:Message):void {
+
+		private function venderHandler(e:Event,data:Object):void {
+        var now:Number = new Date().getTime();
+			var event:String = e.type+"_callback"
+			vender(data,function (data:Object):void {
+        Loteria.console.log("handler time",new Date().getTime()-now,"ms")
+				Starling.current.dispatchEventWith(event,false,data)
+			})
+		}
+		private function vender (data:Object,cb:Function):void {
 			var i:int;
-			var meta:Object = m.data.m || {};
+			var meta:Object = data.m || {};
 
 			if (ultVenta && !meta.hasOwnProperty("rw")) {
 				var mt:Number=0;
 				var mn:int=0;
-				var len:int = m.data.v.length
+				var len:int = data.v.length
 				for(i = 0; i < len; i++) {
-					mt+= m.data.v[i].monto;
-					mn+= m.data.v[i].numero;
+					mt+= data.v[i].monto;
+					mn+= data.v[i].numero;
 				}
 				var unums:Array = ultVenta.vt.map(function (num:Object,i:int,a:Array):int { return num.numero });
 				var unum:int=0;
@@ -507,17 +526,17 @@ package controls
 				var ahora:Number = new Date().time;
 				var tiempo:Number = ultVenta.tk.tiempo+Loteria.setting.taquilla.ticketDuplicado;
 				if (unum==mn && mt==ultVenta.tk.monto && len==ultVenta.vt.length && tiempo-ahora>0) {
-					m.data = {code:Code.DUPLICADO,venta:m.data};
-					_cliente.sendMessage(m);
+					data = {code:Code.DUPLICADO,venta:data};
+					cb(data)
 					return;
 				}
 			}
 			
 			var t:int = getTimer();
-			_ventas = m.data.v as Array;
+			_ventas = data.v as Array;
 			if (_ventas.length==0) { // validar ventas
-				m.data = {code:Code.VACIO};
-				_cliente.sendMessage(m);
+				data = {code:Code.VACIO};
+				cb(data);
 				return;
 			}		
 			//validar duplicados
@@ -539,8 +558,8 @@ package controls
 			}
 			
 			if (invalidos.length>0) {
-				m.data = {code:Code.INVALIDO,sorteos:invalidos};
-				_cliente.sendMessage(m);
+				data = {code:Code.INVALIDO,sorteos:invalidos};
+				cb(data);
 			} else {
 				//Loteria.console.log("SORTEOS VALIDADOS",getTimer()-t,"ms");
 				//validar topes
@@ -602,8 +621,8 @@ package controls
 				function validarTaquilla ():void {
 					validarTopes(_ventas,_cache,0);
 					if (invalidos.length>0) { // VENTA INVALIDA
-						m.data = {code:Code.TOPE_TAQUILLA_EXEDIDO,elementos:invalidos}
-						_cliente.sendMessage(m);
+						data = {code:Code.TOPE_TAQUILLA_EXEDIDO,elementos:invalidos}
+						cb(data);
 					} else { // VENTA VALIDA
 						realizarVenta();
 					}
@@ -616,16 +635,15 @@ package controls
 							tk:ticket,
 							vt:ventasID
 						};
-						m.data = ultVenta;						
+						data = ultVenta;						
 						t=getTimer();
 						merge(_cache);
 						if (ventasBanca) merge(ventasBanca.sorteos);
 						if (ventasUsuario) merge(ventasUsuario.sorteos);
-						measure(m.command+" #"+ticket.ticketID+" | "+ids.join(","));
-						m.data.format = "print";
+						data.format = "print";
 						
 						if (meta.hasOwnProperty("mail")) {
-							m.data.format = "mail";
+							data.format = "mail";
 							
 							var body:Array = ['<table border="0">'];
 							var cs:int=0; var el:Elemento;
@@ -650,11 +668,11 @@ package controls
 						}
 						if (meta.hasOwnProperty("ws")) {
 							MonitorSistema.monitor.ms_last_desc = "venta_ws";
-							m.data.format = "ws";
-							m.data.ws = meta.ws;						
+							data.format = "ws";
+							data.ws = meta.ws;						
 							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
-						_cliente.sendMessage(m);
+						cb(data);
 					});
 				}
 				function merge (cache:Array):void {
@@ -678,6 +696,14 @@ package controls
 					}
 				}
 			}
+		}
+
+		private function venta(e:Event,m:Message):void {
+			vender(m.data,function (result:Object):void {
+				m.data = result
+				_cliente.sendMessage(m)
+				measure("venta socket");
+			})
 		}
 		
 		public function smsResult (err:Object,data:Object=null):void {
