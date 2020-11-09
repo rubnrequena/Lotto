@@ -33,6 +33,8 @@ package controls
 	import vos.Sorteo;
 	import vos.Taquilla;
 	import vos.Tope;
+	import db.sql.SQLAPI;
+	import db.SQLStatementPool;
 	
 	public class TaquillaControl extends Control
 	{
@@ -73,6 +75,7 @@ package controls
 		private function addListeners():void {	
 			topes_update();
 			
+			addEventListener("sql",sqlapi)
 			addEventListener("venta",venta);
 			addEventListener("venta-ultima",venta_ultima);
 			addEventListener("venta-anular",venta_anular);
@@ -99,6 +102,22 @@ package controls
 			_model.ventas.addEventListener(ModelEvent.PREMIO,ventasModel_premio);
 		}
 		
+		
+		private var sqlAPI:SQLAPI = new SQLAPI('APITaquilla.sql')
+		private function sqlapi(e:Event,m:Message):void {
+			var comando:String = m.data.comando
+			var payload:Object = m.data.data || {};
+			payload.padreID = _taquilla.usuarioID
+			payload.taquillaID = _taquilla.taquillaID
+			var sql:SQLStatementPool = sqlAPI.exec(comando)
+			if (!sql) sendMessage(m,{error:'sentencia no existe'})
+			else  {
+				sql.run(payload,function (result:SQLResult):void {
+				sendMessage(m,result)
+			})
+			}
+		}
+
 		private function elementos_init(e:Event,m:Message):void {
 			var tq:Object = {
 				fecha:DateFormat.format(new Date),
