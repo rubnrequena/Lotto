@@ -934,7 +934,6 @@ package controls
 									_model.taquillas.sendTo(_taq.taquillaID,m);
 								}
 							},function (e:SQLError):void {
-								Loteria.console.log("ERROR: TICKET",m.data.ticketID," PREVIAMENTE ANULADO");
 								m.data.code = Code.DUPLICADO;
 								_cliente.sendMessage(m);
 							});	

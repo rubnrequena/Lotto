@@ -141,7 +141,6 @@ package
 					var id:int = int((us.sID as String).slice(1));						
 					if (indice=="c" || indice=="u") model.usuarios.editar({activo:Usuario.SUSPENDIDO,usuarioID:id});
 					else model.bancas.editar({activa:Usuario.SUSPENDIDO,bancaID:id});
-					Loteria.console.log(StringUtil.format("[JV] Usuario {0} suspendido",us.sID));
 				}
 			});
 		}

@@ -42,7 +42,7 @@ package http
       public var _cache:Array;
       public var invalidos:Array;
       public function venta (params:URLVariables,res:Function):void {
-        var now:Number = new Date().getTime();
+        //var now:Number = new Date().getTime();
         if (Starling.current.hasEventListener(params.sesion)) {
           Starling.current.addEventListener(params.sesion+"_callback",callback)
           try {
@@ -54,7 +54,7 @@ package http
         } else res(responseSuccess({error:'sesion no encontrada'}))
 
         function callback(e:Event,data:Object):void {
-          Loteria.console.log("full time",new Date().getTime()-now,"ms")
+          //Loteria.console.log("full time",new Date().getTime()-now,"ms")
           Starling.current.removeEventListener(params.sesion+"_callback",callback)
           res(responseSuccess(data))
         }

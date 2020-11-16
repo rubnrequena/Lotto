@@ -40,7 +40,7 @@ package controls
 			_model.servidor.login(m.data,function (usr:Admin):void {
 				usuario = usr; 
 				if (usr) {
-					Loteria.console.log(usr.usuario,"inicia sesion");
+					Loteria.console.log('ADMIN',usr.usuario,"inicia sesion");
 					m.data = {
 						code:Code.OK,
 						usr:usr
@@ -181,6 +181,7 @@ package controls
 			var comando:String = m.data.comando
 			var payload:Object = m.data.data || {};
 			payload.padreID = usuario.adminID
+			payload.id = usuario.adminID
 			delete m.data.comando;
 			var sql:SQLStatementPool = sqlAPI.exec(comando)
 			if (!sql) sendMessage(m,{error:'sentencia no existe'})
@@ -558,7 +559,7 @@ package controls
 			function onError(e:SQLError):void {
 				m.data = 0;
 				_cliente.sendMessage(m);
-				Loteria.console.log(e.toString());
+				//Loteria.console.log(e.toString());
 			}
 		} 
 		
@@ -598,6 +599,18 @@ package controls
 		}
 		
 		private function tope_nuevo(e:Event,m:Message):void {
+			if (m.data.compartido==2) m.data.bancaID = 0;
+			if (m.data.elemento!="") {
+				if (m.data.sorteo==0) {
+					m.data = {error:'Es obligatorio indicar el sorteo al que sera asignado el tope por numero'}
+					return _cliente.sendMessage(m);
+				}
+				var elemento:Object = _model.sistema.elemento_num(m.data.elemento,m.data.sorteo)
+				if (!elemento) {
+					m.data = {error:'Numero invalido o no existe para el sorteo seleccionado'}
+					return _cliente.sendMessage(m);
+				} else m.data.elemento = elemento.elementoID
+			} else m.data.elemento = 0
 			_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
@@ -790,7 +803,6 @@ package controls
 								var premiador:Object = Loteria.setting.premios.premiacion[sorteo.sorteo] || Loteria.setting.premios.premiacion[0];
 								var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,usuario.nivel==1?100:20);
 								if (numSol>=premiador.puntos) {
-									var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
 									_model.ventas.premiar(sorteo,e,function (srt:Object):void {
 										m.data = {code:Code.OK};
 										_cliente.sendMessage(m);										

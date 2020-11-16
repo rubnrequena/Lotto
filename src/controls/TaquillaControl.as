@@ -378,7 +378,6 @@ package controls
 							_cliente.sendMessage(m);
 							measure(m.command);
 						},function (er:SQLError):void {
-							Loteria.console.log("ERROR: TICKET",m.data.tk," PREVIAMENTE PAGADO");
 							m.data.code = Code.DUPLICADO;
 							_cliente.sendMessage(m);
 							measure(m.command);
@@ -414,7 +413,6 @@ package controls
 									if (ventasUsuario) unmerge(ventasUsuario.sorteos,r.data);
 								});
 							},function (e:SQLError):void {
-								Loteria.console.log("ERROR: TICKET",m.data.ticketID," PREVIAMENTE ANULADO");
 								m.data.code = Code.DUPLICADO;
 								_cliente.sendMessage(m);
 							});	
@@ -501,10 +499,8 @@ package controls
 		private  var invalidos:Array = [];
 
 		private function venderHandler(e:Event,data:Object):void {
-        var now:Number = new Date().getTime();
 			var event:String = e.type+"_callback"
 			vender(data,function (data:Object):void {
-        Loteria.console.log("handler time",new Date().getTime()-now,"ms")
 				Starling.current.dispatchEventWith(event,false,data)
 			})
 		}
@@ -561,7 +557,6 @@ package controls
 				data = {code:Code.INVALIDO,sorteos:invalidos};
 				cb(data);
 			} else {
-				//Loteria.console.log("SORTEOS VALIDADOS",getTimer()-t,"ms");
 				//validar topes
 				t=getTimer();				
 				//seleccionar validacion de topes				
@@ -573,7 +568,6 @@ package controls
 					if (debeValidar) validarTopeBanca();
 					else validarTopeTaquilla();
 				}
-				//Loteria.console.log("VENTA VALIDADA EN",getTimer()-t+"ms");
 				
 				function validarTopeUsuario():void {
 					ventasUsuario = _model.uMan.findGrupo(_taquilla.usuarioID);

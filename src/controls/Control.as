@@ -74,13 +74,12 @@ package controls
 			lastMessage.control = controlName		
 			lastMessage.command = event.message.command
 			lastMessage.data = event.message.data
-			//Loteria.console.log(controlName,event.message.command,JSON.stringify(event.message.data));
 			dispatchEventWith(event.message.command,false,event.message);
 		}
 		
 		protected function measure(e:String):void {
 			cmt=getTimer()-mt;
-			Loteria.console.log(controlName,e,cmt+"ms");
+			//Loteria.console.log(controlName,e,cmt+"ms");
 			MonitorSistema.monitor.ms_last = cmt;
 			MonitorSistema.monitor.ms_last_desc = controlNameID+"_"+e;
 		}
