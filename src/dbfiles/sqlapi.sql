@@ -71,3 +71,15 @@ SELECT * FROM taquillas_comision WHERE bancaid = :padreID and grupoid = 0 and ta
 SELECT nombre, bancaID FROM bancas WHERE usuarioID = :usuarioID
 --numero_id
 SELECT elementoID, descripcion FROM numeros WHERE numero = :numero and sorteo = :sorteo
+--admin_operadoras
+SELECT sorteos.sorteoID, sorteos.nombre FROM admins_meta
+  JOIN sorteos ON sorteos.sorteoID = valor
+WHERE admins_meta.adminid = :id
+--cupos_generales
+SELECT topeID, creado, monto, COALESCE(numeros.descripcion,'') numero, sorteo FROM topes 
+LEFT JOIN numeros ON numeros.elementoID = elemento
+WHERE taquillaid = 0 AND usuarioID = 0
+--topes_elemento
+SELECT taquillaid, topeid,bancaID FROM topes
+JOIN comer_usuario ON comer_usuario.uID = topes.usuarioID
+WHERE elemento = :elemento AND comer_usuario.cID = :id
