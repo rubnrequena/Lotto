@@ -280,8 +280,8 @@ package controls
 		
 		private function taquilla_comision_nv(e:Event,m:Message):void
 		{
-			m.data.grupoID = usuario.usuarioID;
-			m.data.bancaID = usuario.bancaID;
+			m.data.grupoID = usuario.bancaID;
+			m.data.bancaID = usuario.usuarioID;
 			_model.taquillas.comision_nv(m.data,function(r:SQLResult):void {
 				m.data.comID = r.lastInsertRowID;
 				_cliente.sendMessage(m);
