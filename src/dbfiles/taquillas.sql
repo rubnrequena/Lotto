@@ -36,4 +36,4 @@ ORDER BY sorteo ASC, grupoid
 --comision_nueva
 INSERT INTO taquillas_comision (sorteo,comision,taquillaID,grupoID,bancaID) VALUES (:sorteo,:comision,:taquillaID,:grupoID,:bancaID)
 --comision_remover
-DELETE FROM taquillas_comision WHERE bancaID = :bancaID AND comID = :comID
+DELETE FROM taquillas_comision WHERE comID = :comID

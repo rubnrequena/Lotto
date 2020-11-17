@@ -192,6 +192,7 @@ package controls
 			var comando:String = m.data.comando
 			var payload:Object = m.data.data || {};
 			payload.padreID = usuario.usuarioID
+			payload.id = usuario.usuarioID;
 			delete m.data.comando;
 			var sql:SQLStatementPool = sqlAPI.exec(comando)
 			if (!sql) sendMessage(m,{error:'sentencia no existe'})
