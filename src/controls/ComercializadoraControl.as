@@ -560,7 +560,7 @@ package controls
 		}
 
 		private function comision_producto_nuevo (e:Event,m:Message):void {
-			var comisionPrevia:Object = {usuario:m.data.usuario,operadora:m.data.operadora,tipo:m.data.tipo}
+			var comisionPrevia:Object = {usuario:m.data.usuario,operadora:m.data.operadora,tipo:m.data.tipo,rol:m.data.rol}
 			_model.usuarios.comisiones_usuario(comisionPrevia,function (comisiones:SQLResult):void {
 				if (comisiones.data) {
 					m.data = {error:'comision existe'}
