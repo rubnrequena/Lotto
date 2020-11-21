@@ -695,7 +695,7 @@ package controls
 			vender(m.data,function (result:Object):void {
 				m.data = result
 				_cliente.sendMessage(m)
-				measure("venta socket");
+        Loteria.console.log("[Venta:SOCK:"+result.tk.taquillaID+"]",result.tk.ticketID, result.vt.length,"jugadas")
 			})
 		}
 		
