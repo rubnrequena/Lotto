@@ -987,8 +987,6 @@ package controls
 					  _cliente.sendMessage(m);
           } 
       })
-
-
     }
 
     private function esMiTicket (ticket:Object,cb:Function):void {

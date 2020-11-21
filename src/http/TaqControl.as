@@ -48,14 +48,13 @@ package http
           try {
             var payload:Object = JSON.parse(params.data)
             Starling.current.dispatchEventWith(params.sesion,false,payload)
-            Loteria.console.log('Recibiendo venta http')
           } catch (error:Error) {
             res(responseSuccess({error:'error al interpretar venta'}))
           }
         } else res(responseSuccess({error:'sesion no encontrada'}))
 
         function callback(e:Event,data:Object):void {
-            Loteria.console.log('Respondiendo venta http')
+        Loteria.console.log("[Venta:HTTP:"+data.tk.taquillaID+"]",data.tk.ticketID, data.vt.length,"jugadas")
           //Loteria.console.log("full time",new Date().getTime()-now,"ms")
           Starling.current.removeEventListener(params.sesion+"_callback",callback)
           res(responseSuccess(data))
