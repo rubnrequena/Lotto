@@ -25,10 +25,10 @@ package helpers
 		private var _name:String;
 
 		private var reintentar:int;
-		private var reintentos:int=5;
+		private var reintentos:int=Loteria.setting.premios.reintentos || 10;
 
 		private var inicioBusq:int;
-		private var tiempoBusq:int=3600000; //1 hora
+		private var tiempoBusq:int=Loteria.setting.premios.tiempoBusqueda_ms || 3600000; //1 hora
 		
 		public function Premio_SRQWeb(name:String)
 		{
@@ -80,6 +80,8 @@ package helpers
 				st = setTimeout(function ():void {
 					if (loader) loader.load(web);
 				},_delay);
+			} else {
+				Loteria.console.log("[JV:Premio] Busqueda de premio desactivada por tiempo: ",srt)
 			}
 		}
 		
@@ -87,8 +89,7 @@ package helpers
 			dispatchEventWith("ready",false,this);
 		}
 		
-		public function buscar(sorteo:String, fecha:Date=null):void
-		{
+		public function buscar(sorteo:String, fecha:Date=null):void {
 			if (inicioBusq==0) inicioBusq=getTimer();
 			srt = sorteo;
 			
@@ -98,6 +99,7 @@ package helpers
 			fv.servidor = Loteria.setting.servidor;
 			
 			web.data = fv;
+			Loteria.console.log('[JV:Premio] Iniciando busqueda de premio:',sorteo)
 			loader.load(web);
 		}
 		

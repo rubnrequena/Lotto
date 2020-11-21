@@ -34,6 +34,8 @@
       } 
     },
     "activo": true,
+    "reintentos": 10,
+    "tiempoBusqueda_ms": 3600000,
     "retraso": 2,
     "prm_solicitudes": 2,
     "url": "http://sistemasrq.com/prm/",
