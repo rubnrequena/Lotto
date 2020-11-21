@@ -83,3 +83,8 @@ WHERE taquillaid = 0 AND usuarioID = 0
 SELECT taquillaid, topeid,bancaID FROM topes
 JOIN comer_usuario ON comer_usuario.uID = topes.usuarioID
 WHERE elemento = :elemento AND comer_usuario.cID = :id
+--banca_meta
+SELECT metaID, campo, valor FROM taquillas_meta 
+JOIN comer_usuario ON comer_usuario.uID = bancaID
+WHERE bancaID = :bancaID AND taquillaID = 0 and cID = :id
+ORDER BY taquillaID DESC

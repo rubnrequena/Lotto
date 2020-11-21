@@ -108,4 +108,4 @@ FROM bancas
 	  AND participacion.operadora = :operadora AND participacion.rol = 2 AND participacion.tipo = 1
 WHERE bancas.usuarioID = :usuario
 --comisiones_usuario
-SELECT * FROM us.comisiones WHERE usuario = :usuario AND operadora = :operadora AND tipo = :tipo
+SELECT * FROM us.comisiones WHERE usuario = :usuario AND operadora = :operadora AND tipo = :tipo AND rol = :rol

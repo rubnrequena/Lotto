@@ -3,6 +3,7 @@ package db.sql
 	import db.SQLStatementPool;
 	
 	import vos.Taquilla;
+	import flash.data.SQLStatement;
 
 	public class TaquillasSQL extends SQLBase
 	{
@@ -70,6 +71,10 @@ package db.sql
 		public var comisiones_grupo:SQLStatementPool;
 
 		public var taquilla_activa:SQLStatementPool;
+		public var meta_remover_banca:SQLStatementPool;
+		public var meta_registrar_banca:SQLStatementPool;
+		public var meta_validar_existe:SQLStatementPool;
+		public var meta_actualizar_banca:SQLStatementPool
 		
 		public function TaquillasSQL() {
 			super('taquillas.sql');
@@ -106,9 +111,8 @@ package db.sql
 			/*panic_off_banca = new SQLStatementPool('UPDATE us.taquillas SET activa = 1 WHERE activa = -1 AND bancaID = :bancaID');
 			panic_off_usuario = new SQLStatementPool('UPDATE us.taquillas SET activa = 1 WHERE activa = -1 AND usuarioID = :usuarioID');*/
 			
-			metas = new SQLStatementPool('SELECT * FROM (SELECT taquillaID, taquillas_meta.campo, taquillas_meta.valor FROM taquillas_meta WHERE taquillaID = 0 OR taquillaID = :taquillaID ORDER BY taquillaID ASC) GROUP BY campo');
 			meta = new SQLStatementPool('UPDATE taquillas_meta SET valor = :valor WHERE taquillaID = :taquillaID AND campo = :campo');
-			meta_nuevo = new SQLStatementPool('INSERT INTO taquillas_meta (valor,campo,taquillaiD) VALUES (:valor,:campo,:taquillaID)');
+			meta_nuevo = new SQLStatementPool('INSERT INTO taquillas_meta (valor,campo,taquillaiD,bancaID) VALUES (:valor,:campo,:taquillaID,:bancaID)');
 			meta_campo = new SQLStatementPool('SELECT bancaID, taquillaID, CAST(valor AS INTEGER) valor FROM us.meta WHERE campoID = :campoID ORDER BY taquillaID DESC, bancaID DESC',null);
 			
 			transferir = new SQLStatementPool("UPDATE us.taquillas SET bancaID = :hasta WHERE taquillaID = :taquillaID AND bancaID = :desde");

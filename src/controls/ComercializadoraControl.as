@@ -42,12 +42,14 @@ package controls
 			addEventListener("sorteo-premiar",sorteo_premiar);
 			addEventListener("elementos",elementos);
 			
+			addEventListener("taquilla",taquilla);
 			addEventListener("taquillas",taquillas);
 			addEventListener("taquilla-editar",taquilla_editar);
 			addEventListener("taquilla-nueva",taquilla_nueva);
 			addEventListener("taquilla-panic",taquilla_panic);
 			addEventListener("taquilla-remover",taquilla_remover);
 			
+			addEventListener("taquilla-metas",taquilla_metas)
 			addEventListener("taquilla-comisiones",taquilla_comisiones);
 			addEventListener("taquilla-comision-nv",taquilla_comision_nv);
 			addEventListener("taquilla-comision-dl",taquilla_comision_dl);
@@ -123,6 +125,8 @@ package controls
 			addEventListener("usuario-listaSuspender",usuarioLSuspender);
 			addEventListener("usuario-susprem",usuario_suspremover);
 			addEventListener("usuario-suspnvo",usuario_suspnuevo);
+			addEventListener("meta-banca-rem",usuario_remover_meta)
+			addEventListener("meta-registrar-banca",meta_registrar_banca)
 
 			addEventListener('chat-leer',function (e:Event,m:Message):void {
         _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
@@ -202,12 +206,25 @@ package controls
 			})
 			}
 		}
+		private function usuario_remover_meta (e:Event,m:Message):void {
+			_model.taquillas.meta_remover_banca(m.data.metaID,function (r:SQLResult):void {
+				m.data = r.rowsAffected
+				_cliente.sendMessage(m);
+			})
+		}
+		private function meta_registrar_banca (e:Event, m:Message): void {
+			m.data.taquillaID = 0;
+			_model.taquillas.meta_registrar_banca(m.data,function (r:SQLResult):void {
+				m.data = r.lastInsertRowID;
+				_cliente.sendMessage(m);
+			})
+		}
+
 		private function taquilla_panic(e:Event,m:Message):void {
 			m.data = {usuarioID:usuario.usuarioID};
 			_model.taquillas.panic(m.data,function (numTaq:int):void {
 				m.data = numTaq;
 				_cliente.sendMessage(m);
-				measure(m.command);
 			});
 		}
 		private function taquilla_remover(e:Event,m:Message):void {
@@ -469,6 +486,15 @@ package controls
 				Loteria.console.log("ERROR",er.details,er.message);
 				m.data = er.detailID*-1;
 				_cliente.sendMessage(m);
+			});
+		}
+		private function taquilla(e:Event,m:Message):void {
+			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
+				m.data = r.data[0];		
+				_model.taquillas.metas({taquillaID:m.data.taquillaID, bancaID: m.data.usuarioID},function (meta:Object):void {
+					m.data.meta = meta;
+					_cliente.sendMessage(m);
+				});				
 			});
 		}
 		private function taquillas(e:Event,m:Message):void {
@@ -999,6 +1025,33 @@ package controls
 			});
 		}
 		
+		private function taquilla_metas(e:Event,m:Message):void {
+			var a:int=0;
+			for (var meta:String in m.data.meta) {
+				a++;
+				var ometa:Object = {
+					valor:m.data.meta[meta],
+					campo:meta,
+					taquillaID:m.data.taquilla,
+					bancaID:m.data.banca
+				};
+				_model.taquillas.meta(ometa,taquillas_meta_result);
+			}
+			
+			if (a==0) {
+				m.data = m.data.meta;
+				_cliente.sendMessage(m);
+			}
+			
+			var n:int=0;
+			function taquillas_meta_result (r:SQLResult):void {
+				n++;
+				if (n==a) {
+					m.data = m.data.meta;
+					_cliente.sendMessage(m);
+				}
+			}
+		}
 		private function permiso_nuevo(e:Event,m:Message):void {
 			var metas:Array = [];
 			for each (var permiso:int in m.data.permisos) {

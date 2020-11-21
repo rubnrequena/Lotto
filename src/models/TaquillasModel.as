@@ -344,5 +344,18 @@ package models
 				else execute(cb,false);
 			});
 		}
+
+		public function meta_remover_banca(metaID:int,cb:Function):void {
+			sql.meta_remover_banca.run({metaID:metaID},cb)
+		}
+		public function meta_registrar_banca(data:Object,cb:Function):void {
+			sql.meta_validar_existe.run(data,function (r:SQLResult):void {
+				if (r.data) {
+					var meta:Object = r.data[0]
+					sql.meta_actualizar_banca.run({metaID:meta.metaID,valor:data.valor},cb)
+				} else sql.meta_registrar_banca.run(data,cb)
+			})
+			
+		}
 	}
 }

@@ -245,7 +245,13 @@ package controls
 			var a:int=0;
 			for (var meta:String in m.data.meta) {
 				a++;
-				_model.taquillas.meta({valor:m.data.meta[meta],campo:meta,taquillaID:m.data.taq},taquillas_meta_result);
+				var ometa:Object = {
+					valor:m.data.meta[meta],
+					campo:meta,
+					taquillaID:m.data.taq,
+					bancaID:usuario.usuarioID
+				}
+				_model.taquillas.meta(ometa,taquillas_meta_result);
 			}
 			
 			if (a==0) {
@@ -510,7 +516,7 @@ package controls
 			m.data.bancaID = usuario.bancaID;
 			_model.taquillas.buscar(m.data,function (r:SQLResult):void {
 				m.data = r.data[0];		
-				_model.taquillas.metas({taquillaID:m.data.taquillaID},function (meta:Object):void {
+				_model.taquillas.metas({taquillaID:m.data.taquillaID, bancaID:m.data.usuarioID},function (meta:Object):void {
 					m.data.meta = meta;
 					_cliente.sendMessage(m);
 				});				

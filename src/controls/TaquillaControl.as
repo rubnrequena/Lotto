@@ -293,10 +293,9 @@ package controls
 					m.data.sesion = sesionHash
 					sendMessage(m);
 					
-					_model.taquillas.metas({taquillaID:_taquilla.taquillaID},function metaResult (meta:Object):void {
+					_model.taquillas.metas({taquillaID:_taquilla.taquillaID,bancaID:_taquilla.usuarioID},function metaResult (meta:Object):void {
 						m.command = "metas";
-						m.data = meta;
-						
+						m.data = meta;						
 						sendMessage(m);
 						measure("login");
 					})
