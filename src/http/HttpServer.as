@@ -175,14 +175,17 @@ package http
                 
                 if (controller) {
                     param_string = param_string == "" ? null : param_string;
-                    var response:String = controller.doAction(action_key, new URLVariables(param_string),function (res:String):void {
+                    var response:String = controller.doAction(action_key, new URLVariables(param_string),
+                    function http_controller_action (res:String):void {
                         socket.writeUTFBytes(res);
                         end();
                     });
                     if (response) {
-                        socket.writeUTFBytes(response);
-                        end();
-                    }
+                        if (socket) {
+                            socket.writeUTFBytes(response);
+                            end();
+                        } else Loteria.console.log("[ERROR HTTP] Socket no existe o esta fuera de alcance")
+                    } else Loteria.console.log("[ERROR HTTP] sin respuesta que enviar")
                 }
                 else {
                     socket.writeBytes(_fileController.getFile(url));
@@ -191,6 +194,7 @@ package http
             }
             catch (error:Error)
             {
+              Loteria.console.log("[ERROR HTTP]",error.name,error.message)
                 if (_errorCallback != null) {
                     _errorCallback(error, error.message);
                 }
