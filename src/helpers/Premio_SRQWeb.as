@@ -43,7 +43,7 @@ package helpers
 			web.useCache = false;
 			web.cacheResponse = false;
 			
-			_delay = int(Loteria.setting.premios.retraso)*60000; //ms a minutos			
+			_delay = int(Loteria.setting.premios.retraso || 5)*60000; //ms a minutos			
 			
 			loader = new URLLoader;
 			loader.addEventListener(Event.COMPLETE,onComplete);
@@ -56,7 +56,7 @@ package helpers
 		}
 		protected function error(event:IOErrorEvent):void {
 			Loteria.console.log("404:",srt,event.text);
-			if (reintentos++<reintentar) retry();
+			retry();
 		}
 		private function onComplete(event:Event):void {
 			var data:String = loader.data;
@@ -76,13 +76,9 @@ package helpers
 		}
 		
 		private function retry():void {
-			if (sigoBuscando) {
 				st = setTimeout(function ():void {
 					if (loader) loader.load(web);
 				},_delay);
-			} else {
-				Loteria.console.log("[JV:Premio] Busqueda de premio desactivada por tiempo: ",srt)
-			}
 		}
 		
 		public function isComplete():void {
