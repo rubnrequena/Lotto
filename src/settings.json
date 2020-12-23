@@ -52,30 +52,6 @@
         "webofic": {
           "url": "http://sistemasrq.com/prm/"
         }
-      },
-      "lottoactivo": {
-        "numCompletado": 1,
-        "webofic": {
-          "url": "http://sistemasrq.com/prm/"
-        }
-      },
-      "ruletanimal": {
-        "numCompletado": 1,
-        "webofic": {
-          "url": "http://sistemasrq.com/prm/"
-        }
-      },
-      "ruletaoriente": {
-        "numCompletado": 1,
-        "webofic": {
-          "url": "http://sistemasrq.com/prm/"
-        }
-      },
-      "lottoselva": {
-        "numCompletado": 1,
-        "webofic": {
-          "url": "http://sistemasrq.com/prm/"
-        }
       }
     },
     "pagaPorAproximacion": {
@@ -105,10 +81,10 @@
       "activa": 1
     },
     "telegram": {
-      "url": "http://216.128.130.103:3001/json?servidor=local&text={0}"
+      "url": "http://216.128.130.103:3001/send?user=570183216&text={0}"
     },
     "ws": {
-      "url": "http://216.128.130.103:3001/json?servidor=local&user=aml&text={1}",
+      "url": "http://216.128.130.103:3001/send?user=570183216&text={1}",
       "psw": "srq-WS",
       "pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
       "separador_lineas": "%0A"
