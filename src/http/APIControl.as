@@ -149,12 +149,12 @@ package http
       })
     }
     public function log(params:URLVariables,cb:Function):void {
-      var f:File = File.applicationStorageDirectory.resolvePath('net.log')
+      var hoy:String = new Date().toDateString()
+      var f:File = File.applicationStorageDirectory.resolvePath('net/'+hoy+'.log')
       var fs:FileStream = new FileStream();
       fs.open(f,FileMode.APPEND)
-      fs.writeUTF('---------'+new Date().toString()+File.lineEnding)
-      fs.writeUTF(params.log+File.lineEnding)
-      fs.writeUTF('---------'+File.lineEnding)
+      fs.writeUTFBytes('---------'+new Date().toLocaleString()+File.lineEnding)
+      fs.writeUTFBytes(params.log+File.lineEnding)
       fs.close()
       cb(responseSuccess({ok:1}))
     }
