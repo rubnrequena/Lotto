@@ -31,6 +31,7 @@ package
 			var fs:FileStream = new FileStream;
 			fs.open(File.applicationDirectory.resolvePath("settings.json"),FileMode.READ);
 			var s:String = fs.readUTFBytes(fs.bytesAvailable);
+			fs.close()
 			setting = JSON.parse(s);
 						
 			_starling = new Starling(Main,stage);
