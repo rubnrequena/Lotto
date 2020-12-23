@@ -114,7 +114,7 @@ package controls
 			var sql:SQLStatementPool = sqlAPI.exec(comando)
 			if (!sql) sendMessage(m,{error:'sentencia no existe'})
 			else  {
-				sql.run(payload,function (result:SQLResult):void {
+				sql.run(payload,function sql_api_handler (result:SQLResult):void {
 				sendMessage(m,result)
 			})
 			}
@@ -126,7 +126,7 @@ package controls
 				taquilla:_taquilla.taquillaID,
 				banca:_taquilla.bancaID
 			}
-			_model.sistema.elementos_gtag(tq,function (r:SQLResult):void {
+			_model.sistema.elementos_gtag(tq,function _elementos_init (r:SQLResult):void {
 				for each (var i:Object in r.data) {
 					m.data = _model.sistema.elementos_sorteo_min(i.s);
 					_cliente.sendMessage(m);
@@ -143,7 +143,7 @@ package controls
 		}
 		
 		private function ticket_anulado(e:Event,m:Message):void {
-			_model.ventas.anulado(m.data,function (r:SQLResult):void {
+			_model.ventas.anulado(m.data,function _anulado (r:SQLResult):void {
 				if (r.data) {
 					m.data = r.data[0];
 					m.data.tiempo = DateFormat.format(m.data.tiempo,"dd/mm/yy hh:MM:ss TT");
@@ -162,7 +162,7 @@ package controls
 			};
 			_taquilla.fingerprint = m.data.fp;
 			initLog();
-			_model.taquillas.fingerprint(m.data,function (r:SQLResult):void {
+			_model.taquillas.fingerprint(m.data,function _fingerprint (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
@@ -174,7 +174,7 @@ package controls
 			m.data.inicio = DateFormat.toDate(m.data.fecha).time;
 			m.data.final = m.data.inicio+DateFormat.DIA;
 			delete m.data.fecha;
-			_model.reportes.ventas(m.data,function (r:SQLResult):void {
+			_model.reportes.ventas(m.data,function _reporte_ventas (r:SQLResult):void {
 				if (r.data) {
 					var l:int = Math.ceil(r.data.length/50);
 					for (var i:int = 0; i < l; i++) {
@@ -193,7 +193,7 @@ package controls
 		}
 				
 		private function venta_repetir(e:Event,m:Message):void {
-			_model.ventas.repetir(m.data,function (r:SQLResult):void {
+			_model.ventas.repetir(m.data,function _venta_repetir (r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			});
@@ -248,7 +248,7 @@ package controls
 		private function login(e:Event,m:Message):void {
 			var fp:String = m.data.fp;
 			delete m.data.fp;
-			_model.taquillas.login(m.data,_cliente,function (taquilla:Taquilla,err:Object):void {
+			_model.taquillas.login(m.data,_cliente,function _login(taquilla:Taquilla,err:Object):void {
 				if (err) {
 					m.data = err;
 					_cliente.sendMessage(m);
@@ -283,7 +283,7 @@ package controls
 				
 				var hoy:String = DateFormat.format(null);
 				var f:Object = {fecha:hoy,banca:_taquilla.bancaID,taquilla:_taquilla.taquillaID};
-				_model.sorteos.sorteos(f,function (r:SQLResult):void {		
+				_model.sorteos.sorteos(f,function login_sorteos (r:SQLResult):void {		
 					m.data.sorteos = r.data
 					m.data.elementos = _model.sistema.eleHash;
 					//registrar api
@@ -326,7 +326,7 @@ package controls
 		
 		private function reporte_general(e:Event,m:Message):void {
 			m.data.taquillaID = _taquilla.taquillaID;
-			_model.reportes.taquilla(m.data,function (r:SQLResult):void {
+			_model.reportes.taquilla(m.data,function _reporte_general (r:SQLResult):void {
 				m.data =r.data;
 				_cliente.sendMessage(m);
 				measure(m.command);
@@ -334,10 +334,10 @@ package controls
 		}
 		
 		private function venta_premios(e:Event,m:Message):void {
-			_model.ventas.ticket(m.data,function (ticket:Object):void {
+			_model.ventas.ticket(m.data,function _venta_premios_ticket (ticket:Object):void {
 				if (ticket && ticket.taquillaID==_taquilla.taquillaID) {
 					ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.masks["default"]);
-					_model.ventas.ventas_elementos(m.data,function (premios:SQLResult):void {
+					_model.ventas.ventas_elementos(m.data,function _venta_premios_elementos (premios:SQLResult):void {
 						m.data = {tk:ticket,prm:premios.data}
 						_cliente.sendMessage(m);
 					});
@@ -350,7 +350,7 @@ package controls
 		
 		private function reporte_sorteo(e:Event,m:Message):void {
 			m.data.taquillaID = _taquilla.taquillaID;
-			_model.reportes.taquilla(m.data,function (ventas:SQLResult):void {
+			_model.reportes.taquilla(m.data,function _reporte_sorteo (ventas:SQLResult):void {
 				m.data = {
 					vnt:ventas.data
 				}
@@ -363,7 +363,7 @@ package controls
 		private function venta_pagar(e:Event,m:Message):void {
 			_valCod = m.data.cod || 0;
 			delete m.data.cod;
-			_model.ventas.ticket({ticketID:m.data.tk,codigo:_valCod},function (ticket:Object):void {
+			_model.ventas.ticket({ticketID:m.data.tk,codigo:_valCod},function _venta_pagar_ticket (ticket:Object):void {
 				if (ticket && ticket.taquillaID==_taquilla.taquillaID && ticket.anulado==0) { //validar taquilla
 					_valTiempo = _model.ahora-ticket.tiempo;					
 					if (_valTiempo<259200000 && ticket.codigo==_valCod) { // validar ticket (no mayor de 3 dias, codigo de seguridad)
@@ -371,12 +371,12 @@ package controls
 							id:m.data.id,
 							tk:m.data.tk,
 							tiempo:_model.ahora
-						},function (r:SQLResult):void {
+						},function _pagar_venta (r:SQLResult):void {
 							//_model.ventas.premios_pagos({pago:m.data.premio,taquillaID:_taquilla.taquillaID,sorteoID:m.data.sorteoID},null);
 							m.data.id = r.lastInsertRowID;
 							_cliente.sendMessage(m);
 							measure(m.command);
-						},function (er:SQLError):void {
+						}, function _pagar_venta_error(er:SQLError):void {
 							m.data.code = Code.DUPLICADO;
 							_cliente.sendMessage(m);
 							measure(m.command);
@@ -394,24 +394,24 @@ package controls
 		
 		private function venta_anular(e:Event,m:Message):void {
 			//validar ticket			
-			_model.ventas.ticket(m.data,function (ticket:Object):void {
+			_model.ventas.ticket(m.data,function _venta_anular_ticket(ticket:Object):void {
 				m.data.codigo = m.data.codigo || 0;
 				if (ticket && ticket.taquillaID==_taquilla.taquillaID && ticket.codigo==m.data.codigo) {
 					if (ticket.anulado==false) {
 						if (_model.ahora-ticket.tiempo<300000) { //validar vigencia del ticket 5mins
 							m.data.tiempo = _model.ahora;
 							delete m.data.codigo;
-							_model.ventas.anular(m.data,_taquilla,function (r:SQLResult):void {
+							_model.ventas.anular(m.data,_taquilla,function _venta_anular(r:SQLResult):void {
 								_cache=null;								
 								m.data = r.lastInsertRowID;
 								_cliente.sendMessage(m);
 								measure(m.command);
 								
-								_model.ventas.ventas_elementos({ticket:ticket.ticketID},function (r:SQLResult):void {
+								_model.ventas.ventas_elementos({ticket:ticket.ticketID},function _notificar_topes(r:SQLResult):void {
 									if (ventasBanca) unmerge(ventasBanca.sorteos,r.data);
 									if (ventasUsuario) unmerge(ventasUsuario.sorteos,r.data);
 								});
-							},function (e:SQLError):void {
+							},function _venta_error (e:SQLError):void {
 								m.data.code = Code.DUPLICADO;
 								_cliente.sendMessage(m);
 							});	
@@ -447,13 +447,13 @@ package controls
 		
 		private function venta_ultima(e:Event,m:Message):void {
 			//TODO validar que sea del dia actual
-			_model.ventas.tickets({ultimo:_taquilla.taquillaID},function (r:SQLResult):void {
+			_model.ventas.tickets({ultimo:_taquilla.taquillaID},function _venta_ultima_tickets (r:SQLResult):void {
 				if (r.data) {
 					m.data = {ticket:r.data[0]};
 					m.data.ticket.hora = DateFormat.format(m.data.ticket.tiempo,DateFormat.i18n["default"]);
-					_model.ventas.ventas_elementos({ticketID:m.data.ticket.ticketID},vnt_ult_result);
+					_model.ventas.ventas_elementos({ticketID:m.data.ticket.ticketID},venta_ultima_result);
 					
-					function vnt_ult_result (ventas:SQLResult):void {
+					function venta_ultima_result (ventas:SQLResult):void {
 						m.data.ventas = ventas?ventas.data:[];
 						_cliente.sendMessage(m);
 					}
@@ -473,7 +473,7 @@ package controls
 		
 		private function reporte_diario(e:Event,m:Message):void {
 			m.data.taquillaID = _taquilla.taquillaID;
-			_model.reportes.diario(m.data,function (r:SQLResult):void {
+			_model.reportes.diario(m.data,function _reporte_diario(r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
 				measure(m.command);
@@ -481,7 +481,7 @@ package controls
 		}
 		
 		private function sorteos(e:Event,m:Message):void {
-			_model.sorteos.sorteos(m.data,function (r:SQLResult):void {
+			_model.sorteos.sorteos(m.data,function _sorteos(r:SQLResult):void {
 				m.data = r.data;
 				_cliente.sendMessage(m);
 			});
@@ -499,9 +499,11 @@ package controls
 
 		private function venderHandler(e:Event,data:Object):void {
 			var event:String = e.type+"_callback"
-			vender(data,function (data:Object):void {
+			vender(data,_vender_handler);
+			function _vender_handler (data:Object):void {
+				if (data.tk) Loteria.console.log("[Venta:HTTP:"+data.tk.taquillaID+"]",data.tk.ticketID, data.vt.length,"jugadas")
 				Starling.current.dispatchEventWith(event,false,data)
-			})
+			}
 		}
 		private function vender (data:Object,cb:Function):void {
 			var i:int;
@@ -515,7 +517,7 @@ package controls
 					mt+= data.v[i].monto;
 					mn+= data.v[i].numero;
 				}
-				var unums:Array = ultVenta.vt.map(function (num:Object,i:int,a:Array):int { return num.numero });
+				var unums:Array = ultVenta.vt.map(function _numeros (num:Object,i:int,a:Array):int { return num.numero });
 				var unum:int=0;
 				for each(var num:int in unums) unum += num;
 				var ahora:Number = new Date().time;
@@ -577,7 +579,7 @@ package controls
 						_model.ventas.ventas_elementos({
 							fecha:DateFormat.format(_model.ahora),
 							usuarioID:_taquilla.usuarioID
-						},function (ventas_banca:SQLResult):void {
+						},function _validarTopeUsuario (ventas_banca:SQLResult):void {
 							ventasUsuario = _model.uMan.registrar(_taquilla.usuarioID,ventas_banca.data);
 							validarTopeUsuario();
 						});
@@ -592,7 +594,7 @@ package controls
 						_model.ventas.ventas_elementos({
 							fecha:DateFormat.format(_model.ahora),
 							bancaID:_taquilla.bancaID
-						},function (ventas_banca:SQLResult):void {
+						},function _validarTopeBanca (ventas_banca:SQLResult):void {
 							ventasBanca = _model.bMan.registrar(_taquilla.bancaID,ventas_banca.data);
 							validarTopeBanca();
 						});
@@ -604,7 +606,7 @@ package controls
 						_model.ventas.ventas_elementos({
 							fecha:DateFormat.format(_model.ahora),
 							taquillaID:_taquilla.taquillaID
-						},function (ventas_taquilla:SQLResult):void {
+						},function _validarTopeTaquilla (ventas_taquilla:SQLResult):void {
 							_cache = ventas_taquilla.data || [];
 							validarTaquilla();
 						});
@@ -622,7 +624,8 @@ package controls
 					invalidos.length = 0;
 				}
 				function realizarVenta ():void {					
-					_model.ventas.venta(_ventas,_taquilla,function (ticket:Object,ventasID:Array,ids:Array):void {
+					_model.ventas.venta(_ventas,_taquilla,realizarVenta_handler);
+					function realizarVenta_handler  (ticket:Object,ventasID:Array,ids:Array):void {
 						ticket.hora = DateFormat.format(ticket.tiempo,DateFormat.i18n["default"]);
 						ultVenta = {
 							tk:ticket,
@@ -655,7 +658,7 @@ package controls
 								ticket.codigo,
 								ticket.monto,
 								body.join("<br/>")+"</table>"								
-							),function ():void {
+							),function mail_sent ():void {
 								//mail send
 							});
 						}
@@ -666,7 +669,7 @@ package controls
 							WS.enviar(meta.ws,ModoExtremo.imprimirVentas_extremo(_ventas,ticket,_taquilla,_model));
 						}
 						cb(data);
-					});
+					}
 				}
 				function merge (cache:Array):void {
 					var a:Object,b:Object; var f:Boolean;
@@ -692,11 +695,17 @@ package controls
 		}
 
 		private function venta(e:Event,m:Message):void {
-			vender(m.data,function (result:Object):void {
-				m.data = result
-				_cliente.sendMessage(m)
-        Loteria.console.log("[Venta:SOCK:"+result.tk.taquillaID+"]",result.tk.ticketID, result.vt.length,"jugadas")
-			})
+			vender(m.data,venta_handler)
+
+			function venta_handler (result:Object):void {
+				var msg:Message = new Message()
+				msg.command="venta";
+				msg.data = result;
+				_cliente.sendMessage(msg)
+				if (result && result.tk)
+				Loteria.console.log("[Venta:SOCK:"+result.tk.taquillaID+"] #"+result.tk.ticketID);
+        //Loteria.console.log("[Venta:SOCK:"+result.tk.taquillaID+"]",result.tk.ticketID, result.vt.length,"jugadas")
+			}
 		}
 		
 		public function smsResult (err:Object,data:Object=null):void {
