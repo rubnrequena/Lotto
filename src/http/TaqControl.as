@@ -44,7 +44,7 @@ package http
       public function venta (params:URLVariables,res:Function):void {
         //var now:Number = new Date().getTime();
         if (Starling.current.hasEventListener(params.sesion)) {
-          Starling.current.addEventListener(params.sesion+"_callback",callback)
+          Starling.current.addEventListener(params.sesion+"_callback",http_venta_callback)
           try {
             var payload:Object = JSON.parse(params.data)
             Starling.current.dispatchEventWith(params.sesion,false,payload)
@@ -53,10 +53,8 @@ package http
           }
         } else res(responseSuccess({error:'sesion no encontrada'}))
 
-        function callback(e:Event,data:Object):void {
-        Loteria.console.log("[Venta:HTTP:"+data.tk.taquillaID+"]",data.tk.ticketID, data.vt.length,"jugadas")
-          //Loteria.console.log("full time",new Date().getTime()-now,"ms")
-          Starling.current.removeEventListener(params.sesion+"_callback",callback)
+        function http_venta_callback(e:Event,data:Object):void {
+          Starling.current.removeEventListener(e.type,http_venta_callback)
           res(responseSuccess(data))
         }
       }
