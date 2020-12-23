@@ -62,18 +62,18 @@ package http
         /**
         * The main entry point for calling an action by the <code>HttpServer</code>
          */
-        public function doAction(action:String, params:URLVariables,cb:Function=null):String
+        public function doAction(actionName:String, params:URLVariables,cb:Function=null):String
         {
-            if (action == "") {
-                action = "index";
+            if (actionName == "") {
+                actionName = "index";
             }
             
-            if (!(this[action] is Function)) {
-                return actionNotFound(action);
+            if (!(this[actionName] is Function)) {
+                return actionNotFound(actionName);
             }
-            var faction:Function = this[action];
-            if (faction.length==1) return faction.call(this, params);
-            else faction.call(this, params, cb);
+            var actionHandler:Function = this[actionName];
+            if (actionHandler.length==1) return actionHandler.call(this, params);
+            else actionHandler.call(this, params, cb);
             return null;
         }
         
