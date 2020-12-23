@@ -25,6 +25,7 @@ package controls
 	import starling.utils.execute;
 	import db.SQLStatementPool;
 	import db.sql.SQLAPI;
+	import vos.Tope;
 	
 	public class ComercializadoraControl extends Control
 	{
@@ -427,14 +428,33 @@ package controls
 				_cliente.sendMessage(m);
 			});
 		}
+
+		private function topes_notificar(comercialID:int):void {
+			var tp:Tope = new Tope;
+			_model.comercializadora.hijos(comercialID,comercial_hijos)
+			function comercial_hijos (r:SQLResult):void {
+				for each(var hijo:Object in r.data) {
+					tp.usuarioID = hijo.usuarioID
+					_model.topes.dispatchEventWith(Event.CHANGE,false,tp);
+				}
+			}
+		}
 		
 		private function tope_remover(e:Event,m:Message):void {
-			_model.topes.remover(m.data,function (r:SQLResult):void {
+			if (m.data.hasOwnProperty("elemento")) {
+				_model.comercializadora.tope_remover(m.data.elemento,usuario.usuarioID,function tope_remover_elemento(r:SQLResult):void {
+					m.data = {ok:1,num:r.rowsAffected}
+					_cliente.sendMessage(m);
+					topes_notificar(usuario.usuarioID)
+				})
+			} else {
+				_model.topes.remover(m.data,function (r:SQLResult):void {
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
+			}
 		}
-		
+
 		private function tope_nuevo(e:Event,m:Message):void {
 			if (m.data.compartido==2) m.data.bancaID = 0;
 			if (m.data.elemento!="") {
@@ -448,14 +468,33 @@ package controls
 					return _cliente.sendMessage(m);
 				} else m.data.elemento = elemento.elementoID
 			} else m.data.elemento = 0
-			_model.topes.nuevo(m.data,function (id:int):void {
+
+			if (m.data.usuarioID==0) {
+				m.data.id = usuario.usuarioID
+				_model.comercializadora.tope_nuevo(m.data,tope_nuevo)
+				function tope_nuevo(r:SQLResult):void {
+					m.data = {
+						complete:r.complete,
+						registros:r.rowsAffected
+					}
+					_cliente.sendMessage(m)
+					topes_notificar(usuario.usuarioID)
+				}
+			} else {
+				_model.topes.nuevo(m.data,function (id:int):void {
 				m.data = id;
 				_cliente.sendMessage(m);
 			});
+			}
 		}
 		
 		private function topes(e:Event,m:Message):void {
 			_model.topes.topes(m.data,function (r:SQLResult):void {
+				if (r.data==null) {
+					m.data = []
+					_cliente.sendMessage(m)
+					return;
+				}
 				if (r.data.length<100) {
 					m.data = r.data;
 				  _cliente.sendMessage(m);

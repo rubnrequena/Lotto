@@ -9,7 +9,10 @@ package db.sql
 		public var login:SQLStatementPool;
 		public var comercializadoras:SQLStatementPool;
 		public var usuarios:SQLStatementPool;
+		public var hijos:SQLStatementPool;
 		public var link:SQLStatementPool;
+		public var tope_nuevo:SQLStatementPool;
+		public var tope_delete:SQLStatementPool;
 		
 		public function ComerSQL()
 		{
