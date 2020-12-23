@@ -160,9 +160,9 @@ package http
                 
                 // It must be a GET request
                 if (request.substring(0, 3).toUpperCase() != 'GET') {
-                  socket.writeUTFBytes(ActionController.responseNotAllowed("HttpServer only supports GET requests."))
-                  end();
-                  return;
+                    socket.writeUTFBytes(ActionController.responseNotAllowed("HttpServer only supports GET requests."))
+                    end(socket);
+                    return;
                 }
                 
                 // Parse out the controller name, action name and paramert list
@@ -177,24 +177,25 @@ package http
                     param_string = param_string == "" ? null : param_string;
                     var response:String = controller.doAction(action_key, new URLVariables(param_string),
                     function http_controller_action (res:String):void {
-                        socket.writeUTFBytes(res);
-                        end();
+                        if (socket && socket.connected==true) {
+                            socket.writeUTFBytes(res);
+                            end(socket);
+                        } else {
+                            Loteria.console.log('[ERROR] socket desconectado')
+                        }
                     });
                     if (response) {
-                        if (socket) {
-                            socket.writeUTFBytes(response);
-                            end();
-                        } else Loteria.console.log("[ERROR HTTP] Socket no existe o esta fuera de alcance")
-                    } else Loteria.console.log("[ERROR HTTP] sin respuesta que enviar")
-                }
-                else {
+                        socket.writeUTFBytes(response);
+                        end(socket);
+                    }
+                } else {
                     socket.writeBytes(_fileController.getFile(url));
-                    end();
+                    end(socket);
                 }
             }
             catch (error:Error)
             {
-              Loteria.console.log("[ERROR HTTP]",error.name,error.message)
+                Loteria.console.log("[ERROR HTTP]",error.name,error.message)
                 if (_errorCallback != null) {
                     _errorCallback(error, error.message);
                 }
@@ -203,7 +204,7 @@ package http
                 }
             }
 
-            function end():void {
+            function end(socket:Socket):void {
                 socket.flush();
                 socket.close();
             }
