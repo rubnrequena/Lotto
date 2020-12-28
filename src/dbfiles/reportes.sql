@@ -335,7 +335,7 @@ LEFT JOIN us.comisiones as participacion ON participacion.usuario = usuarios.usu
 WHERE reportes.fecha BETWEEN :inicio AND :fin AND cID = :comercial
 GROUP BY usuarios.usuarioID, sorteos.sorteo, sorteos.fecha ORDER BY usuarios.nombre ASC
 --gbanca
-SELECT *, SUM(jg) jg, SUM(pr) pr, SUM(cm) cm  FROM (
+SELECT *, SUM(jg) jg, SUM(pr) pr, SUM(cm) cm, SUM(prt) prt  FROM (
   SELECT 'grupo' tipo, bancas.bancaID id, sorteos.sorteo, sorteos.nombre operadora, reportes.fecha, 
 	bancas.nombre desc, ROUND(SUM(jugada),2) jg, ROUND(SUM(premio),2) pr, reportes.comision tcm,
 	COALESCE(comisiones.valor,bancas.comision) cb, COALESCE(participacion.valor,bancas.participacion) pb,
