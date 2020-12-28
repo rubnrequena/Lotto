@@ -796,8 +796,7 @@ package controls
 						m.data = {code:Code.DUPLICADO};
 						_cliente.sendMessage(m);
 					} else {
-						if (_model.mSorteos.verificarSolicitud(solPremios,m.data.sorteoID)) {							
-							var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
+						var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
 							Loteria.console.log(usuario.usuario,"PREMIA SORTEO","#"+m.data.sorteoID,"NUM",e.descripcion);
 							_model.sorteos.sorteo(s,function (sorteo:Sorteo):void {
 								var premiador:Object = Loteria.setting.premios.premiacion[sorteo.sorteo] || Loteria.setting.premios.premiacion[0];
@@ -816,10 +815,6 @@ package controls
 									_cliente.sendMessage(m);
 								}
 							});
-						} else {
-							m.data = {code:Code.INVALIDO};
-							_cliente.sendMessage(m);
-						}
 					}
 				} else {
 					m.data = {code:Code.NO_EXISTE};
