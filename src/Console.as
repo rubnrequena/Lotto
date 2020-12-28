@@ -20,6 +20,8 @@ package
 	import feathers.controls.Button;
 	import starling.events.Event;
 	import feathers.layout.HorizontalLayout;
+	import flash.desktop.Clipboard;
+	import flash.desktop.ClipboardFormats;
 	
 	public class Console extends LayoutGroup
 	{
@@ -75,6 +77,7 @@ package
 				item.iconLabelField = "tiempo";
 				return item;
 			};
+			list.addEventListener(Event.CHANGE,listSelected)
 			addChild(list);
 
       var btnBar:LayoutGroup = new LayoutGroup
@@ -209,6 +212,10 @@ package
 			fs.writeMultiByte(text,File.systemCharset);
 			if (close) fs.close();
 		}
-
+    private function listSelected (e:Event):void {
+			var list:List = List(e.currentTarget)
+			var item:Object = list.selectedItem
+			Clipboard.generalClipboard.setData(ClipboardFormats.TEXT_FORMAT,JSON.stringify(item))
+		}
 	}
 }
