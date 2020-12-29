@@ -34,6 +34,7 @@ package models
 	import flash.net.URLRequestHeader;
 	import flash.net.URLVariables;
 	import flash.net.URLLoader;
+	import flash.utils.setTimeout;
 	
 	public class ModelHUB extends EventDispatcher
 	{		
@@ -116,7 +117,6 @@ package models
 			for each (var time:String in Loteria.setting.jarvis.tasks.midas) {
 				_tasks[time] = [jv_midas];
 			}
-
 			if (Loteria.setting.jarvis.tasks.hasOwnProperty("monitor")) {
 				_tasks[Loteria.setting.jarvis.tasks.monitor.time] = [jv_sysMonitor];
 			}
@@ -137,24 +137,22 @@ package models
 		}
 		
 		public function jv_midasHandler (r:SQLResult):void {
-			var hoy:String = DateFormat.format(null);
-			var a:Array=[], t:int, p:int;
+			var sorteosPendientes:Array=[], t:int, p:int;
 			var len:int = r.data?r.data.length:0;
 			for (var i:int = 0; i < len; i++) {
 				t+=r.data[i].ej;
 				p+=r.data[i].ep;
 				if (r.data[i].ej!=r.data[i].rj || r.data[i].ep!=r.data[i].rp) {
 					Loteria.console.log("ERROR: [JV][MIDAS]","INCONSISTENCIA EN EL SORTEO",r.data[i].es,r.data[i].ej,r.data[i].rj,r.data[i].ep,r.data[i].rp);
-					a.push(r.data[i].es);
+					sorteosPendientes.push(r.data[i].desc);
 					SorteosModel.sorteosPendientes.push(r.data[i].es)
 				}
 			}				
-			if (a.length>0) {				
-				//nameSorteos(a); FIXME cambiar [sorteo.sorteoID] por [sorteo.descripcion]
-				WS.emitir(WS.premios,"Revisar sorteos:\n"+a.join("\n"));
-				Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS "+a.join(",")+"; NOTIFICANDO AL ADMINISTRADOR");				
+			if (sorteosPendientes.length>0) {
+					Loteria.console.log("[JV][MIDAS]","INCONSISTENCIA EN LOS SORTEOS "+sorteosPendientes.join(",")+"; NOTIFICANDO AL ADMINISTRADOR");				
+					WS.emitir(WS.premios,"Revisar sorteos:\n"+sorteosPendientes.join("\n"));
 			}
-			a=null; hoy=null;
+			sorteosPendientes=null;
 		}
 		
 		private function nameSorteos (sorteos:Array):Array {

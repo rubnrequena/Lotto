@@ -14,6 +14,7 @@ package db.sql
 		public var premio:SQLStatementPool;
 		
 		public var sorteos_dia:SQLStatementPool;
+		/** SELECT * FROM vt.sorteos WHERE fecha = :fecha ORDER BY cierra*/
 		public var sorteos_fecha:SQLStatementPool;
 		public var sorteos_fecha_taq:SQLStatementPool;
 		/** SELECT * FROM vt.sorteos WHERE sorteoID = :sorteoID*/

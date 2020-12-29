@@ -226,13 +226,14 @@ JOIN us.comer_usuario ON comer_usuario.uID = bancas.usuarioID
 WHERE reportes.fecha BETWEEN :inicio AND :fin AND cID = :comercial
 GROUP BY reportes.fecha ORDER BY reportes.fecha ASC
 --midas
-SELECT * FROM 
+SELECT es, ej, ep, rj, rs, rp, sorteos.descripcion desc FROM 
 	(SELECT elementos.sorteoID es, ROUND(SUM(monto),2) ej, ROUND(SUM(premio),2) ep FROM elementos 
 	 	JOIN vt.sorteos ON sorteos.sorteoID = elementos.sorteoID 
 	 	WHERE fecha = :fecha AND anulado = 0 GROUP BY elementos.sorteoID ORDER BY elementos.sorteoID asc) AS jg
 	LEFT JOIN (SELECT sorteoID rs, ROUND(SUM(jugada),2) rj, ROUND(SUM(premio),2) rp FROM reportes 
 		WHERE fecha = :fecha GROUP BY sorteoID ORDER BY sorteoID asc) AS rp 
 ON rp.rs = jg.es
+JOIN vt.sorteos ON sorteos.sorteoID = es
 --midas_sorteo
 SELECT * FROM 
 	(SELECT elementos.sorteoID es, ROUND(SUM(monto),2) ej, ROUND(SUM(premio),2) ep FROM elementos 
