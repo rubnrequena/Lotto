@@ -799,21 +799,15 @@ package controls
 						var e:Elemento = ObjectUtil.find(m.data.elemento,"elementoID",_model.sistema.elementos);
 							Loteria.console.log(usuario.usuario,"PREMIA SORTEO","#"+m.data.sorteoID,"NUM",e.descripcion);
 							_model.sorteos.sorteo(s,function (sorteo:Sorteo):void {
-								var premiador:Object = Loteria.setting.premios.premiacion[sorteo.sorteo] || Loteria.setting.premios.premiacion[0];
-								var numSol:int = _model.mSorteos.solicitudPremio(sorteo,m.data.elemento,usuario.nivel==1?100:20);
-								if (numSol>=premiador.puntos) {
-									_model.ventas.premiar(sorteo,e,function (srt:Object):void {
+								_model.ventas.premiar(sorteo,e,function (srt:Object):void {
 										m.data = {code:Code.OK};
-										_cliente.sendMessage(m);										
-									//verificar si estaba pendiente
-										WS.emitir(WS.premios,StringUtil.format('*SORTEO PENDIENTE PREMIADO*\n#{0} {1}',sorteo.sorteoID,sorteo.descripcion))
-									/* if (SorteosModel.sorteosPendientes.indexOf(sorteo.sorteoID)>-1) {
-									} */
+										_cliente.sendMessage(m);
+										var sorteoPendiente_indice:int = SorteosModel.sorteosPendientes.indexOf(sorteo.sorteoID)
+										if (sorteoPendiente_indice>-1) {
+											WS.emitir(WS.premios,StringUtil.format('*SORTEO PENDIENTE PREMIADO*\n#{0} {1}',sorteo.sorteoID,sorteo.descripcion))
+											SorteosModel.sorteosPendientes.splice(sorteoPendiente_indice,1)
+										}
 									});
-								} else {
-									m.data = {code:Code.NO};
-									_cliente.sendMessage(m);
-								}
 							});
 					}
 				} else {
