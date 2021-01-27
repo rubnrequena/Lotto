@@ -74,7 +74,7 @@ package controls
 						m.command = "balance-padre";
 						_cliente.sendMessage(m);
 					});
-					_model.usuarios.nuevaSesion(usuario.usuarioID,Usuario.TIPO_GRUPO);
+					_model.usuarios.nuevaSesion(usuario.usuarioID,Usuario.TIPO_GRUPO,_cliente.socket().remoteAddress);
 				});
 				initSolicitudesPremios();
 			}

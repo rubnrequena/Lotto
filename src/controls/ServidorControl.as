@@ -50,7 +50,7 @@ package controls
 					else addListeners_premiar();
           addListeners();
 					_cliente.sendMessage(m);
-					_model.usuarios.nuevaSesion(usr.adminID,Usuario.TIPO_ADMIN);
+					_model.usuarios.nuevaSesion(usr.adminID,Usuario.TIPO_ADMIN,_cliente.socket().remoteAddress);
 					
 					_model.servidor.sorteos({adminID:usuario.adminID},function (s:SQLResult):void {
 						m.command = "init";

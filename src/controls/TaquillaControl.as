@@ -294,7 +294,7 @@ package controls
 					m.data.sesion = sesionHash
 					sendMessage(m);
 
-					_model.usuarios.nuevaSesion(_taquilla.taquillaID,Usuario.TIPO_TAQUILLA)
+					_model.usuarios.nuevaSesion(_taquilla.taquillaID,Usuario.TIPO_TAQUILLA,_cliente.socket().remoteAddress)
 					
 					_model.taquillas.metas({taquillaID:_taquilla.taquillaID,bancaID:_taquilla.usuarioID},function metaResult (meta:Object):void {
 						m.command = "metas";

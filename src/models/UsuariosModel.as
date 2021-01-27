@@ -152,13 +152,14 @@ package models
 			sql.comisiones_grupo.run(s,cb);
 		}
 
-		public function nuevaSesion (usuarioID:int,tipo:int):void {
+		public function nuevaSesion (usuarioID:int,tipo:int,ip:String):void {
 			var ahora:Date = new Date();
 			var params:Object = {
 				usuario:usuarioID,
 				tipo:tipo,
 				fecha:DateFormat.format(ahora),
-				tiempo: DateFormat.format(ahora,DateFormat.masks.mediumTime)
+				tiempo: DateFormat.format(ahora,DateFormat.masks.mediumTime),
+				ip:ip
 			}
 			sql.nueva_sesion.run(params,null)
 		}
