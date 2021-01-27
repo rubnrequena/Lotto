@@ -18,6 +18,9 @@ package http
   import flash.filesystem.File;
   import flash.filesystem.FileStream;
   import flash.filesystem.FileMode;
+  import helpers.IPremio;
+  import starling.events.Event;
+  import flash.utils.setTimeout;
 
   public class APIControl extends ActionController {
     public var model:ModelHUB;
@@ -39,10 +42,11 @@ package http
 
     public function sql(params:URLVariables,cb:Function):void {
       if (estaAutenticado(params,cb)) {
-        var s:String = params.s;      
+        var s:String = params.s;
+        s = s.replace(':unixtime',"strftime('%s', 'now')*1000")
         var stat:SQLStatementPool = new SQLStatementPool(s);
         stat.run(null,function (r:SQLResult):void {
-         cb(responseSuccess(r.data));
+          cb(responseSuccess(r.data));
         },function (error:SQLError):void {
           cb(responseSuccess({error: error}));
         });
@@ -71,7 +75,7 @@ package http
           cb(responseNotFound("Sorteo no existe.."))
           return
         }
-        if (sorteo.sorteoID in model.ventas.sorteos_premiados) {												
+        if (sorteo.ganador>0) {												
 						cb(responseSuccess("[JV] SORTEO PREVIAMENTE PREMIADO, OMITIENDO PREMIACION"));
           } else {
             var n:String = int(params.ganador)<10&&int(params.ganador)>1?"0"+params.ganador:params.ganador;
@@ -157,6 +161,24 @@ package http
       fs.writeUTFBytes(params.log+File.lineEnding)
       fs.close()
       cb(responseSuccess({ok:1}))
+    }
+
+    public function buscar_premio (params:URLVariables,cb:Function):void {
+      var sorteoid:Number = params.sorteoid;
+      var fecha:String = params.fecha;
+      model.sorteos.sorteo({sorteoID:sorteoid},function sorteo_result(sorteo:Sorteo):void {
+        if (!sorteo) { cb(responseNotFound('premiador no existe')); return }
+        var premiador:IPremio = model.sistema.getPremiosClassByID(sorteo.sorteo);
+        if (!premiador) { cb(responseNotFound('premiador no existe')); return }
+        premiador.addEventListener(Event.COMPLETE,function premio_result(e:Event,pleno:String):void {
+          cb(responseSuccess({sorteo:sorteo.descripcion,ganador:pleno}))
+        })
+        premiador.buscar(sorteo.descripcion,new Date(fecha));
+        setTimeout(function premio_timeout():void {
+          premiador.dispose();
+          cb(responseNotFound(sorteo.descripcion+': NO ENCONTRADO'))
+        },60000)
+      })
     }
   }
 }
