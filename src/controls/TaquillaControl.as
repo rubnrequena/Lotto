@@ -298,8 +298,7 @@ package controls
 					sendMessage(m);
 
 					initLimiteMinimo();
-					trace('cliente IP',_cliente.socket().remoteAddress);
-					_model.usuarios.nuevaSesion(_taquilla.taquillaID,Usuario.TIPO_TAQUILLA)
+					_model.usuarios.nuevaSesion(_taquilla.taquillaID,Usuario.TIPO_TAQUILLA,_cliente.socket().remoteAddress)
 					_model.taquillas.metas({taquillaID:_taquilla.taquillaID,bancaID:_taquilla.usuarioID},function metaResult (meta:Object):void {
 						m.command = "metas";
 						m.data = meta;						

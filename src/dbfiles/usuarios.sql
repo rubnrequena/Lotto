@@ -110,7 +110,7 @@ WHERE bancas.usuarioID = :usuario
 --comisiones_usuario
 SELECT * FROM us.comisiones WHERE usuario = :usuario AND operadora = :operadora AND tipo = :tipo AND rol = :rol
 --nueva_sesion
-INSERT INTO us.sesiones (fecha,tiempo,usuario,tipo) VALUES (:fecha,:tiempo,:usuario,:tipo)
+INSERT INTO us.sesiones (fecha,tiempo,usuario,tipo,ip) VALUES (:fecha,:tiempo,:usuario,:tipo,:ip)
 --limite_nuevo
 INSERT INTO us.limites (banca,grupo,monto,fecha) VALUES (:banca,:grupo,:monto,:fecha)
 --buscar_limite

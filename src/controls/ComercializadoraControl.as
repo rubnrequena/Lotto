@@ -580,7 +580,7 @@ package controls
 								};
 								addListeners();
 								_cliente.sendMessage(m);
-								_model.usuarios.nuevaSesion(u.usuarioID,Usuario.TIPO_COMERCIAL);
+								_model.usuarios.nuevaSesion(u.usuarioID,Usuario.TIPO_COMERCIAL,_cliente.socket().remoteAddress);
 							});
 						});
 						
