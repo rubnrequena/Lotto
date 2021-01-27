@@ -94,7 +94,7 @@ package models
 			ahora = (new Date).time+(1000*60*60*Loteria.setting.gmtHoras);			
 			lastTime = getTimer();
 			setInterval(actualizarHora,1000);
-			Loteria.console.log("HORA ACTUAL:",DateFormat.format(ahora,"HH:MM:ss A"));
+			Loteria.console.log("HORA ACTUAL:",DateFormat.format(ahora,"dd/mm HH:MM:ss A"));
 						
 			conexion = new SQLConnection();
 			conexion.openAsync(sistemaDB,"create",new Responder(initModel_sistema,DB.ERROR_HANDLER));
@@ -251,7 +251,8 @@ package models
 						dispatchEventWith(Event.READY,null,"ventas");
 						Loteria.console.log("MODEL VENTAS RDY");
 						
-						mSorteos.iniciar(DateFormat.format(new Date));
+						var fecha:String = DateFormat.format(ahora)
+						mSorteos.iniciar(fecha);
 						//mSorteos.addEventListener(Event.COMPLETE,prepararVentas);
 						mSorteos.addEventListener(Event.CLOSE,sorteo_close);
 					});
@@ -274,7 +275,7 @@ package models
           if (premiador.activo) {				
             var pw:IPremio = sistema.getPremiosClassByID(s.sorteo); 
             if (pw) {					
-              pw.addEventListener(Event.COMPLETE,function (e:Event,pleno:String):void {						
+              pw.addEventListener(Event.COMPLETE,function (e:Event,pleno:String):void {				
                 sorteos.premio({sorteoID:s.sorteoID},function (r:SQLResult):void {
                   if (s.sorteoID in ventas.sorteos_premiados) {												
                     Loteria.console.log("[JV] SORTEO PREVIAMENTE PREMIADO, OMITIENDO PREMIACION");
@@ -282,13 +283,9 @@ package models
                     Loteria.console.log("[JV] PREMIO RECIBIDO ",s.descripcion,"PLENO:",pleno);												
                     var e:Elemento = sistema.elemento_num(pleno,s.sorteo);
                     if (e) {
-                      var numSol:int = mSorteos.solicitudPremio(s,e.elementoID,13); 
-                      if (numSol>=premiador.puntos) {
-                        pw.dispose();
-                        ventas.premiar(s,e,function (sorteo:Object):void {
-                          Loteria.console.log("[JV] SORTEO PREMIADO EXITOSAMENTE ",sorteo.descripcion,"#",pleno);
-                        });										
-                      }
+                      ventas.premiar(s,e,function (sorteo:Object):void {
+												Loteria.console.log("[JV] SORTEO PREMIADO EXITOSAMENTE ",sorteo.descripcion,"#",pleno);
+											});	
                     } else {
                       WS.emitir(WS.premios,"Error al premiar, pleno invalido. pleno: #"+pleno+" "+s.descripcion);
                       Loteria.console.log("[JV] Error al premiar, pleno invalido. pleno: #",pleno,s.descripcion);
