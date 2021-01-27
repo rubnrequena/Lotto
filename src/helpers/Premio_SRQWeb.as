@@ -55,7 +55,7 @@ package helpers
 			return time > tiempoBusq?false:true;
 		}
 		protected function error(event:IOErrorEvent):void {
-			Loteria.console.log("404:",srt,event.text);
+			Loteria.console.log("404:",srt,configs.webofic.url);
 			retry();
 		}
 		private function onComplete(event:Event):void {
