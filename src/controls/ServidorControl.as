@@ -473,7 +473,7 @@ package controls
 			_model.sorteos.editar_abierta(m.data,function (r:SQLResult):void {
 				var estado:String = m.data.abierta?"ABRE":"CIERRA"
 				Loteria.console.log(StringUtil.format('USUARIO {0}: {1} SORTEO #{2}',usuario.usuario,estado,m.data.sorteo))
-				_model.mSorteos.iniciar();
+				_model.mSorteos.iniciar(DateFormat.format(_model.ahora));
 				m.data = r.rowsAffected;
 				_cliente.sendMessage(m);
 			});
