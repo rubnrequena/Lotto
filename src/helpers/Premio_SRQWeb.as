@@ -82,6 +82,7 @@ package helpers
 		}
 		
 		public function isComplete():void {
+			dispose();
 			dispatchEventWith("ready",false,this);
 		}
 		
