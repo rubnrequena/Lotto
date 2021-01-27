@@ -356,9 +356,9 @@ package controls
                 permisos:permisos.data
 							};
 							addListeners();
-							measure(m.command);
 							_cliente.sendMessage(m);
 							
+							_model.usuarios.nuevaSesion(u.usuarioID,Usuario.TIPO_BANCA);
 							_model.balance.usID({usID:usuario.usID,lm:10},function (r:SQLResult):void {
 								m.command = "balance-padre";
 								m.data = r.data;

@@ -36,6 +36,7 @@ package controls
 	import db.sql.SQLAPI;
 	import db.SQLStatementPool;
 	import starling.core.Starling;
+	import vos.Usuario;
 	
 	public class TaquillaControl extends Control
 	{
@@ -288,10 +289,12 @@ package controls
 					m.data.elementos = _model.sistema.eleHash;
 					//registrar api
 					sesionHash = MD5.hash(_taquilla.taquillaID+new Date().getTime().toString())
-					trace("sesion",sesionHash)
+					
 					Starling.current.addEventListener(sesionHash,venderHandler);
 					m.data.sesion = sesionHash
 					sendMessage(m);
+
+					_model.usuarios.nuevaSesion(_taquilla.taquillaID,Usuario.TIPO_TAQUILLA)
 					
 					_model.taquillas.metas({taquillaID:_taquilla.taquillaID,bancaID:_taquilla.usuarioID},function metaResult (meta:Object):void {
 						m.command = "metas";
@@ -508,7 +511,6 @@ package controls
 		private function vender (data:Object,cb:Function):void {
 			var i:int;
 			var meta:Object = data.m || {};
-
 			if (ultVenta && !meta.hasOwnProperty("rw")) {
 				var mt:Number=0;
 				var mn:int=0;

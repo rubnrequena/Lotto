@@ -35,6 +35,7 @@ package
 
 	import vos.Usuario;
 	import db.SQLStatementPool;
+	import flash.errors.SQLError;
 	
 	public class Main extends LayoutGroup
 	{
@@ -94,7 +95,7 @@ package
 						Loteria.setting.servidor,	//0
 						DateFormat.format(null,DateFormat.masks.isoDateTime))
 					);	//1
-					//validarBaseDatos();
+					validarBaseDatos();
 					validarSuspensionesPendientes();
 					
 					model.ventas.addEventListener(Event.CLOSE,function ():void {
@@ -146,7 +147,7 @@ package
 		}
 
 		private function validarBaseDatos ():void {
-			var ticket:SQLStatementPool = new SQLStatementPool('SELECT impuesto FROM vt.ticket LIMIT 1')
+			/* var ticket:SQLStatementPool = new SQLStatementPool('SELECT impuesto FROM vt.ticket LIMIT 1')
 			ticket.run(null,function verificacionImpuestoVenta(result:SQLResult):void {
 				if (result.data) {
 					if (!result.data[0].hasOwnProperty('impuesto')) {
@@ -158,6 +159,12 @@ package
 						})
 					}
 				}
+			}) */
+			var sesiones:SQLStatementPool = new SQLStatementPool('CREATE TABLE IF NOT EXISTS "us"."sesiones" ("fecha"	TEXT, "tiempo" TEXT, "usuario"	INTEGER,"tipo"	INTEGER);');
+			sesiones.run(null,function crearTablaSesion(result:SQLResult):void {
+				Loteria.console.log('Tabla creada exitosamente')
+			},function crearSesiones_error(error:SQLError):void {
+				Loteria.console.log('Tabla Sesiones Existe',error.details)
 			})
 		}
 

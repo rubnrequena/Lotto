@@ -10,6 +10,14 @@ package vos
 		public static const USUARIO_ACTIVO:int = 3;
 		public static const PAGO_SUSPENDIDO:int = -10;
 		public static const ACTIVO:int = 3;
+
+		public static const TIPO_TAQUILLA:int = 1;
+		public static const TIPO_GRUPO:int = 2;
+		public static const TIPO_BANCA:int = 3;
+		public static const TIPO_USUARIO:int = 4;
+		public static const TIPO_COMERCIAL:int = 5;
+		public static const TIPO_ADMIN:int = 6;
+
 		
 		public var usuarioID:int;
 		public var usuario:String;

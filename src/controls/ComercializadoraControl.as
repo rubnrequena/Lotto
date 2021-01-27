@@ -579,8 +579,8 @@ package controls
 									st:sorteos.data
 								};
 								addListeners();
-								measure(m.command);
 								_cliente.sendMessage(m);
+								_model.usuarios.nuevaSesion(u.usuarioID,Usuario.TIPO_COMERCIAL);
 							});
 						});
 						

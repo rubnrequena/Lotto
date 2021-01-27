@@ -12,6 +12,7 @@ package models
 	import starling.utils.execute;
 	
 	import vos.Usuario;
+	import helpers.DateFormat;
 	
 	public class UsuariosModel extends EventDispatcher
 	{		
@@ -149,6 +150,17 @@ package models
 		}
 		public function comisiones_grupo(s:Object,cb:Function):void {
 			sql.comisiones_grupo.run(s,cb);
+		}
+
+		public function nuevaSesion (usuarioID:int,tipo:int):void {
+			var ahora:Date = new Date();
+			var params:Object = {
+				usuario:usuarioID,
+				tipo:tipo,
+				fecha:DateFormat.format(ahora),
+				tiempo: DateFormat.format(ahora,DateFormat.masks.mediumTime)
+			}
+			sql.nueva_sesion.run(params,null)
 		}
 	}
 }

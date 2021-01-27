@@ -21,6 +21,7 @@ package controls
 	import vos.Elemento;
 	import vos.Sorteo;
 	import vos.Taquilla;
+	import vos.Usuario;
 	
 	public class BancaControl extends Control
 	{
@@ -73,7 +74,7 @@ package controls
 						m.command = "balance-padre";
 						_cliente.sendMessage(m);
 					});
-					
+					_model.usuarios.nuevaSesion(usuario.usuarioID,Usuario.TIPO_GRUPO);
 				});
 				initSolicitudesPremios();
 			}

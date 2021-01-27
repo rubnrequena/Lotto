@@ -24,6 +24,7 @@ package controls
 	import models.SorteosModel;
 	import db.sql.SQLAPI;
 	import db.SQLStatementPool;
+	import vos.Usuario;
 	
 	public class ServidorControl extends Control
 	{
@@ -49,6 +50,7 @@ package controls
 					else addListeners_premiar();
           addListeners();
 					_cliente.sendMessage(m);
+					_model.usuarios.nuevaSesion(usr.adminID,Usuario.TIPO_ADMIN);
 					
 					_model.servidor.sorteos({adminID:usuario.adminID},function (s:SQLResult):void {
 						m.command = "init";

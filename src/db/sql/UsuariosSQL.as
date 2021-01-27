@@ -41,6 +41,7 @@ package db.sql
 		public var comisiones_banca:SQLStatementPool
 		public var comisiones_grupo:SQLStatementPool
 		public var comisiones_usuario:SQLStatementPool;
+		public var nueva_sesion:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');
