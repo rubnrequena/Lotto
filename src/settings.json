@@ -1,6 +1,6 @@
 {
   "servidor": "local",
-  "gmtHoras": -6,
+  "gmtHoras": -5,
   "minEspacioDisponible": 1,
   "minEspacioIntervalo": 30,
   "db": {
@@ -81,10 +81,10 @@
       "activa": 1
     },
     "telegram": {
-      "url": "http://216.128.130.103:3001/send?user=570183216&text={0}"
+      "url": "http://149.28.253.254:3001/send?user=570183216&text={0}"
     },
     "ws": {
-      "url": "http://216.128.130.103:3001/send?user=570183216&text={1}",
+      "url": "http://149.28.253.254:3001/send?user=570183216&text={1}",
       "psw": "srq-WS",
       "pie_sms": "%0A_POR FAVOR NO RESPONDER, NO ATENDEMOS LLAMADAS, NI SMS, NI WS, ESTE NUMERO NO ES MONITOREADO_",
       "separador_lineas": "%0A"
