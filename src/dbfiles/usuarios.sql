@@ -111,3 +111,10 @@ WHERE bancas.usuarioID = :usuario
 SELECT * FROM us.comisiones WHERE usuario = :usuario AND operadora = :operadora AND tipo = :tipo AND rol = :rol
 --nueva_sesion
 INSERT INTO us.sesiones (fecha,tiempo,usuario,tipo) VALUES (:fecha,:tiempo,:usuario,:tipo)
+--limite_nuevo
+INSERT INTO us.limites (banca,grupo,monto,fecha) VALUES (:banca,:grupo,:monto,:fecha)
+--buscar_limite
+SELECT limiteID, monto, grupo, banca FROM limites 
+JOIN bancas ON bancas.bancaID = :grupo
+WHERE (banca=bancas.usuarioID OR banca=0) AND (grupo=:grupo OR grupo=0)
+ORDER BY banca DESC, grupo DESC LIMIT 1

@@ -13,12 +13,15 @@ package models
 	
 	import vos.Usuario;
 	import helpers.DateFormat;
+	import vos.Limite;
+	import vos.Taquilla;
 	
 	public class UsuariosModel extends EventDispatcher
 	{		
 		private var sql:UsuariosSQL;
 		private var usr:Usuario;
-		private const rID:RegExp = /\d+/
+		private const rID:RegExp = /\d+/;
+		public var LIMITES:Array = []
 				
 		public function UsuariosModel() {
 			super();
@@ -161,6 +164,36 @@ package models
 				tiempo: DateFormat.format(ahora,DateFormat.masks.mediumTime)
 			}
 			sql.nueva_sesion.run(params,null)
+		}
+
+		public function nuevoLimite (banca:int,grupo:int,monto:Number,cb:Function):void {
+			var params:Object = {
+				banca:banca,
+				grupo:grupo,
+				monto:monto,
+				fecha:DateFormat.format(null,DateFormat.masks.isoDateTime)
+			}
+			sql.limite_nuevo.run(params,function limiteNuevo_ok(result:SQLResult):void {
+				cb(null,result)
+			},function limiteNuevo_error(error:SQLError):void {
+				cb(error,null)
+			})
+		}
+/* 
+		public function limites(cb:Function):void {
+			sql.limites.run(null,function (result:SQLResult):void {
+				cb(result.data)
+			})
+		} */
+
+		public function buscar_limite (grupo:int,cb:Function):void {
+			var params:Object = {
+				grupo:grupo
+			}
+			sql.buscar_limite.run(params,function (result:SQLResult):void {
+				if (!result.data) cb(null);
+				else cb(result.data[0]) 
+			})
 		}
 	}
 }

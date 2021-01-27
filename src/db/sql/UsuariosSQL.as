@@ -4,6 +4,8 @@ package db.sql
 	
 	import vos.Usuario;
 	import vos.UsuarioMin;
+	import flash.data.SQLStatement;
+	import vos.Limite;
 
 	public class UsuariosSQL extends SQLBase
 	{
@@ -42,6 +44,8 @@ package db.sql
 		public var comisiones_grupo:SQLStatementPool
 		public var comisiones_usuario:SQLStatementPool;
 		public var nueva_sesion:SQLStatementPool;
+		public var limite_nuevo:SQLStatementPool;
+		public var buscar_limite:SQLStatementPool;
 		
 		public function UsuariosSQL() {
 			super('usuarios.sql');
@@ -56,6 +60,7 @@ package db.sql
 			comercialID = new SQLStatementPool(sentencia('comercialID'),null,UsuarioMin)
 
 			usuario_comercial = new SQLStatementPool(sentencia('usuario_comercial'),null,Usuario)
+			buscar_limite = new SQLStatementPool(sentencia('buscar_limite'),null,Limite)
 			scan();
 		}
 	}

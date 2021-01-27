@@ -14,6 +14,7 @@ package http
   import helpers.ObjectUtil;
   import starling.core.Starling;
   import starling.events.Event;
+  import helpers.Code;
 
   public class TaqControl extends ActionController
     {
@@ -42,16 +43,15 @@ package http
       public var _cache:Array;
       public var invalidos:Array;
       public function venta (params:URLVariables,res:Function):void {
-        //var now:Number = new Date().getTime();
         if (Starling.current.hasEventListener(params.sesion)) {
           Starling.current.addEventListener(params.sesion+"_callback",http_venta_callback)
           try {
             var payload:Object = JSON.parse(params.data)
             Starling.current.dispatchEventWith(params.sesion,false,payload)
           } catch (error:Error) {
-            res(responseSuccess({error:'error al interpretar venta'}))
+            res(responseSuccess({code:Code.TICKET_INVALIDO}))
           }
-        } else res(responseSuccess({error:'sesion no encontrada'}))
+        } else res(responseSuccess({code:Code.SESION_NO_ENCONTRADA}))
 
         function http_venta_callback(e:Event,data:Object):void {
           Starling.current.removeEventListener(e.type,http_venta_callback)
