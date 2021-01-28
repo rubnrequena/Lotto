@@ -37,6 +37,7 @@ package controls
 	import db.SQLStatementPool;
 	import starling.core.Starling;
 	import vos.Usuario;
+	import vos.Limite;
 	
 	public class TaquillaControl extends Control
 	{
@@ -56,6 +57,8 @@ package controls
 		private var logFile:File;
 		private var logFS:FileStream;
 		private var sesionHash:String;
+
+		private var LIMITE:Limite;
 		
 		public function TaquillaControl(cliente:Client, model:ModelHUB) {
 			super(cliente, model);
@@ -294,8 +297,8 @@ package controls
 					m.data.sesion = sesionHash
 					sendMessage(m);
 
+					initLimiteMinimo();
 					_model.usuarios.nuevaSesion(_taquilla.taquillaID,Usuario.TIPO_TAQUILLA,_cliente.socket().remoteAddress)
-					
 					_model.taquillas.metas({taquillaID:_taquilla.taquillaID,bancaID:_taquilla.usuarioID},function metaResult (meta:Object):void {
 						m.command = "metas";
 						m.data = meta;						
@@ -305,7 +308,11 @@ package controls
 				});
 			}
 		}
-		
+		private function initLimiteMinimo():void {
+			_model.usuarios.buscar_limite(_taquilla.bancaID,function (limite:Limite):void {
+				LIMITE = limite;
+			})
+		}
 		private function initLog():void {
 			logFile = File.applicationStorageDirectory.resolvePath("logUsers").resolvePath(DateFormat.format(null,"yyyymmdd")).resolvePath("TQ"+_taquilla.taquillaID+".txt");
 			logFS = new FileStream;
@@ -547,7 +554,14 @@ package controls
 					_ventas.removeAt(i);
 				}
 			}
-			
+
+			//validar jugada minima
+			if (esInferiorAlMinimoPermitido(_ventas)) {
+				data = {code:Code.JUGADA_MINIMA_PERMITIDA,monto:LIMITE.monto};
+				cb(data);
+				return;
+			}
+
 			//validar disponibilidad de sorteos
 			invalidos.length=0;
 			for (i = 0; i < _ventas.length; i++) {
@@ -693,6 +707,14 @@ package controls
 						}
 					}
 				}
+			}
+			function esInferiorAlMinimoPermitido(ventas:Array):Boolean {
+				var len:int = ventas.length;
+				for(var i:int = 0; i < len; i++) {
+					var venta:Object = ventas[i];
+					if (venta.monto<LIMITE.monto) return true
+				}
+				return false
 			}
 		}
 

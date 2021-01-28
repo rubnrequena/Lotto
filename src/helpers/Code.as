@@ -14,6 +14,9 @@ package helpers
 		public static const TOPE_ANIMAL_EXEDIDO:int = 7;
 		public static const CERRADO:int = 8;
 		public static const OCUPADO:int = 9;
+		public static const JUGADA_MINIMA_PERMITIDA:int = 10
+		public static const SESION_NO_ENCONTRADA:int = 11
+		public static const TICKET_INVALIDO:int = 12
 		
 		public static const SMS_ENVIADO:int = 101;
 		public static const SMS_NODISPONIBLE:int = 102;

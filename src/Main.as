@@ -162,9 +162,20 @@ package
 			}) */
 			var sesiones:SQLStatementPool = new SQLStatementPool('CREATE TABLE IF NOT EXISTS "us"."sesiones" ("sesionID" INTEGER PRIMARY KEY AUTOINCREMENT, "fecha"	TEXT, "tiempo" TEXT, "usuario"	INTEGER,"tipo"	INTEGER, "ip" TEXT);');
 			sesiones.run(null,function crearTablaSesion(result:SQLResult):void {
-				Loteria.console.log('Tabla creada exitosamente')
+				Loteria.console.log('Sesiones OK')
 			},function crearSesiones_error(error:SQLError):void {
-				Loteria.console.log('Tabla Sesiones Existe',error.details)
+				Loteria.console.log('Ocurrio un error al registrar tabla SESIONES',error.details)
+			})
+			var limites:SQLStatementPool = new SQLStatementPool('CREATE TABLE "us"."limites" ("limiteID"	INTEGER PRIMARY KEY AUTOINCREMENT,"banca"	INTEGER,"grupo"	INTEGER,"monto"	REAL, "fecha" TEXT)');
+			limites.run(null,function crearLimites(result:SQLResult):void {
+				model.usuarios.nuevoLimite(0,0,1000,function nuevoLimite_result(error:SQLError,result:SQLResult):void {
+					if (error) Loteria.console.log('ERROR AL REGISTRAR LIMITE');
+				})
+				Loteria.console.log('Limites OK')
+			},function crearLimites_error(error:SQLError):void {
+				if (error.details.indexOf('already exists')<0) {
+					Loteria.console.log('Ocurrio un error al registrar tabla LIMITES',error.details)
+				}
 			})
 		}
 

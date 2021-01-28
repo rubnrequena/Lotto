@@ -79,7 +79,8 @@ package db
 			
 			lastQuery = s.text;
 			lastData = params;
-			//trace(s.text,JSON.stringify(params));
+			/* trace(s.text,JSON.stringify(params));
+			trace("---------") */
 			s.execute(prefetch,rs);
 		}
 		private const patron:RegExp = new RegExp(':\\w+','g')
