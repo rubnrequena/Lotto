@@ -74,7 +74,8 @@ package db.sql
 		public var meta_remover_banca:SQLStatementPool;
 		public var meta_registrar_banca:SQLStatementPool;
 		public var meta_validar_existe:SQLStatementPool;
-		public var meta_actualizar_banca:SQLStatementPool
+		public var meta_actualizar_banca:SQLStatementPool;
+		public var sesiones:SQLStatementPool;
 		
 		public function TaquillasSQL() {
 			super('taquillas.sql');

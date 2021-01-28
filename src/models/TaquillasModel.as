@@ -357,5 +357,15 @@ package models
 			})
 			
 		}
+
+		public function sesiones(fecha:String,bancaID:int,cb:Function):void {
+			var params:Object = {
+				fecha:fecha,
+				bancaID:bancaID
+			}
+			sql.sesiones.run(params,function (result:SQLResult):void {
+				cb(result.data)
+			})
+		}
 	}
 }

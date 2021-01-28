@@ -50,3 +50,8 @@ INSERT INTO taquillas_meta (taquillaID, bancaID, campo, valor) VALUES (:taquilla
 UPDATE taquillas_meta SET valor = :valor WHERE metaID = :metaID
 --meta_validar_existe
 SELECT * FROM taquillas_meta WHERE bancaID = :bancaID AND taquillaID = 0 AND campo = :campo
+--sesiones
+SELECT ip, sesiones.usuario id, taquillas.usuario, taquillas.nombre, tiempo hora FROM sesiones 
+INNER JOIN taquillas ON taquillas.taquillaID = sesiones.usuario
+WHERE fecha = :fecha AND tipo = 1 AND taquillas.usuarioID = :bancaID
+GROUP BY fecha, sesiones.usuario ORDER BY sesionID DESC

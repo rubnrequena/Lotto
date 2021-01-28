@@ -160,7 +160,7 @@ package
 					}
 				}
 			}) */
-			var sesiones:SQLStatementPool = new SQLStatementPool('CREATE TABLE IF NOT EXISTS "us"."sesiones" ("fecha"	TEXT, "tiempo" TEXT, "usuario"	INTEGER,"tipo"	INTEGER, "ip" TEXT);');
+			var sesiones:SQLStatementPool = new SQLStatementPool('CREATE TABLE IF NOT EXISTS "us"."sesiones" ("sesionID" INTEGER PRIMARY KEY AUTOINCREMENT, "fecha"	TEXT, "tiempo" TEXT, "usuario"	INTEGER,"tipo"	INTEGER, "ip" TEXT);');
 			sesiones.run(null,function crearTablaSesion(result:SQLResult):void {
 				Loteria.console.log('Tabla creada exitosamente')
 			},function crearSesiones_error(error:SQLError):void {

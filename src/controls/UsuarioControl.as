@@ -454,6 +454,8 @@ package controls
 			
 			addEventListener("suspension-info",suspension_info);
 
+			addEventListener("sesiones_dia",sesiones_dia);
+
 			//Mensajes
 			addEventListener('chat-leer',function (e:Event,m:Message):void {
         _model.sms.leer(m.data.origen,usuario.usID,10,function (res:Array):void {
@@ -505,7 +507,13 @@ package controls
 				})
 			})
 		}
-		
+		private function sesiones_dia(e:Event,m:Message):void
+		{
+			var hoy:String = DateFormat.format(null)
+			_model.taquillas.sesiones(hoy,usuario.usuarioID,function (sesiones:Array):void {
+				sendMessage(m,sesiones);
+			})
+		}
 		private function suspension_info(e:Event,m:Message):void
 		{
 			
