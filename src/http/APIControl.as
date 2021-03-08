@@ -78,7 +78,7 @@ package http
         if (sorteo.ganador>0) {												
 						cb(responseSuccess("[JV] SORTEO PREVIAMENTE PREMIADO, OMITIENDO PREMIACION"));
           } else {
-            var n:String = int(params.ganador)<10&&int(params.ganador)>1?"0"+params.ganador:params.ganador;
+            var n:String = int(params.ganador)<10&&int(params.ganador)>0?"0"+params.ganador:params.ganador;
             var elemento:Elemento = model.sistema.elemento_num(n,sorteo.sorteo);
             model.ventas.premiar(sorteo,elemento,function (sorteo:Object):void {
               var m:String = "SORTEO PREMIADO EXITOSAMENTE "+sorteo.descripcion+" #"+elemento.numero;
